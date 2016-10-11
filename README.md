@@ -160,9 +160,9 @@ ws.on('feedUpdated', handlerFunction)
 ## Server
 
 ```js
-var Server = require('rpc-websockets').Server
+var WebSocketServer = require('rpc-websockets').Server
 
-var server = new Server({
+var server = new WebSocketServer({
   port: 8080,
   host: 'localhost',
   rpc: {
