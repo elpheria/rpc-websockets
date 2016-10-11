@@ -1,0 +1,46 @@
+{
+  "name": "rpc-websockets",
+  "version": "2.0.0",
+  "description": "JSON-RPC 2.0 implementation over WebSockets for Node.js",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "mkdir -p ./dist && eslint --fix -c ./.eslintrc.json './src/**/*.js' './test/**/*.js' && babel ./src -d ./dist",
+    "pretest": "npm run-script build",
+    "test": "mocha test/*spec.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/qaap/rpc-websockets.git"
+  },
+  "dependencies": {
+    "assert-args": "^1.2.1",
+    "babel-runtime": "^6.11.6",
+    "uuid": "^2.0.3",
+    "ws": "^1.1.1"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.14.0",
+    "babel-core": "^6.14.0",
+    "babel-eslint": "^7.0.0",
+    "babel-plugin-add-module-exports": "^0.2.1",
+    "babel-plugin-transform-runtime": "^6.15.0",
+    "babel-preset-latest": "^6.14.0",
+    "chai": "^3.5.0",
+    "eslint": "^3.6.1",
+    "mocha": "^3.0.2"
+  },
+  "keywords": [
+    "json",
+    "rpc",
+    "websocket",
+    "ws",
+    "client",
+    "server"
+  ],
+  "author": "Qaap",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/qaap/rpc-websockets/issues"
+  },
+  "homepage": "https://github.com/qaap/rpc-websockets#readme"
+}

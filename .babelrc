@@ -1,0 +1,9 @@
+{
+    "presets": [
+        "latest"
+    ],
+    "plugins": [
+        "transform-runtime",
+        "add-module-exports"
+    ]
+}
