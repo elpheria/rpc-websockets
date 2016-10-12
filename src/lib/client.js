@@ -18,8 +18,7 @@ export default class Client extends EventEmitter
      * @param {Object} options - ws options object with reconnect parameters
      * @return {Client}
      */
-    constructor(address = "ws://localhost:8080/rpc/1.0",
-    {
+    constructor(address = "ws://localhost:8080/rpc/1.0", {
         autoconnect = true,
         reconnect = true,
         reconnect_interval = 1000,
