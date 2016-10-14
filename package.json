@@ -6,7 +6,9 @@
   "scripts": {
     "build": "mkdir -p ./dist && eslint --fix -c ./.eslintrc.json './src/**/*.js' './test/**/*.js' && babel ./src -d ./dist",
     "pretest": "npm run-script build",
-    "test": "mocha test/*spec.js"
+    "test": "mocha test/*spec.js",
+    "coverage": "istanbul cover _mocha --report lcovonly -- -R spec",
+    "coveralls": "npm run-script coverage && coveralls < ./coverage/lcov.info"
   },
   "repository": {
     "type": "git",
@@ -26,8 +28,11 @@
     "babel-plugin-transform-runtime": "^6.15.0",
     "babel-preset-latest": "^6.14.0",
     "chai": "^3.5.0",
+    "coveralls": "^2.11.14",
     "eslint": "^3.6.1",
-    "mocha": "^3.0.2"
+    "istanbul": "^0.4.5",
+    "mocha": "^3.0.2",
+    "mocha-lcov-reporter": "^1.2.0"
   },
   "keywords": [
     "json",
