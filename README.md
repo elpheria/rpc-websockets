@@ -148,7 +148,7 @@ Emits when the connection is closed.
 
 * &lt;Object&gt;
 
-Emits a notification event a client has subscribed to once the server sends it.
+Emits a notification event with possible parameters a client has subscribed to once the server sends it.
 
 Example:
 ```js
@@ -192,15 +192,22 @@ Registers an RPC method.
 
 Parameters:
 * `method` {String}: RPC method name.
-* `callback` {Function}: RPC function that will be fired with a possible parameter object once the method is started.
+* `callback` {Function}: RPC function that will be fired with a possible parameter object once the method is called.
 
 ### server.event(name)
 
 Creates a new event that can be emitted to clients.
 
 Parameters:
-* `method` {String}: RPC method name.
-* `callback` {Function}: RPC function that will be fired once the method is started.
+* `name` {String}: Name of the event.
+
+### server.emit(name[, ...params])
+
+Emits a created event to clients.
+
+Parameters:
+* `name` {String}: Name of the event.
+* `...params`: Parameters forwarded to clients.
 
 ### **get** server.eventList -> Array
 
