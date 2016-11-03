@@ -182,6 +182,15 @@ describe("Client", function()
             })
         })
 
+        it("should throw Error if event is not registered", function()
+        {
+            client.subscribe("inexistent").catch(function(error)
+            {
+                error.name.should.equal("Error")
+                error.message.should.equal("Failed subscribing to an event with: provided event invalid")
+            })
+        })
+
         it("should throw TypeError if event name not provided", function()
         {
             client.subscribe().catch(function(error)

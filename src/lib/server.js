@@ -286,26 +286,22 @@ export default class Server extends EventEmitter
 
             const results = {}
 
+            const event_names = Object.keys(this.events)
+
             for (const name of message.params)
             {
-                for (const event of Object.keys(this.events))
+                const index = event_names.indexOf(name)
+
+                if (index === -1)
                 {
-                    if (event === name)
-                    {
-                        this.events[event].push(socket_id)
-
-                        results[name] = "ok"
-                        break
-                    }
+                    results[name] = "provided event invalid"
+                    continue
                 }
+
+                this.events[event_names[index]].push(socket_id)
+
+                results[name] = "ok"
             }
-
-            if (!Object.keys(results).length)
-                return {
-                    jsonrpc: "2.0",
-                    result: "provided event invalid",
-                    id: message.id || null
-                }
 
             return {
                 jsonrpc: "2.0",
