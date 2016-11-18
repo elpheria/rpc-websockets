@@ -40,7 +40,7 @@ export default class Server extends EventEmitter
             const path = url.parse(socket.upgradeReq.url, true).pathname.split("/")
             socket._id = uuid.v1()
 
-            // cleanup after the socket get disconnected
+            // cleanup after the socket gets disconnected
             socket.on("close", () =>
             {
                 this.clients.delete(socket._id)
