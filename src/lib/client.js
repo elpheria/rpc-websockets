@@ -219,8 +219,10 @@ export default class Client extends EventEmitter
 
         this.socket.on("close", (code, message) =>
         {
+            if (this.ready)
+                this.emit("close", code, message)
+
             this.ready = false
-            this.emit("close", code, message)
 
             if (code === 1000)
                 return
