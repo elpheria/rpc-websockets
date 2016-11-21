@@ -209,7 +209,7 @@ export default class Client extends EventEmitter
                 const args = [message.notification]
 
                 // using for-loop instead of unshift/spread because performance is better
-                for (let i = 0 ;i < message.params.length ;i++)
+                for (let i = 0; i < message.params.length; i++)
                     args.push(message.params[i])
 
                 return this.emit.apply(this, args)
@@ -218,13 +218,13 @@ export default class Client extends EventEmitter
             if (!this.queue[message.id])
                 return
 
+            if (this.queue[message.id].timeout)
+                clearTimeout(this.queue[message.id].timeout)
+
             if (message.error)
                 this.queue[message.id].promise[1](message.error)
             else
                 this.queue[message.id].promise[0](message.result)
-
-            if (this.queue[message.id].timeout)
-                clearTimeout(this.queue[message.id].timeout)
 
             this.queue[message.id] = null
         })
