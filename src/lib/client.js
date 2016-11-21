@@ -198,7 +198,7 @@ export default class Client extends EventEmitter
                 const args = [message.notification]
 
                 // using for-loop instead of unshift/spread because performance is better
-                for (let i = 0 ;i < message.params.length ;i++)
+                for (let i = 0; i < message.params.length; i++)
                     args.push(message.params[i])
 
                 return this.emit.apply(this, args)
