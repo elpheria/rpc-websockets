@@ -100,7 +100,7 @@ Calls a registered RPC method on server. Resolves once the response is ready. Th
 Parameters:
 * `method` {String}: An RPC method name to run on server-side.
 * `params` {Object|Array}: Optional parameter(s) to be sent along the request.
-* `timeout` {Number}: Optional rpc reply timeout in milliseconds.
+* `timeout` {Number}: Optional RPC reply timeout in milliseconds.
 
 ### ws.notify(method[, params])
 
