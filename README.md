@@ -93,13 +93,14 @@ Parameters:
   * `reconnect_interval` {Number}: Time between adjacent reconnects. Defaults to `1000`.
   * `max_reconnects` {Number}: Maximum number of times the client should try to reconnect. Defaults to `5`.
 
-### ws.call(method[, params]) -> Promise
+### ws.call(method[, params[, timeout]]) -> Promise
 
 Calls a registered RPC method on server. Resolves once the response is ready. Throws if an RPC error was received.
 
 Parameters:
 * `method` {String}: An RPC method name to run on server-side.
 * `params` {Object|Array}: Optional parameter(s) to be sent along the request.
+* `timeout` {Number}: Optional rpc reply timeout in milliseconds.
 
 ### ws.notify(method[, params])
 

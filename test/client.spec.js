@@ -38,6 +38,14 @@ describe("Client", function()
             return true
         })
 
+        server.register("hang", function()
+        {
+            return new Promise(function(resolve, reject)
+            {
+                setTimeout(function() { resolve() }, 3000)
+            })
+        })
+
         server.event("newsUpdate")
 
         done()
@@ -123,6 +131,24 @@ describe("Client", function()
                 })
 
                 expect(exception).to.be.false
+            })
+        })
+
+        it("should throw Error on reply timeout", function(done)
+        {
+            const client = new Barge("ws://localhost:" + port + RPC_ROOT + "/" + RPC_VERSION)
+
+            client.on("open", function()
+            {
+                client.call("hang", null, 20).then(function()
+                {
+                    done(new Error("didn't hang"))
+                })
+                .catch(function(error)
+                {
+                    expect(error.message).to.equal("reply timeout")
+                    done()
+                })
             })
         })
     })

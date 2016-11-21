@@ -46,13 +46,15 @@ export default class Client extends EventEmitter
      * @method
      * @param {String} method - RPC method name
      * @param {Object|Array} params - optional method parameters
+     * @param {Number} timeout - RPC reply timeout value
      * @return {Promise}
      */
-    call(method, params)
+    call(method, params, timeout)
     {
         assertArgs(arguments, {
             "method": "string",
-            "[params]": ["object", Array]
+            "[params]": ["object", Array],
+            "[timeout]": "number"
         })
 
         return new Promise((resolve, reject) =>
@@ -74,7 +76,16 @@ export default class Client extends EventEmitter
                 if (error)
                     return reject(error)
 
-                this.queue[rpc_id] = [resolve, reject]
+                this.queue[rpc_id] = { promise: [resolve, reject] }
+
+                if (timeout)
+                {
+                    this.queue[rpc_id].timeout = setTimeout(() =>
+                    {
+                        this.queue[rpc_id] = null
+                        reject(new Error("reply timeout"))
+                    }, timeout)
+                }
             })
         })
     }
@@ -198,7 +209,7 @@ export default class Client extends EventEmitter
                 const args = [message.notification]
 
                 // using for-loop instead of unshift/spread because performance is better
-                for (let i = 0; i < message.params.length; i++)
+                for (let i = 0 ;i < message.params.length ;i++)
                     args.push(message.params[i])
 
                 return this.emit.apply(this, args)
@@ -208,9 +219,12 @@ export default class Client extends EventEmitter
                 return
 
             if (message.error)
-                this.queue[message.id][1](message.error)
+                this.queue[message.id].promise[1](message.error)
             else
-                this.queue[message.id][0](message.result)
+                this.queue[message.id].promise[0](message.result)
+
+            if (this.queue[message.id].timeout)
+                clearTimeout(this.queue[message.id].timeout)
 
             this.queue[message.id] = null
         })
