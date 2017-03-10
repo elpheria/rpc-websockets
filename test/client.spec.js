@@ -10,8 +10,6 @@ const WebSocketServer = require("../dist").Server
 const Barge = require("../dist").Client
 const SERVER_HOST = "localhost"
 const SERVER_PORT = 0 // random free port
-const RPC_ROOT = "/rpc"
-const RPC_VERSION = "1.0"
 
 describe("Client", function()
 {
@@ -58,7 +56,7 @@ describe("Client", function()
 
     it("should return a new instance", function()
     {
-        const client = new Barge("ws://localhost:" + port + RPC_ROOT + "/" + RPC_VERSION)
+        const client = new Barge("ws://localhost:" + port)
         client.should.be.an.instanceOf(Barge)
     })
 
@@ -66,7 +64,7 @@ describe("Client", function()
     {
         it("should call an RPC method without parameters and receive a valid response", function(done)
         {
-            const client = new Barge("ws://localhost:" + port + RPC_ROOT + "/" + RPC_VERSION)
+            const client = new Barge("ws://localhost:" + port)
 
             client.on("open", function()
             {
@@ -85,7 +83,7 @@ describe("Client", function()
 
         it("should call an RPC method with parameters and receive a valid response", function(done)
         {
-            const client = new Barge("ws://localhost:" + port + RPC_ROOT + "/" + RPC_VERSION)
+            const client = new Barge("ws://localhost:" + port)
 
             client.on("open", function()
             {
@@ -104,7 +102,7 @@ describe("Client", function()
 
         it("should throw TypeError if method not provided", function()
         {
-            const client = new Barge("ws://localhost:" + port + RPC_ROOT + "/" + RPC_VERSION)
+            const client = new Barge("ws://localhost:" + port)
 
             client.on("open", function()
             {
@@ -114,7 +112,7 @@ describe("Client", function()
 
         it("should correctly throw if nonexistent method called", function()
         {
-            const client = new Barge("ws://localhost:" + port + RPC_ROOT + "/" + RPC_VERSION)
+            const client = new Barge("ws://localhost:" + port)
 
             client.on("open", function()
             {
@@ -136,7 +134,7 @@ describe("Client", function()
 
         it("should throw Error on reply timeout", function(done)
         {
-            const client = new Barge("ws://localhost:" + port + RPC_ROOT + "/" + RPC_VERSION)
+            const client = new Barge("ws://localhost:" + port)
 
             client.on("open", function()
             {
@@ -157,7 +155,7 @@ describe("Client", function()
     {
         it("should send a notification", function(done)
         {
-            const client = new Barge("ws://localhost:" + port + RPC_ROOT + "/" + RPC_VERSION)
+            const client = new Barge("ws://localhost:" + port)
 
             client.on("open", function()
             {
@@ -174,7 +172,7 @@ describe("Client", function()
 
         it("should throw TypeError if method not provided", function()
         {
-            const client = new Barge("ws://localhost:" + port + RPC_ROOT + "/" + RPC_VERSION)
+            const client = new Barge("ws://localhost:" + port)
 
             client.on("open", function()
             {
@@ -189,7 +187,7 @@ describe("Client", function()
 
         before(function(done)
         {
-            client = new Barge("ws://localhost:" + port + RPC_ROOT + "/" + RPC_VERSION)
+            client = new Barge("ws://localhost:" + port)
 
             client.on("open", done)
         })
@@ -267,7 +265,7 @@ describe("Client", function()
 
         before(function(done)
         {
-            client = new Barge("ws://localhost:" + port + RPC_ROOT + "/" + RPC_VERSION)
+            client = new Barge("ws://localhost:" + port)
 
             client.once("open", done)
         })
@@ -303,7 +301,7 @@ describe("Client", function()
     {
         it("should close a connection gracefully", function(done)
         {
-            const client = new Barge("ws://localhost:" + port + RPC_ROOT + "/" + RPC_VERSION)
+            const client = new Barge("ws://localhost:" + port)
 
             client.on("open", function()
             {
@@ -324,11 +322,6 @@ function runServer(port, host)
     return new WebSocketServer(
         {
             host: host || SERVER_HOST,
-            port: port || SERVER_PORT,
-            rpc:
-            {
-                root_path: RPC_ROOT,
-                version: RPC_VERSION
-            }
+            port: port || SERVER_PORT
         })
 }

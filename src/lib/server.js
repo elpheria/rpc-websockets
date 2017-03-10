@@ -9,7 +9,6 @@ import assertArgs from "assert-args"
 import EventEmitter from "events"
 import { Server as WebSocketServer } from "ws"
 import uuid from "uuid"
-import url from "url"
 
 import * as utils from "./utils"
 
@@ -37,7 +36,6 @@ export default class Server extends EventEmitter
 
         this.wss.on("connection", (socket) =>
         {
-            const path = url.parse(socket.upgradeReq.url, true).pathname.split("/")
             socket._id = uuid.v1()
 
             // cleanup after the socket gets disconnected
@@ -54,17 +52,10 @@ export default class Server extends EventEmitter
                 }
             })
 
-            // use an RPC handler if rpc request
-            if (options.rpc && "/" + path[1] === options.rpc.root_path)
-            {
-                if (path[2] !== options.rpc.version)
-                    return socket.close(404)
+            // store socket
+            this.clients.set(socket._id, socket)
 
-                // store socket
-                this.clients.set(socket._id, socket)
-
-                return this._handleRPC(socket)
-            }
+            return this._handleRPC(socket)
         })
 
         this.wss.on("error", (error) => this.emit("error", error))

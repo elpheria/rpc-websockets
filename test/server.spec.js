@@ -910,12 +910,7 @@ function getInstance(port, host)
 {
     return new Pharos({
         host: host || SERVER_HOST,
-        port: port || SERVER_PORT,
-        rpc:
-        {
-            root_path: "/rpc",
-            version: "1.0"
-        }
+        port: port || SERVER_PORT
     })
 }
 
@@ -930,7 +925,7 @@ function connect(port, host)
     return new Promise(function(resolve, reject)
     {
         const ws = new WebSocket("ws://" + (host || SERVER_HOST) +
-            ":" + (port || SERVER_PORT) + "/rpc/1.0")
+            ":" + (port || SERVER_PORT))
 
         ws.once("open", function()
         {
