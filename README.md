@@ -23,11 +23,7 @@ var WebSocketServer = require('rpc-websockets').Server
 // instantiate Server and start listening for requests
 var server = new WebSocketServer({
   port: 8080,
-  host: 'localhost',
-  rpc: {
-    root_path: '/rpc',
-    version: '1.0'
-  }
+  host: 'localhost'
 })
 
 // register an RPC method
@@ -48,7 +44,7 @@ server.emit('feedUpdated')
 server.close()
 
 // instantiate Client and connect to an RPC server
-var ws = new WebSocket('ws://localhost:8080/rpc/1.0')
+var ws = new WebSocket('ws://localhost:8080')
 
 ws.on('open', function() {
   // call an RPC method with parameters
@@ -78,7 +74,7 @@ ws.on('open', function() {
 
 ```js
 var WebSocket = require('rpc-websockets').Client
-var ws = new WebSocket('ws://localhost:8080/rpc/1.0')
+var ws = new WebSocket('ws://localhost:8080')
 ```
 
 ### new WebSocket(address[, options]) -> Client
@@ -86,7 +82,7 @@ var ws = new WebSocket('ws://localhost:8080/rpc/1.0')
 Instantiate a WebSocket client.
 
 Parameters:
-* `address` {String}: The URL of the WebSocket server. Defaults to 'ws://localhost:8080/rpc/1.0'.
+* `address` {String}: The URL of the WebSocket server. Defaults to 'ws://localhost:8080'.
 * `options` {Object}: Client options that are also forwarded to `ws`.
   * `autoconnect` {Boolean}: Client autoconnect upon Client class instantiation. Defaults to `true`.
   * `reconnect` {Boolean}: Whether client should reconnect automatically once the connection is down. Defaults to `true`.
@@ -166,11 +162,7 @@ var WebSocketServer = require('rpc-websockets').Server
 
 var server = new WebSocketServer({
   port: 8080,
-  host: 'localhost',
-  rpc: {
-    root_path: '/rpc',
-    version: '1.0'
-  }
+  host: 'localhost'
 })
 ```
 
@@ -182,9 +174,6 @@ Parameters:
 * `options` {Object}: Server options that are also forwarded to `ws`.
   * `port` {Number}: Port number on which the server will listen for incoming requests.
   * `host` {String}: Address on which the server will listen for incoming requests.
-  * `rpc` {Object}:
-    * `root_path` {String}: RPC server endpoint.
-    * `version` {String}: RPC API version.
 
 Once the Server class is instantiated, you can use a `ws` library's instance via server.wss object.
 
@@ -217,7 +206,8 @@ Lists all created events.
 
 ### server.of(name)
 
-Returns a Namespace object initialized by the provided pathname (eg: ```/chat```)
+Returns a Namespace object initialized by the provided pathname upon connecting(eg: ```/chat```).
+Defaults to ```/```.
 
 Parameters:
 * `name` {String}: Namespace identifier.
