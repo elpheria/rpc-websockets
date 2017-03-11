@@ -41,6 +41,7 @@
         "arrow-parens": [ "error" ],
         "arrow-spacing": [ "error" ],
         "no-duplicate-imports": [ "error" ],
-        "prefer-const": [ "error" ]
+        "prefer-const": [ "error" ],
+        "no-cond-assign": 0
     }
 }
