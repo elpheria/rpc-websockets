@@ -215,6 +215,15 @@ Parameters:
 
 Lists all created events.
 
+### server.of(name)
+
+Returns a Namespace object initialized by the provided pathname (eg: ```/chat```)
+
+Parameters:
+* `name` {String}: Namespace identifier.
+
+More information on Namespaces below.
+
 ### server.createError(code, message[, data]) -> Object
 
 Creates a structured error that can be thrown in a .register callback.
@@ -237,3 +246,26 @@ Emits when the server has started listening for requests.
 * &lt;Error&gt;
 
 Emits when a server error is raised.
+
+## Namespaces
+Namespace represents a pool of sockets connected under a given scope identified by a pathname (eg: ```/chat```). Basically borrows ideas from ```socket.io```.
+
+### namespace.name -> String
+
+Returns a namespace identifier.
+
+### namespace.connected() -> Object
+
+Returns a hash of websocket objects connected to this namespace, identified by ```id```.
+
+### namespace.emit(name[, ...params])
+
+Emits a created event to clients connected to this namespace.
+
+Parameters:
+* `name` {String}: Name of the event.
+* `...params`: Parameters forwarded to clients in this namespace.
+
+### namespace.clients() -> Array
+
+Returns a list of client unique identifiers connected to this namespace.

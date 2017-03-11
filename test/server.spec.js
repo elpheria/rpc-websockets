@@ -96,6 +96,19 @@ describe("Server", function()
         })
     })
 
+    it(".namespace", function()
+    {
+        const server = getInstance()
+
+        const ns = server.of("/chatroom")
+
+        ns.should.be.an.object
+        expect(ns.emit).to.be.a.function
+        expect(ns.name).to.be.a.string
+        expect(ns.connected).to.be.a.function
+        expect(ns.clients).to.be.a.function
+    })
+
     it(".createError", function()
     {
         let exception = false

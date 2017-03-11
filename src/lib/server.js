@@ -9,6 +9,7 @@ import assertArgs from "assert-args"
 import EventEmitter from "events"
 import { Server as WebSocketServer } from "ws"
 import uuid from "uuid"
+import url from "url"
 
 import * as utils from "./utils"
 
@@ -29,6 +30,9 @@ export default class Server extends EventEmitter
         // stores all connected sockets with a universally unique identifier
         this.clients = new Map()
 
+        // stores all connected sockets in the appropriate namespace
+        this.namespaces = new Map()
+
         // stores all events as keys and subscribed users in array as value
         this.events = {}
 
@@ -36,6 +40,7 @@ export default class Server extends EventEmitter
 
         this.wss.on("connection", (socket) =>
         {
+            const ns = url.parse(socket.upgradeReq.url).pathname
             socket._id = uuid.v1()
 
             // cleanup after the socket gets disconnected
@@ -54,6 +59,11 @@ export default class Server extends EventEmitter
 
             // store socket
             this.clients.set(socket._id, socket)
+
+            if (!this.namespaces.has(ns))
+                this.namespaces.set(ns, new Array())
+
+            this.namespaces.get(ns).push(socket._id)
 
             return this._handleRPC(socket)
         })
@@ -105,6 +115,52 @@ export default class Server extends EventEmitter
                 }))
             }
         })
+    }
+
+    /**
+     * Returns a requested namespace object
+     * @method
+     * @param {String} name - namespace identifier
+     * @throws {TypeError}
+     * @return {Object} - namespace object
+     */
+    of(name)
+    {
+        assertArgs(arguments, {
+            "name": "string",
+        })
+
+        const self = this
+
+        return {
+            emit(event, params)
+            {
+                const socket_ids = self.namespaces.get(name)
+
+                for (var i = 0, id; id = socket_ids[i]; ++i)
+                {
+                    self.clients.get(id).send(JSON.stringify({
+                        notification: event,
+                        params: params || []
+                    }))
+                }
+            },
+            name: name,
+            connected()
+            {
+                const clients = {}
+                const socket_ids = self.namespaces.get(name)
+
+                for (var i = 0, id; id = socket_ids[i]; ++i)
+                    clients[id] = self.clients.get(id)
+
+                return clients
+            },
+            clients()
+            {
+                return self.namespaces.get(name)
+            }
+        }
     }
 
     /**

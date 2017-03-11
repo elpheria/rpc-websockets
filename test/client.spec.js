@@ -45,6 +45,7 @@ describe("Client", function()
         })
 
         server.event("newsUpdate")
+        server.event("newMessage")
 
         done()
     })
@@ -293,6 +294,43 @@ describe("Client", function()
             {
                 error.name.should.equal("TypeError")
                 error.message.should.equal("\"event\" is required")
+            })
+        })
+    })
+
+    describe(".namespace", function()
+    {
+        let client = null
+
+        before(function(done)
+        {
+            client = new Barge("ws://localhost:" + port + "/chat")
+
+            client.on("open", done)
+        })
+
+        after(function(done)
+        {
+            client.close()
+            done()
+        })
+
+        it("should subscribe to an event", function(done)
+        {
+            client.subscribe("newMessage").then(done, function(error)
+            {
+                done(error)
+            })
+        })
+
+        it("should receive an event from a joined namespace", function(done)
+        {
+            const chat = server.of("/chat")
+            chat.emit("newMessage")
+
+            client.once("newMessage", function()
+            {
+                done()
             })
         })
     })
