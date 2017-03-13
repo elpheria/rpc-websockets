@@ -204,7 +204,7 @@ Parameters:
 
 Lists all created events.
 
-### server.of(name)
+### server.of(name) -> Namespace
 
 Returns a Namespace object initialized by the provided pathname upon connecting(eg: ```/chat```).
 Defaults to ```/```.
