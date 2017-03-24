@@ -1,12 +1,12 @@
+<div align="center"><img src="misc/images/logo.png"/></div>
+
+WebSockets for [node](http://nodejs.org) with JSON RPC 2.0 support on top.
+
 [![GitHub license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/qaap/rpc-websockets/blob/master/LICENSE)
 [![Build Status](https://travis-ci.org/qaap/rpc-websockets.svg?branch=master)](https://travis-ci.org/qaap/rpc-websockets)
 [![Coverage Status](https://coveralls.io/repos/github/qaap/rpc-websockets/badge.svg?branch=master)](https://coveralls.io/github/qaap/rpc-websockets?branch=master)
 [![npm](https://img.shields.io/npm/dm/rpc-websockets.svg?maxAge=2592000)](https://www.npmjs.com/package/rpc-websockets)  
 [![NPM](https://nodei.co/npm/rpc-websockets.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/rpc-websockets/)
-
-# rpc-websockets
-
-rpc-websockets wraps [ws](https://github.com/websockets/ws) library providing JSON RPC 2.0 support on top.
 
 ## Installation
 
