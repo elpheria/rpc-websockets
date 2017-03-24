@@ -259,3 +259,7 @@ Parameters:
 ### namespace.clients() -> Array
 
 Returns a list of client unique identifiers connected to this namespace.
+
+## License
+
+  [MIT](LICENSE)
