@@ -1,6 +1,8 @@
 <div align="center"><img src="misc/images/logo.png"/></div>
 
+<p align="center">
 WebSockets for [node](http://nodejs.org) with JSON RPC 2.0 support on top.
+</p>
 
 [![GitHub license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/qaap/rpc-websockets/blob/master/LICENSE)
 [![Build Status](https://travis-ci.org/qaap/rpc-websockets.svg?branch=master)](https://travis-ci.org/qaap/rpc-websockets)
