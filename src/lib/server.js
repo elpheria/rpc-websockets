@@ -25,16 +25,18 @@ export default class Server extends EventEmitter
     {
         super()
 
-        this.rpc_methods = {}
-
-        // stores all connected sockets with a universally unique identifier
-        this.clients = new Map()
-
-        // stores all connected sockets in the appropriate namespace
-        this.namespaces = new Map()
-
-        // stores all events as keys and subscribed users in array as value
-        this.events = {}
+        /**
+         * Stores all connected sockets with a universally unique identifier
+         * in the appropriate namespace.
+         * Stores all rpc methods to specific namespaces. "/" by default.
+         * Stores all events as keys and subscribed users in array as value
+         * @private
+         * @name namespaces
+         * @param {Array} namespaces.rpc_methods
+         * @param {Map} namespaces.clients
+         * @param {Object} namespaces.events
+         */
+        this.namespaces = {}
 
         this.wss = new WebSocketServer(options, () => this.emit("listening"))
 
@@ -46,26 +48,24 @@ export default class Server extends EventEmitter
             // cleanup after the socket gets disconnected
             socket.on("close", () =>
             {
-                this.clients.delete(socket._id)
+                this.namespaces[ns].clients.delete(socket._id)
 
-                for (const event of Object.keys(this.events))
+                for (const event of Object.keys(this.namespaces[ns].events))
                 {
-                    const index = this.events[event].indexOf(socket._id)
+                    const index = this.namespaces[ns].events[event].indexOf(socket._id)
 
                     if (index === 0)
-                        this.events[event].splice(index, 1)
+                        this.namespaces[ns].events[event].splice(index, 1)
                 }
             })
 
-            // store socket
-            this.clients.set(socket._id, socket)
+            if (!this.namespaces[ns]) this._generateNamespace(ns)
 
-            if (!this.namespaces.has(ns))
-                this.namespaces.set(ns, new Array())
+            // store socket and method
+            this.namespaces[ns].clients.set(socket._id, socket)
+            this.namespaces[ns].rpc_methods.push(socket._id)
 
-            this.namespaces.get(ns).push(socket._id)
-
-            return this._handleRPC(socket)
+            return this._handleRPC(socket, ns)
         })
 
         this.wss.on("error", (error) => this.emit("error", error))
@@ -76,40 +76,48 @@ export default class Server extends EventEmitter
      * @method
      * @param {String} name - method name
      * @param {Function} fn - a callee function
+     * @param {String} ns - namespace identifier
      * @throws {TypeError}
      * @return {Undefined}
      */
-    register(name, fn)
+    register(name, fn, ns = "/")
     {
         assertArgs(arguments, {
             name: "string",
-            fn: "function"
+            fn: "function",
+            "[ns]": "string"
         })
 
-        this.rpc_methods[name] = fn
+        if (!this.namespaces[ns]) this._generateNamespace(ns)
+
+        this.namespaces[ns].rpc_methods[name] = fn
     }
 
     /**
      * Creates a new event that can be emitted to clients.
      * @method
      * @param {String} name - event name
+     * @param {String} ns - namespace identifier
      * @throws {TypeError}
      * @return {Undefined}
      */
-    event(name)
+    event(name, ns = "/")
     {
         assertArgs(arguments, {
             "name": "string",
+            "[ns]": "string"
         })
 
-        this.events[name] = []
+        if (!this.namespaces[ns]) this._generateNamespace(ns)
+
+        this.namespaces[ns].events[name] = []
 
         // forward emitted event to subscribers
         this.on(name, (...params) =>
         {
-            for (const socket_id of this.events[name])
+            for (const socket_id of this.namespaces[ns].events[name])
             {
-                this.clients.get(socket_id).send(JSON.stringify({
+                this.namespaces[ns].clients.get(socket_id).send(JSON.stringify({
                     notification: name,
                     params: params || null
                 }))
@@ -130,48 +138,123 @@ export default class Server extends EventEmitter
             "name": "string",
         })
 
+        if (!this.namespaces[name]) this._generateNamespace(name)
+
         const self = this
 
         return {
+            // self.register convenience method
+            register(fn_name, fn)
+            {
+                if (arguments.length !== 2)
+                    throw new Error("must provide exactly two arguments")
+
+                if (typeof fn_name !== "string")
+                    throw new Error("name must be a string")
+
+                if (typeof fn !== "function")
+                    throw new Error("handler must be a function")
+
+                self.register(fn_name, fn, name)
+            },
+
+            // self.event convenience method
+            event(ev_name)
+            {
+                if (arguments.length !== 1)
+                    throw new Error("must provide exactly one argument")
+
+                if (typeof ev_name !== "string")
+                    throw new Error("name must be a string")
+
+                self.event(ev_name, name)
+            },
+
+            // self.eventList convenience method
+            get eventList()
+            {
+                return Object.keys(self.namespaces[name].events)
+            },
+
+            /**
+             * Emits a specified event to this namespace.
+             * @inner
+             * @method
+             * @param {String} event - event name
+             * @param {Array} params - event parameters
+             * @return {Undefined}
+             */
             emit(event, params)
             {
-                const socket_ids = self.namespaces.get(name)
+                const socket_ids = [ ...self.namespaces[name].clients.keys() ]
 
                 for (var i = 0, id; id = socket_ids[i]; ++i)
                 {
-                    self.clients.get(id).send(JSON.stringify({
+                    self.namespaces[name].clients.get(id).send(JSON.stringify({
                         notification: event,
                         params: params || []
                     }))
                 }
             },
-            name: name,
+
+            /**
+             * Returns a name of this namespace.
+             * @inner
+             * @method
+             * @kind constant
+             * @return {String}
+             */
+            get name()
+            {
+                return name
+            },
+
+            /**
+             * Returns a hash of websocket objects connected to this namespace.
+             * @inner
+             * @method
+             * @return {Object}
+             */
             connected()
             {
                 const clients = {}
-                const socket_ids = self.namespaces.get(name)
+                const socket_ids = [ ...self.namespaces[name].clients.keys() ]
 
                 for (var i = 0, id; id = socket_ids[i]; ++i)
-                    clients[id] = self.clients.get(id)
+                    clients[id] = self.namespaces[name].clients.get(id)
 
                 return clients
             },
+
+            /**
+             * Returns a list of client unique identifiers connected to this namespace.
+             * @inner
+             * @method
+             * @return {Array}
+             */
             clients()
             {
-                return self.namespaces.get(name)
+                return self.namespaces[name]
             }
         }
     }
 
     /**
-     * Lists all created events.
+     * Lists all created events in a given namespace. Defaults to "/".
      * @method
+     * @param {String} ns - namespaces identifier
      * @readonly
      * @return {Array} - returns a list of created events
      */
-    get eventList()
+    eventList(ns = "/")
     {
-        return Object.keys(this.events)
+        assertArgs(arguments, {
+            "[ns]": "string",
+        })
+
+        if (!this.namespaces[ns]) return []
+
+        return Object.keys(this.namespaces[ns].events)
     }
 
     /**
@@ -225,9 +308,10 @@ export default class Server extends EventEmitter
      * Handles all WebSocket JSON RPC 2.0 requests.
      * @private
      * @param {Object} socket - ws socket instance
+     * @param {String} ns - namespaces identifier
      * @return {Undefined}
      */
-    _handleRPC(socket)
+    _handleRPC(socket, ns = "/")
     {
         socket.on("message", async(data) =>
         {
@@ -255,7 +339,7 @@ export default class Server extends EventEmitter
 
                 for (const message of data)
                 {
-                    const response = await this._runMethod(message, socket._id)
+                    const response = await this._runMethod(message, socket._id, ns)
 
                     if (!response)
                         continue
@@ -269,7 +353,7 @@ export default class Server extends EventEmitter
                 return socket.send(JSON.stringify(responses))
             }
 
-            const response = await this._runMethod(data, socket._id)
+            const response = await this._runMethod(data, socket._id, ns)
 
             if (!response)
                 return
@@ -283,9 +367,10 @@ export default class Server extends EventEmitter
      * @private
      * @param {Object} message - a message received
      * @param {Object} socket_id - user's socket id
+     * @param {String} ns - namespaces identifier
      * @return {Object|undefined}
      */
-    async _runMethod(message, socket_id)
+    async _runMethod(message, socket_id, ns = "/")
     {
         if (typeof message !== "object")
             return {
@@ -333,7 +418,7 @@ export default class Server extends EventEmitter
 
             const results = {}
 
-            const event_names = Object.keys(this.events)
+            const event_names = Object.keys(this.namespaces[ns].events)
 
             for (const name of message.params)
             {
@@ -345,7 +430,7 @@ export default class Server extends EventEmitter
                     continue
                 }
 
-                this.events[event_names[index]].push(socket_id)
+                this.namespaces[ns].events[event_names[index]].push(socket_id)
 
                 results[name] = "ok"
             }
@@ -369,13 +454,13 @@ export default class Server extends EventEmitter
 
             for (const name of message.params)
             {
-                if (!this.events[name])
+                if (!this.namespaces[ns].events[name])
                 {
                     results[name] = "provided event invalid"
                     continue
                 }
 
-                const index = this.events[name].indexOf(socket_id)
+                const index = this.namespaces[ns].events[name].indexOf(socket_id)
 
                 if (index === -1)
                 {
@@ -383,7 +468,7 @@ export default class Server extends EventEmitter
                     continue
                 }
 
-                this.events[name].splice(index, 1)
+                this.namespaces[ns].events[name].splice(index, 1)
                 results[name] = "ok"
             }
 
@@ -394,7 +479,7 @@ export default class Server extends EventEmitter
             }
         }
 
-        if (!this.rpc_methods[message.method])
+        if (!this.namespaces[ns].rpc_methods[message.method])
         {
             return {
                 jsonrpc: "2.0",
@@ -405,7 +490,7 @@ export default class Server extends EventEmitter
 
         let response = null
 
-        try { response = await this.rpc_methods[message.method](message.params) }
+        try { response = await this.namespaces[ns].rpc_methods[message.method](message.params) }
 
         catch (error)
         {
@@ -438,6 +523,21 @@ export default class Server extends EventEmitter
             jsonrpc: "2.0",
             result: response,
             id: message.id
+        }
+    }
+
+    /**
+     * Generate a new namespace store
+     * @private
+     * @param {String} name - namespaces identifier
+     * @return {undefined}
+     */
+    _generateNamespace(name)
+    {
+        this.namespaces[name] = {
+            rpc_methods: new Array(),
+            clients: new Map(),
+            events: {}
         }
     }
 }

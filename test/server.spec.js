@@ -70,7 +70,7 @@ describe("Server", function()
         const server = getInstance()
         server.event("newMail")
 
-        try { expect(server.eventList).to.be.an("array").and.to.include("newMail") }
+        try { expect(server.eventList()).to.be.an("array").and.to.include("newMail") }
 
         catch (error) { exception = true }
 
@@ -107,6 +107,58 @@ describe("Server", function()
         expect(ns.name).to.be.a.string
         expect(ns.connected).to.be.a.function
         expect(ns.clients).to.be.a.function
+    })
+
+    it(".namespaceMethod", function(done)
+    {
+        const server = getInstance(63554)
+
+        server.once("listening", () =>
+        {
+            server.register("sendMsg", () => "Message received", "/chatroom")
+
+            connect(server.wss.options.port, server.wss.options.host, "/chatroom")
+            .then(function(ws)
+            {
+                ws.send(JSON.stringify({
+                    id: rpc_id,
+                    jsonrpc: "2.0",
+                    method: "sendMsg",
+                    params: ["Hello, everyone!"]
+                }))
+
+                ws.once("message", function(message)
+                {
+                    message = JSON.parse(message)
+
+                    message.id.should.equal(rpc_id)
+                    message.result.should.equal("Message received")
+
+                    ws.close()
+                    done()
+                })
+
+                ws.once("error", function(error)
+                {
+                    done(error)
+                })
+            })
+        })
+    })
+
+    it(".namespaceList", function()
+    {
+        const server = getInstance()
+
+        const ns = server.of("/chat1")
+
+        ns.event("alert1")
+        expect(ns.eventList).to.have.length.of(1)
+
+        server.event("alert2", "/chat2")
+        expect(ns.eventList).to.have.length.of(1)
+
+        expect(server.eventList()).to.have.length.of(0)
     })
 
     it(".createError", function()
@@ -931,14 +983,15 @@ function getInstance(port, host)
  * Connects to an RPC server.
  * @param {Number} port - port number
  * @param {String} host - hostname
+ * @param {String} path - uri path
  * @return {Promise}
  */
-function connect(port, host)
+function connect(port, host, path)
 {
     return new Promise(function(resolve, reject)
     {
         const ws = new WebSocket("ws://" + (host || SERVER_HOST) +
-            ":" + (port || SERVER_PORT))
+            ":" + (port || SERVER_PORT) + (path || "/"))
 
         ws.once("open", function()
         {

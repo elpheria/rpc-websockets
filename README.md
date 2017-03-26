@@ -72,6 +72,10 @@ ws.on('open', function() {
 })
 ```
 
+## Migrating to 3.x
+
+Departing from version 2.x, there's been some minor API changes. A breaking change is a server.eventList method, which is not a getter method anymore, because of the inclusion of a namespaces system throughout the library. Other methods will work seamlessly.
+
 ## Client
 
 ```js
@@ -179,20 +183,21 @@ Parameters:
 
 Once the Server class is instantiated, you can use a `ws` library's instance via server.wss object.
 
-### server.register(method, callback)
+### server.register(method, handler)
 
 Registers an RPC method.
 
 Parameters:
 * `method` {String}: RPC method name.
-* `callback` {Function}: RPC function that will be fired with a possible parameter object once the method is called.
+* `handler` {Function}: RPC function that will be fired with a possible parameter object once the method is called.
 
-### server.event(name)
+### server.event(name[, namespace])
 
 Creates a new event that can be emitted to clients.
 
 Parameters:
 * `name` {String}: Name of the event.
+* `namespace` {String}: Namespace identifier. Defaults to ```/```.
 
 ### server.emit(name[, ...params])
 
@@ -202,13 +207,16 @@ Parameters:
 * `name` {String}: Name of the event.
 * `...params`: Parameters forwarded to clients.
 
-### **get** server.eventList -> Array
+### server.eventList([namespace]) -> Array
 
 Lists all created events.
 
+Parameters:
+* `namespace`: Namespace identifier. Defaults to ```/```.
+
 ### server.of(name) -> Namespace
 
-Returns a Namespace object initialized by the provided pathname upon connecting(eg: ```/chat```).
+Returns a Namespace object initialized by the provided pathname upon connecting (eg: ```/chat```).
 Defaults to ```/```.
 
 Parameters:
@@ -242,7 +250,15 @@ Emits when a server error is raised.
 ## Namespaces
 Namespace represents a pool of sockets connected under a given scope identified by a pathname (eg: ```/chat```). Basically borrows ideas from ```socket.io```.
 
-### namespace.name -> String
+### namespace.register(method, handler)
+
+A convenience method for server.register using this namespace.
+
+### namespace.event(name)
+
+A convenience method for server.event using this namespace.
+
+### **get** namespace.name -> String
 
 Returns a namespace identifier.
 
@@ -257,6 +273,10 @@ Emits a created event to clients connected to this namespace.
 Parameters:
 * `name` {String}: Name of the event.
 * `...params`: Parameters forwarded to clients in this namespace.
+
+### **get** namespace.eventList -> Array
+
+A convenience getter method that lists all created events in this namespace.
 
 ### namespace.clients() -> Array
 

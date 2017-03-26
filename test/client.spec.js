@@ -46,6 +46,8 @@ describe("Client", function()
 
         server.event("newsUpdate")
         server.event("newMessage")
+        server.event("newMessage", "/chat")
+        server.event("chatMessage", "/chat")
 
         done()
     })
@@ -326,9 +328,9 @@ describe("Client", function()
         it("should receive an event from a joined namespace", function(done)
         {
             const chat = server.of("/chat")
-            chat.emit("newMessage")
+            chat.emit("chatMessage")
 
-            client.once("newMessage", function()
+            client.once("chatMessage", function()
             {
                 done()
             })
