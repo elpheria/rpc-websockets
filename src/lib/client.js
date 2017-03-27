@@ -7,7 +7,7 @@
 
 import assertArgs from "assert-args"
 import EventEmitter from "events"
-import WebSocket from "ws"
+import WebSocket from "uws"
 
 export default class Client extends EventEmitter
 {

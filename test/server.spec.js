@@ -5,7 +5,7 @@
 
 const should = require("chai").should()
 const expect = require("chai").expect
-const WebSocket = require("ws")
+const WebSocket = require("uws")
 
 const Pharos = require("../dist").Server
 const SERVER_HOST = "localhost"
@@ -16,14 +16,15 @@ describe("Server", function()
 {
     it("should return a new instance", function(done)
     {
-        const server = getInstance()
+        getInstance().then((server) =>
+        {
+            server.should.be.an.instanceOf(Pharos)
 
-        server.should.be.an.instanceOf(Pharos)
-
-        server.close().then(done)
+            server.close().then(done)
+        })
     })
 
-    it("should forward throw an error from 'ws' if no params object is passed", function()
+    it("should forward throw an error from 'uws' if no params object is passed", function()
     {
         let exception = false
 
@@ -37,88 +38,100 @@ describe("Server", function()
     it(".register", function()
     {
         let exception = false
-        const server = getInstance()
 
-        try { server.register("foo", function() {}) }
-
-        catch (error) { exception = true }
-
-        server.close().then(function()
+        getInstance().then((server) =>
         {
-            exception.should.be.false
+            try { server.register("foo", function() {}) }
+
+            catch (error) { exception = true }
+
+            server.close().then(function()
+            {
+                exception.should.be.false
+            })
         })
     })
 
     it(".event", function()
     {
         let exception = false
-        const server = getInstance()
 
-        try { server.event("foo") }
-
-        catch (error) { exception = true }
-
-        server.close().then(function()
+        getInstance().then((server) =>
         {
-            exception.should.be.false
+            try { server.event("foo") }
+
+            catch (error) { exception = true }
+
+            server.close().then(function()
+            {
+                exception.should.be.false
+            })
         })
     })
 
     it(".eventList", function()
     {
         let exception = false
-        const server = getInstance()
-        server.event("newMail")
 
-        try { expect(server.eventList()).to.be.an("array").and.to.include("newMail") }
-
-        catch (error) { exception = true }
-
-        server.close().then(function()
+        getInstance().then((server) =>
         {
-            exception.should.be.false
+            server.event("newMail")
+
+            try { expect(server.eventList()).to.be.an("array").and.to.include("newMail") }
+
+            catch (error) { exception = true }
+
+            server.close().then(function()
+            {
+                exception.should.be.false
+            })
         })
     })
 
     it(".emit", function()
     {
         let exception = false
-        const server = getInstance()
-        server.event("foo")
 
-        try { server.emit("foo") }
-
-        catch (error) { exception = true }
-
-        server.close().then(function()
+        getInstance().then((server) =>
         {
-            exception.should.be.false
+            server.event("foo")
+
+            try { server.emit("foo") }
+
+            catch (error) { exception = true }
+
+            server.close().then(function()
+            {
+                exception.should.be.false
+            })
         })
     })
 
     it(".namespace", function()
     {
-        const server = getInstance()
+        getInstance().then((server) =>
+        {
+            const ns = server.of("/chatroom")
 
-        const ns = server.of("/chatroom")
-
-        ns.should.be.an.object
-        expect(ns.emit).to.be.a.function
-        expect(ns.name).to.be.a.string
-        expect(ns.connected).to.be.a.function
-        expect(ns.clients).to.be.a.function
+            ns.should.be.an.object
+            expect(ns.emit).to.be.a.function
+            expect(ns.name).to.be.a.string
+            expect(ns.connected).to.be.a.function
+            expect(ns.clients).to.be.a.function
+        })
     })
 
     it(".namespaceMethod", function(done)
     {
-        const server = getInstance(63554)
-
-        server.once("listening", () =>
+        getInstance().then((server) =>
         {
             server.register("sendMsg", () => "Message received", "/chatroom")
 
-            connect(server.wss.options.port, server.wss.options.host, "/chatroom")
-            .then(function(ws)
+            connect(
+                server.wss.httpServer.address().port,
+                server.wss.httpServer.address().address,
+                "/chatroom")
+            .then((ws) =>
             {
                 ws.send(JSON.stringify({
                     id: rpc_id,
@@ -148,103 +161,114 @@ describe("Server", function()
 
     it(".namespaceList", function()
     {
-        const server = getInstance()
+        getInstance().then((server) =>
+        {
+            const ns = server.of("/chat1")
 
-        const ns = server.of("/chat1")
+            ns.event("alert1")
+            expect(ns.eventList).to.have.length.of(1)
 
-        ns.event("alert1")
-        expect(ns.eventList).to.have.length.of(1)
+            server.event("alert2", "/chat2")
+            expect(ns.eventList).to.have.length.of(1)
 
-        server.event("alert2", "/chat2")
-        expect(ns.eventList).to.have.length.of(1)
-
-        expect(server.eventList()).to.have.length.of(0)
+            expect(server.eventList()).to.have.length.of(0)
+        })
     })
 
     it(".createError", function()
     {
         let exception = false
-        const server = getInstance()
 
-        try { server.createError(-32050, "Error", "Error details") }
-
-        catch (error) { exception = true }
-
-        server.close().then(function()
+        getInstance().then((server) =>
         {
-            exception.should.be.false
+            try { server.createError(-32050, "Error", "Error details") }
+
+            catch (error) { exception = true }
+
+            server.close().then(function()
+            {
+                exception.should.be.false
+            })
         })
     })
 
     it(".close", function(done)
     {
-        const server = getInstance()
-
-        server.close().then(done, function(error)
+        getInstance().then((server) =>
         {
-            done(error)
+            server.close().then(done, function(error)
+            {
+                done(error)
+            })
         })
     })
 
     describe("WebSocket API", function()
     {
         let server = null
+        let host = null
+        let port = null
 
         // create server and register testing methods
         before(function(done)
         {
-            server = getInstance(Math.floor(Math.random() * (65536 - 40001) + 40000))
-
-            server.once("listening", done)
-
-            server.register("sqrt", function(param)
+            getInstance(Math.floor(Math.random() * (65536 - 40001) + 40000)).then((inst) =>
             {
-                return Math.sqrt(param)
-            })
+                server = inst
+                host = server.wss.httpServer.address().address
+                port = server.wss.httpServer.address().port
 
-            server.register("sum", function(params)
-            {
-                let sum = 0
-
-                for (const nr of params)
+                inst.register("sqrt", function(param)
                 {
-                    sum += nr
-                }
+                    return Math.sqrt(param)
+                })
 
-                return sum
+                inst.register("sum", function(params)
+                {
+                    let sum = 0
+
+                    for (const nr of params)
+                    {
+                        sum += nr
+                    }
+
+                    return sum
+                })
+
+                inst.register("subtract", function(params)
+                {
+                    if (Array.isArray(params))
+                        return params[0] - params[1]
+
+                    if (typeof (params) === "object")
+                        return params.minuend - params.subtrahend
+                })
+
+                inst.register("greet", function(name)
+                {
+                    return "Hello, " + name + "!"
+                })
+
+                inst.register("update", function()
+                {
+                    return
+                })
+
+                inst.register("throwsSrvError", function()
+                {
+                    throw inst.createError(-32050, "Server error", "Server error details")
+                })
+
+                inst.register("throwsJsError", function()
+                {
+                    throw new Error("Server error details")
+                })
+
+                inst.event("newMail")
+                inst.event("updatedNews")
+
+                done()
             })
-
-            server.register("subtract", function(params)
-            {
-                if (Array.isArray(params))
-                    return params[0] - params[1]
-
-                if (typeof (params) === "object")
-                    return params.minuend - params.subtrahend
-            })
-
-            server.register("greet", function(name)
-            {
-                return "Hello, " + name + "!"
-            })
-
-            server.register("update", function()
-            {
-                return
-            })
-
-            server.register("throwsSrvError", function()
-            {
-                throw server.createError(-32050, "Server error", "Server error details")
-            })
-
-            server.register("throwsJsError", function()
-            {
-                throw new Error("Server error details")
-            })
-
-            server.event("newMail")
-            server.event("updatedNews")
         })
 
         // close server
@@ -260,7 +284,7 @@ describe("Server", function()
         {
             it("should return a valid response using single parameter", function(done)
             {
-                connect(server.wss.options.port).then(function(ws)
+                connect(port, host).then((ws) =>
                 {
                     ws.send(JSON.stringify({
                         id: rpc_id,
@@ -282,7 +306,7 @@ describe("Server", function()
                     })
 
                     ws.once("error", function(error)
-                    {
+{
                         done(error)
                     })
                 })
@@ -290,7 +314,7 @@ describe("Server", function()
 
             it("should return a valid response using positional parameters", function(done)
             {
-                connect(server.wss.options.port).then(function(ws)
+                connect(port, host).then(function(ws)
                 {
                     ws.send(JSON.stringify({
                         id: rpc_id,
@@ -320,7 +344,7 @@ describe("Server", function()
 
             it("should return a valid response using named parameters", function(done)
             {
-                connect(server.wss.options.port).then(function(ws)
+                connect(port, host).then(function(ws)
                 {
                     ws.send(JSON.stringify({
                         id: rpc_id,
@@ -354,7 +378,7 @@ describe("Server", function()
 
             it("should respond with -32601 when calling a missing method", function(done)
             {
-                connect(server.wss.options.port).then(function(ws)
+                connect(port, host).then(function(ws)
                 {
                     ws.send(JSON.stringify({
                         id: rpc_id,
@@ -385,7 +409,7 @@ describe("Server", function()
 
             it("should respond with -32700 when called with invalid JSON", function(done)
             {
-                connect(server.wss.options.port).then(function(ws)
+                connect(port, host).then(function(ws)
                 {
                     const data = "{\"jsonrpc\": \"2.0\", \"foo}"
                     ws.send(data)
@@ -410,7 +434,7 @@ describe("Server", function()
 
             it("should respond with -32600 when called with invalid method name in JSON-RPC 2.0 Request object", function(done)
             {
-                connect(server.wss.options.port).then(function(ws)
+                connect(port, host).then(function(ws)
                 {
                     ws.send(JSON.stringify({
                         id: rpc_id,
@@ -441,7 +465,7 @@ describe("Server", function()
 
             it("should respond with -32600 when called with invalid params type in JSON-RPC 2.0 Request object", function(done)
             {
-                connect(server.wss.options.port).then(function(ws)
+                connect(port, host).then(function(ws)
                 {
                     ws.send(JSON.stringify({
                         id: rpc_id,
@@ -472,7 +496,7 @@ describe("Server", function()
 
             it("should return a valid error if callback threw with .error", function(done)
             {
-                connect(server.wss.options.port).then(function(ws)
+                connect(port, host).then(function(ws)
                 {
                     ws.send(JSON.stringify({
                         id: rpc_id,
@@ -502,7 +526,7 @@ describe("Server", function()
 
             it("should return a valid error if callback threw with JavaScript's Error", function(done)
             {
-                connect(server.wss.options.port).then(function(ws)
+                connect(port, host).then(function(ws)
                 {
                     ws.send(JSON.stringify({
                         id: rpc_id,
@@ -535,7 +559,7 @@ describe("Server", function()
         {
             it("should return a valid response", function(done)
             {
-                connect(server.wss.options.port).then(function(ws)
+                connect(port, host).then(function(ws)
                 {
                     ws.send(JSON.stringify([
                         {
@@ -592,7 +616,7 @@ describe("Server", function()
 
             it("should respond with -32700 when called with invalid JSON", function(done)
             {
-                connect(server.wss.options.port).then(function(ws)
+                connect(port, host).then(function(ws)
                 {
                     const data =
                         "[{\"jsonrpc\": \"2.0\", \"method\": \"sum\", \"params\": [1,2,4], \"id\": \"1\"}, " +
@@ -620,7 +644,7 @@ describe("Server", function()
 
             it("should respond with -32600 when called with an empty array", function(done)
             {
-                connect(server.wss.options.port).then(function(ws)
+                connect(port, host).then(function(ws)
                 {
                     ws.send("[]")
 
@@ -644,7 +668,7 @@ describe("Server", function()
 
             it("should respond with -32600 when called with invalid non-empty array", function(done)
             {
-                connect(server.wss.options.port).then(function(ws)
+                connect(port, host).then(function(ws)
                 {
                     ws.send("[1]")
 
@@ -669,7 +693,7 @@ describe("Server", function()
 
             it("should respond with -32600 when called with invalid data", function(done)
             {
-                connect(server.wss.options.port).then(function(ws)
+                connect(port, host).then(function(ws)
                 {
                     ws.send("[1,2,3]")
 
@@ -694,7 +718,7 @@ describe("Server", function()
 
             it("should receive all notifications", function(done)
             {
-                connect(server.wss.options.port).then(function(ws)
+                connect(port, host).then(function(ws)
                 {
                     ws.send(JSON.stringify([
                         {
@@ -725,7 +749,7 @@ describe("Server", function()
         {
             it("should receive a notification", function(done)
             {
-                connect(server.wss.options.port).then(function(ws)
+                connect(port, host).then(function(ws)
                 {
                     ws.send(JSON.stringify({
                         jsonrpc: "2.0",
@@ -752,7 +776,7 @@ describe("Server", function()
         {
             it("should respond with -32000 if event name not provided", function(done)
             {
-                connect(server.wss.options.port).then(function(ws)
+                connect(port, host).then(function(ws)
                 {
                     ws.send(JSON.stringify({
                         id: ++rpc_id,
@@ -780,7 +804,7 @@ describe("Server", function()
 
             it("should subscribe a user to an event", function(done)
             {
-                connect(server.wss.options.port).then(function(ws)
+                connect(port, host).then(function(ws)
                 {
                     ws.send(JSON.stringify({
                         id: ++rpc_id,
@@ -810,7 +834,7 @@ describe("Server", function()
 
             it("should emit an event with no values to subscribed clients", function(done)
             {
-                connect(server.wss.options.port).then(function(ws)
+                connect(port, host).then(function(ws)
                 {
                     ws.send(JSON.stringify({
                         id: ++rpc_id,
@@ -846,7 +870,7 @@ describe("Server", function()
 
             it("should emit an event with single value to subscribed clients", function(done)
             {
-                connect(server.wss.options.port).then(function(ws)
+                connect(port, host).then(function(ws)
                 {
                     ws.send(JSON.stringify({
                         id: ++rpc_id,
@@ -883,7 +907,7 @@ describe("Server", function()
 
             it("should emit an event with multiple values to subscribed clients", function(done)
             {
-                connect(server.wss.options.port).then(function(ws)
+                connect(port, host).then(function(ws)
                 {
                     ws.send(JSON.stringify({
                         id: ++rpc_id,
@@ -920,7 +944,7 @@ describe("Server", function()
 
             it("should unsubscribe a user from an event", function(done)
             {
-                connect(server.wss.options.port).then(function(ws)
+                connect(port, host).then(function(ws)
                 {
                     ws.send(JSON.stringify({
                         id: ++rpc_id,
@@ -973,9 +997,14 @@ describe("Server", function()
  */
 function getInstance(port, host)
 {
-    return new Pharos({
-        host: host || SERVER_HOST,
-        port: port || SERVER_PORT
+    return new Promise((resolve, reject) =>
+    {
+        const wss = new Pharos({
+            host: host || SERVER_HOST,
+            port: port || SERVER_PORT
+        })
+
+        wss.on("listening", () => resolve(wss))
     })
 }
 
@@ -988,25 +1017,13 @@ function getInstance(port, host)
  */
 function connect(port, host, path)
 {
-    return new Promise(function(resolve, reject)
+    return new Promise((resolve, reject) =>
     {
-        const ws = new WebSocket("ws://" + (host || SERVER_HOST) +
+        const client = new WebSocket("ws://" + (host || SERVER_HOST) +
             ":" + (port || SERVER_PORT) + (path || "/"))
 
-        ws.once("open", function()
-        {
-            resolve(ws)
-        })
-
-        ws.once("error", function(error)
-        {
-            reject(error)
-        })
-
-        ws.once("closed", function()
-        {
-            reject(new Error("connection abruptly closed"))
-        })
+        client.on("open", () => resolve(client))
+        client.on("error", (error) => reject(error))
     })
 }
 

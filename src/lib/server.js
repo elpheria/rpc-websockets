@@ -7,7 +7,7 @@
 
 import assertArgs from "assert-args"
 import EventEmitter from "events"
-import { Server as WebSocketServer } from "ws"
+import { Server as WebSocketServer } from "uws"
 import uuid from "uuid"
 import url from "url"
 
@@ -291,13 +291,8 @@ export default class Server extends EventEmitter
         {
             try
             {
-                this.wss.close(function(error)
-                {
-                    if (error)
-                        return reject(error)
-
-                    resolve()
-                })
+                this.wss.close()
+                resolve()
             }
 
             catch (error) { reject(error) }

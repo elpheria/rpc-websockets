@@ -76,6 +76,8 @@ ws.on('open', function() {
 
 Departing from version 2.x, there's been some minor API changes. A breaking change is a server.eventList method, which is not a getter method anymore, because of the inclusion of a namespaces system throughout the library. Other methods will work seamlessly.
 
+Starting from version 3.1.0, we have also switched from `ws` to `uWebSockets`, because of a huge performance boost.
+
 ## Client
 
 ```js
@@ -89,7 +91,7 @@ Instantiate a WebSocket client.
 
 Parameters:
 * `address` {String}: The URL of the WebSocket server. Defaults to 'ws://localhost:8080'.
-* `options` {Object}: Client options that are also forwarded to `ws`.
+* `options` {Object}: Client options that are also forwarded to `uws`.
   * `autoconnect` {Boolean}: Client autoconnect upon Client class instantiation. Defaults to `true`.
   * `reconnect` {Boolean}: Whether client should reconnect automatically once the connection is down. Defaults to `true`.
   * `reconnect_interval` {Number}: Time between adjacent reconnects. Defaults to `1000`.
@@ -177,11 +179,11 @@ var server = new WebSocketServer({
 Instantiate a WebSocket server.
 
 Parameters:
-* `options` {Object}: Server options that are also forwarded to `ws`.
+* `options` {Object}: Server options that are also forwarded to `uws`.
   * `port` {Number}: Port number on which the server will listen for incoming requests.
   * `host` {String}: Address on which the server will listen for incoming requests.
 
-Once the Server class is instantiated, you can use a `ws` library's instance via server.wss object.
+Once the Server class is instantiated, you can use a `uws` library's instance via server.wss object.
 
 ### server.register(method, handler[, namespace])
 

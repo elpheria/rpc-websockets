@@ -13,43 +13,47 @@ const SERVER_PORT = 0 // random free port
 
 describe("Client", function()
 {
-    let server = null,
-        port = null
+    let server = null, host = null, port = null
 
     before(function(done)
     {
-        server = runServer(Math.floor(Math.random() * (65536 - 40001) + 40000))
-        port = server.wss.options.port
-
-        server.register("greet", function()
+        runServer(Math.floor(Math.random() * (65536 - 40001) + 40000))
+        .then((srv) =>
         {
-            return "Hello, subscriber!"
-        })
+            server = srv
+            host = server.wss.httpServer.address().address
+            port = server.wss.httpServer.address().port
 
-        server.register("sum", function(args)
-        {
-            return args[0] + args[1]
-        })
-
-        server.register("notification", function()
-        {
-            return true
-        })
-
-        server.register("hang", function()
-        {
-            return new Promise(function(resolve, reject)
+            server.register("greet", function()
             {
-                setTimeout(function() { resolve() }, 3000)
+                return "Hello, subscriber!"
             })
+
+            server.register("sum", function(args)
+            {
+                return args[0] + args[1]
+            })
+
+            server.register("notification", function()
+            {
+                return true
+            })
+
+            server.register("hang", function()
+            {
+                return new Promise(function(resolve, reject)
+                {
+                    setTimeout(function() { resolve() }, 3000)
+                })
+            })
+
+            server.event("newsUpdate")
+            server.event("newMessage")
+            server.event("newMessage", "/chat")
+            server.event("chatMessage", "/chat")
+
+            done()
         })
-
-        server.event("newsUpdate")
-        server.event("newMessage")
-        server.event("newMessage", "/chat")
-        server.event("chatMessage", "/chat")
-
-        done()
     })
 
     after(function(done)
@@ -59,7 +63,7 @@ describe("Client", function()
 
     it("should return a new instance", function()
     {
-        const client = new Barge("ws://localhost:" + port)
+        const client = new Barge("ws://" + host + ":" + port)
         client.should.be.an.instanceOf(Barge)
     })
 
@@ -67,7 +71,7 @@ describe("Client", function()
     {
         it("should call an RPC method without parameters and receive a valid response", function(done)
         {
-            const client = new Barge("ws://localhost:" + port)
+            const client = new Barge("ws://" + host + ":" + port)
 
             client.on("open", function()
             {
@@ -82,11 +86,13 @@ describe("Client", function()
                     done(error)
                 })
             })
+
+            client.on("error", (error) => console.log(error))
         })
 
         it("should call an RPC method with parameters and receive a valid response", function(done)
         {
-            const client = new Barge("ws://localhost:" + port)
+            const client = new Barge("ws://" + host + ":" + port)
 
             client.on("open", function()
             {
@@ -105,7 +111,7 @@ describe("Client", function()
 
         it("should throw TypeError if method not provided", function()
         {
-            const client = new Barge("ws://localhost:" + port)
+            const client = new Barge("ws://" + host + ":" + port)
 
             client.on("open", function()
             {
@@ -115,7 +121,7 @@ describe("Client", function()
 
         it("should correctly throw if nonexistent method called", function()
         {
-            const client = new Barge("ws://localhost:" + port)
+            const client = new Barge("ws://" + host + ":" + port)
 
             client.on("open", function()
             {
@@ -137,7 +143,7 @@ describe("Client", function()
 
         it("should throw Error on reply timeout", function(done)
         {
-            const client = new Barge("ws://localhost:" + port)
+            const client = new Barge("ws://" + host + ":" + port)
 
             client.on("open", function()
             {
@@ -158,7 +164,7 @@ describe("Client", function()
     {
         it("should send a notification", function(done)
         {
-            const client = new Barge("ws://localhost:" + port)
+            const client = new Barge("ws://" + host + ":" + port)
 
             client.on("open", function()
             {
@@ -175,7 +181,7 @@ describe("Client", function()
 
         it("should throw TypeError if method not provided", function()
         {
-            const client = new Barge("ws://localhost:" + port)
+            const client = new Barge("ws://" + host + ":" + port)
 
             client.on("open", function()
             {
@@ -190,7 +196,7 @@ describe("Client", function()
 
         before(function(done)
         {
-            client = new Barge("ws://localhost:" + port)
+            client = new Barge("ws://" + host + ":" + port)
 
             client.on("open", done)
         })
@@ -268,7 +274,7 @@ describe("Client", function()
 
         before(function(done)
         {
-            client = new Barge("ws://localhost:" + port)
+            client = new Barge("ws://" + host + ":" + port)
 
             client.once("open", done)
         })
@@ -306,7 +312,7 @@ describe("Client", function()
 
         before(function(done)
         {
-            client = new Barge("ws://localhost:" + port + "/chat")
+            client = new Barge("ws://" + host + ":" + port + "/chat")
 
             client.on("open", done)
         })
@@ -341,7 +347,7 @@ describe("Client", function()
     {
         it("should close a connection gracefully", function(done)
         {
-            const client = new Barge("ws://localhost:" + port)
+            const client = new Barge("ws://" + host + ":" + port)
 
             client.on("open", function()
             {
@@ -359,9 +365,14 @@ describe("Client", function()
  */
 function runServer(port, host)
 {
-    return new WebSocketServer(
-        {
-            host: host || SERVER_HOST,
-            port: port || SERVER_PORT
-        })
+    return new Promise((resolve, reject) =>
+    {
+        const wss = new WebSocketServer(
+            {
+                host: host || SERVER_HOST,
+                port: port || SERVER_PORT
+            })
+
+        wss.on("listening", () => resolve(wss))
+    })
 }
