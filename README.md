@@ -7,7 +7,6 @@
       WebSockets for <a href="http://nodejs.org">node</a> with JSON RPC 2.0 support on top.
   </p>
   <br>
-  <br>
 	<a href="https://github.com/qaap/rpc-websockets/blob/master/LICENSE">
 		<img src="https://img.shields.io/github/license/mashape/apistatus.svg">
 	</a>
