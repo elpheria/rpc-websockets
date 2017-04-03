@@ -1,14 +1,32 @@
-<div align="center"><img src="misc/images/logo.png"/></div>
-
-<p align="center">
-WebSockets for <a href="http://nodejs.org">node</a> with JSON RPC 2.0 support on top.
-</p>
-
-[![GitHub license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/qaap/rpc-websockets/blob/master/LICENSE)
-[![Build Status](https://travis-ci.org/qaap/rpc-websockets.svg?branch=master)](https://travis-ci.org/qaap/rpc-websockets)
-[![Coverage Status](https://coveralls.io/repos/github/qaap/rpc-websockets/badge.svg?branch=master)](https://coveralls.io/github/qaap/rpc-websockets?branch=master)
-[![npm](https://img.shields.io/npm/dm/rpc-websockets.svg?maxAge=2592000)](https://www.npmjs.com/package/rpc-websockets)  
-[![NPM](https://nodei.co/npm/rpc-websockets.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/rpc-websockets/)
+<div align="center">
+  <a href="https://github.com/qaap/rpc-websockets">
+    <img src="misc/images/logo.png">
+  </a>
+  <br>
+  <h1>
+    <p>
+      WebSockets for <a href="http://nodejs.org">node</a> with JSON RPC 2.0 support on top.
+    </p>
+  </h1>
+  <br>
+  <br>
+	<a href="https://github.com/qaap/rpc-websockets/blob/master/LICENSE">
+		<img src="https://img.shields.io/github/license/mashape/apistatus.svg">
+	</a>
+  <a href="https://travis-ci.org/qaap/rpc-websockets">
+		<img src="https://travis-ci.org/qaap/rpc-websockets.svg?branch=master">
+	</a>
+  <a href="https://coveralls.io/github/qaap/rpc-websockets?branch=master">
+		<img src="https://coveralls.io/repos/github/qaap/rpc-websockets/badge.svg?branch=master">
+	</a>
+  <a href="https://www.npmjs.com/package/rpc-websockets">
+    <img src="https://img.shields.io/npm/dm/rpc-websockets.svg?maxAge=2592000">
+  </a>
+  <br>
+  <a href="https://nodei.co/npm/rpc-websockets">
+		<img src="https://nodei.co/npm/rpc-websockets.png?downloads=true&downloadRank=true&stars=true">
+	</a>
+</div>
 
 ## Installation
 
