@@ -7,7 +7,7 @@ const should = require("chai").should()
 const expect = require("chai").expect
 const WebSocket = require("uws")
 
-const Pharos = require("../dist").Server
+const WebSocketServer = require("../dist").Server
 const SERVER_HOST = "localhost"
 const SERVER_PORT = 0 // random free port
 let rpc_id = 1
@@ -18,7 +18,7 @@ describe("Server", function()
     {
         getInstance().then((server) =>
         {
-            server.should.be.an.instanceOf(Pharos)
+            server.should.be.an.instanceOf(WebSocketServer)
 
             server.close().then(done)
         })
@@ -28,7 +28,7 @@ describe("Server", function()
     {
         let exception = false
 
-        try { new Pharos() }
+        try { new WebSocketServer() }
 
         catch (error) { exception = true }
 
@@ -990,16 +990,16 @@ describe("Server", function()
 })
 
 /**
- * Returns a new Pharos instance.
+ * Returns a new WebSocketServer instance.
  * @param {Number} port - port number
  * @param {String} host - hostname
- * @return {Pharos}
+ * @return {WebSocketServer}
  */
 function getInstance(port, host)
 {
     return new Promise((resolve, reject) =>
     {
-        const wss = new Pharos({
+        const wss = new WebSocketServer({
             host: host || SERVER_HOST,
             port: port || SERVER_PORT
         })

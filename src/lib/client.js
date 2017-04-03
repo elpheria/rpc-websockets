@@ -47,15 +47,23 @@ export default class Client extends EventEmitter
      * @param {String} method - RPC method name
      * @param {Object|Array} params - optional method parameters
      * @param {Number} timeout - RPC reply timeout value
+     * @param {Object} uws_opts - options passed to uWebSockets
      * @return {Promise}
      */
-    call(method, params, timeout)
+    call(method, params, timeout, uws_opts)
     {
         assertArgs(arguments, {
             "method": "string",
             "[params]": ["object", Array],
-            "[timeout]": "number"
+            "[timeout]": "number",
+            "[uws_opts]": "object"
         })
+
+        if (!uws_opts && "object" === typeof timeout)
+        {
+            uws_opts = timeout
+            timeout = null
+        }
 
         return new Promise((resolve, reject) =>
         {
@@ -71,7 +79,7 @@ export default class Client extends EventEmitter
                 id: rpc_id
             }
 
-            this.socket.send(JSON.stringify(message), (error) =>
+            this.socket.send(JSON.stringify(message), uws_opts, (error) =>
             {
                 if (error)
                     return reject(error)
@@ -196,6 +204,9 @@ export default class Client extends EventEmitter
 
         this.socket.on("message", (message) =>
         {
+            if (message instanceof ArrayBuffer)
+                message = Buffer.from(message).toString()
+
             try { message = JSON.parse(message) }
 
             catch (error) { return }

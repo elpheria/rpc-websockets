@@ -310,6 +310,15 @@ export default class Server extends EventEmitter
     {
         socket.on("message", async(data) =>
         {
+            const msg_options = {}
+
+            if (data instanceof ArrayBuffer)
+            {
+                msg_options.binary = true
+
+                data = Buffer.from(data).toString()
+            }
+
             try { data = JSON.parse(data) }
 
             catch (error)
@@ -318,7 +327,7 @@ export default class Server extends EventEmitter
                     jsonrpc: "2.0",
                     error: utils.createError(-32700, error.toString()),
                     id: data.id || null
-                }))
+                }, msg_options))
             }
 
             if (Array.isArray(data))
@@ -328,7 +337,7 @@ export default class Server extends EventEmitter
                         jsonrpc: "2.0",
                         error: utils.createError(-32600, "Invalid array"),
                         id: null
-                    }))
+                    }, msg_options))
 
                 const responses = []
 
@@ -345,7 +354,7 @@ export default class Server extends EventEmitter
                 if (!responses.length)
                     return
 
-                return socket.send(JSON.stringify(responses))
+                return socket.send(JSON.stringify(responses), msg_options)
             }
 
             const response = await this._runMethod(data, socket._id, ns)
@@ -353,7 +362,7 @@ export default class Server extends EventEmitter
             if (!response)
                 return
 
-            return socket.send(JSON.stringify(response))
+            return socket.send(JSON.stringify(response), msg_options)
         })
     }
 

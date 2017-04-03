@@ -7,7 +7,7 @@ const should = require("chai").should()
 const expect = require("chai").expect
 const WebSocketServer = require("../dist").Server
 
-const Barge = require("../dist").Client
+const WebSocket = require("../dist").Client
 const SERVER_HOST = "localhost"
 const SERVER_PORT = 0 // random free port
 
@@ -63,15 +63,15 @@ describe("Client", function()
 
     it("should return a new instance", function()
     {
-        const client = new Barge("ws://" + host + ":" + port)
-        client.should.be.an.instanceOf(Barge)
+        const client = new WebSocket("ws://" + host + ":" + port)
+        client.should.be.an.instanceOf(WebSocket)
     })
 
     describe(".call", function()
     {
         it("should call an RPC method without parameters and receive a valid response", function(done)
         {
-            const client = new Barge("ws://" + host + ":" + port)
+            const client = new WebSocket("ws://" + host + ":" + port)
 
             client.on("open", function()
             {
@@ -92,7 +92,7 @@ describe("Client", function()
 
         it("should call an RPC method with parameters and receive a valid response", function(done)
         {
-            const client = new Barge("ws://" + host + ":" + port)
+            const client = new WebSocket("ws://" + host + ":" + port)
 
             client.on("open", function()
             {
@@ -109,9 +109,30 @@ describe("Client", function()
             })
         })
 
+        it("should forward ws options to ws.send", function(done)
+        {
+            const client = new WebSocket("ws://" + host + ":" + port)
+
+            client.on("open", function()
+            {
+                client.call("greet", {}, { binary: true }).then(function(response)
+                {
+                    response.should.equal("Hello, subscriber!")
+
+                    done()
+                    client.close()
+                }, function(error)
+                {
+                    done(error)
+                })
+            })
+
+            client.on("error", (error) => console.log(error))
+        })
+
         it("should throw TypeError if method not provided", function()
         {
-            const client = new Barge("ws://" + host + ":" + port)
+            const client = new WebSocket("ws://" + host + ":" + port)
 
             client.on("open", function()
             {
@@ -121,7 +142,7 @@ describe("Client", function()
 
         it("should correctly throw if nonexistent method called", function()
         {
-            const client = new Barge("ws://" + host + ":" + port)
+            const client = new WebSocket("ws://" + host + ":" + port)
 
             client.on("open", function()
             {
@@ -143,7 +164,7 @@ describe("Client", function()
 
         it("should throw Error on reply timeout", function(done)
         {
-            const client = new Barge("ws://" + host + ":" + port)
+            const client = new WebSocket("ws://" + host + ":" + port)
 
             client.on("open", function()
             {
@@ -164,7 +185,7 @@ describe("Client", function()
     {
         it("should send a notification", function(done)
         {
-            const client = new Barge("ws://" + host + ":" + port)
+            const client = new WebSocket("ws://" + host + ":" + port)
 
             client.on("open", function()
             {
@@ -181,7 +202,7 @@ describe("Client", function()
 
         it("should throw TypeError if method not provided", function()
         {
-            const client = new Barge("ws://" + host + ":" + port)
+            const client = new WebSocket("ws://" + host + ":" + port)
 
             client.on("open", function()
             {
@@ -196,7 +217,7 @@ describe("Client", function()
 
         before(function(done)
         {
-            client = new Barge("ws://" + host + ":" + port)
+            client = new WebSocket("ws://" + host + ":" + port)
 
             client.on("open", done)
         })
@@ -274,7 +295,7 @@ describe("Client", function()
 
         before(function(done)
         {
-            client = new Barge("ws://" + host + ":" + port)
+            client = new WebSocket("ws://" + host + ":" + port)
 
             client.once("open", done)
         })
@@ -312,7 +333,7 @@ describe("Client", function()
 
         before(function(done)
         {
-            client = new Barge("ws://" + host + ":" + port + "/chat")
+            client = new WebSocket("ws://" + host + ":" + port + "/chat")
 
             client.on("open", done)
         })
@@ -347,7 +368,7 @@ describe("Client", function()
     {
         it("should close a connection gracefully", function(done)
         {
-            const client = new Barge("ws://" + host + ":" + port)
+            const client = new WebSocket("ws://" + host + ":" + port)
 
             client.on("open", function()
             {
