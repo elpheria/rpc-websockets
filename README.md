@@ -3,11 +3,9 @@
     <img src="misc/images/logo.png">
   </a>
   <br>
-  <h1>
-    <p>
+  <p>
       WebSockets for <a href="http://nodejs.org">node</a> with JSON RPC 2.0 support on top.
-    </p>
-  </h1>
+  </p>
   <br>
   <br>
 	<a href="https://github.com/qaap/rpc-websockets/blob/master/LICENSE">
