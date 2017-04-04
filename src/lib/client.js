@@ -12,7 +12,7 @@ import WebSocket from "uws"
 export default class Client extends EventEmitter
 {
     /**
-     * Instantiate a Client client.
+     * Instantiate a Client class.
      * @constructor
      * @param {String} address - url to a websocket server
      * @param {Object} options - ws options object with reconnect parameters

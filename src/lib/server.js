@@ -16,7 +16,7 @@ import * as utils from "./utils"
 export default class Server extends EventEmitter
 {
     /**
-     * Instantiate a Server server.
+     * Instantiate a Server class.
      * @constructor
      * @param {Object} options - ws constructor's parameters with rpc
      * @return {Server} - returns a new Server instance
