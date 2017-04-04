@@ -1,6 +1,6 @@
 <div align="center">
   <a href="https://github.com/qaap/rpc-websockets">
-    <img src="misc/images/logo.png">
+    <img src="http://i.imgur.com/5drhsqV.png">
   </a>
   <br>
   <p>
