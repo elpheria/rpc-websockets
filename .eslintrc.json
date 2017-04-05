@@ -2,7 +2,8 @@
     "env": {
         "es6": true,
         "node": true,
-	"mocha": true
+        "browser": true,
+        "mocha": true
     },
     "parser": "babel-eslint",
     "extends": "eslint:recommended",
