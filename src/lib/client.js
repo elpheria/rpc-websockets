@@ -153,7 +153,7 @@ export default class Client extends EventEmitter
     }
 
     /**
-     * Unsubscribes for a defined event.
+     * Unsubscribes from a defined event.
      * @method
      * @param {String} event - event name
      * @return {Undefined}
