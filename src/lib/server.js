@@ -6,7 +6,7 @@
 "use strict"
 
 import assertArgs from "assert-args"
-import EventEmitter from "events"
+import EventEmitter from "eventemitter3"
 import { Server as WebSocketServer } from "uws"
 import uuid from "uuid"
 import url from "url"

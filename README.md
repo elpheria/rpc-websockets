@@ -120,7 +120,7 @@ Parameters:
 * `method` {String}: An RPC method name to run on server-side.
 * `params` {Object|Array}: Optional parameter(s) to be sent along the request.
 * `timeout` {Number}: Optional RPC reply timeout in milliseconds.
-* `μws_options` {Object}: Optional parameters passed to μws.
+* `μws_options` {Object}: Optional parameters passed to μws. Not available on web browsers.
   * `compress` {Boolean}: Specifies whether data should be compressed or not. Defaults to true when permessage-deflate is enabled.
   * `binary` {Boolean}: Specifies whether data should be sent as a binary or not. Default is autodetected.
   * `mask` {Boolean} Specifies whether data should be masked or not. Defaults to true when websocket is not a server client.
