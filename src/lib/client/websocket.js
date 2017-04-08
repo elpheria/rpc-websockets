@@ -1,3 +1,5 @@
+/* A wrapper for the "uWebSockets/bindings" library. */
+
 "use strict"
 
 import WebSocket from "uws"

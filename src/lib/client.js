@@ -1,5 +1,6 @@
 /**
- * Client wraps the "uWebSockets/bindings" library providing JSON RPC 2.0 support on top.
+ * "Client" wraps the "uWebSockets/bindings" or a browser-implemented "WebSocket" library
+ * according to the environment providing JSON RPC 2.0 support on top.
  * @module Client
  */
 
