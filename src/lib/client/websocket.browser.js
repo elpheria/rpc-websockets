@@ -13,7 +13,7 @@ export default class WebSocket extends EventEmitter
      * @constructor
      * @param {String} address - url to a websocket server
      * @param {(String|Array)} protocols - a list of protocols
-     * @return {uws} - returns an uws instance
+     * @return {uws} - returns a WebSocket instance
      */
     constructor(address, protocols)
     {
