@@ -33,7 +33,7 @@
         "operator-linebreak": [ "error" ],
         "require-jsdoc": [ "error" ],
         "valid-jsdoc": [ "error", { "requireReturnDescription": false } ],
-	"semi-spacing": [ "error", { "before": false, "after": true } ],
+        "semi-spacing": [ "error", { "before": false, "after": true } ],
         "space-before-blocks": [ "error" ],
         "space-in-parens": [ "error" ],
         "space-infix-ops": [ "error" ],
