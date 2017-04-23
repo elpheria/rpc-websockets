@@ -10,6 +10,7 @@ import EventEmitter from "eventemitter3"
 import { Server as WebSocketServer } from "uws"
 import uuid from "uuid"
 import url from "url"
+import CircularJSON from "circular-json"
 
 import * as utils from "./utils"
 
@@ -354,7 +355,7 @@ export default class Server extends EventEmitter
                 if (!responses.length)
                     return
 
-                return socket.send(JSON.stringify(responses), msg_options)
+                return socket.send(CircularJSON.stringify(responses), msg_options)
             }
 
             const response = await this._runMethod(data, socket._id, ns)
@@ -362,7 +363,7 @@ export default class Server extends EventEmitter
             if (!response)
                 return
 
-            return socket.send(JSON.stringify(response), msg_options)
+            return socket.send(CircularJSON.stringify(response), msg_options)
         })
     }
 
