@@ -9,6 +9,7 @@
 import assertArgs from "assert-args"
 import EventEmitter from "eventemitter3"
 import WebSocket from "./client/websocket"
+import CircularJSON from "circular-json"
 
 export default class Client extends EventEmitter
 {
@@ -208,7 +209,7 @@ export default class Client extends EventEmitter
             if (message instanceof ArrayBuffer)
                 message = Buffer.from(message).toString()
 
-            try { message = JSON.parse(message) }
+            try { message = CircularJSON.parse(message) }
 
             catch (error) { return }
 

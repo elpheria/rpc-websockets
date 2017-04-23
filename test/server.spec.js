@@ -264,6 +264,18 @@ describe("Server", function()
                     throw new Error("Server error details")
                 })
 
+                inst.register("circular", function()
+                {
+                    const Obj = function()
+                    {
+                        this.one = "one"
+                        this.two = "two"
+                        this.ref = this
+                    }
+
+                    return new Obj()
+                })
+
                 inst.event("newMail")
                 inst.event("updatedNews")
 
@@ -306,7 +318,7 @@ describe("Server", function()
                     })
 
                     ws.once("error", function(error)
-{
+                    {
                         done(error)
                     })
                 })
@@ -363,6 +375,39 @@ describe("Server", function()
 
                         message.id.should.equal(rpc_id)
                         message.result.should.equal(19)
+
+                        rpc_id++
+                        ws.close()
+                        done()
+                    })
+
+                    ws.once("error", function(error)
+                    {
+                        done(error)
+                    })
+                })
+            })
+
+            it("should return a valid response with circular object references", function(done)
+            {
+                connect(port, host).then(function(ws)
+                {
+                    ws.send(JSON.stringify({
+                        id: rpc_id,
+                        jsonrpc: "2.0",
+                        method: "circular"
+                    }))
+
+                    ws.on("message", function(message)
+                    {
+                        message = JSON.parse(message)
+
+                        message.id.should.equal(rpc_id)
+                        message.result.should.deep.equal({
+                            one: "one",
+                            two: "two",
+                            ref: "~result"
+                        })
 
                         rpc_id++
                         ws.close()
@@ -589,17 +634,17 @@ describe("Server", function()
                             {
                                 jsonrpc: "2.0",
                                 result: "Hello, Charles!",
-                                id: 8
-                            },
-                            {
-                                jsonrpc: "2.0",
-                                result: 7,
                                 id: 9
                             },
                             {
                                 jsonrpc: "2.0",
-                                result: 21,
+                                result: 7,
                                 id: 10
+                            },
+                            {
+                                jsonrpc: "2.0",
+                                result: 21,
+                                id: 11
                             }])
 
                         rpc_id++

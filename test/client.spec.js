@@ -47,6 +47,18 @@ describe("Client", function()
                 })
             })
 
+            server.register("circular", function()
+            {
+                const Obj = function()
+                {
+                    this.one = "one"
+                    this.two = "two"
+                    this.ref = this
+                }
+
+                return new Obj()
+            })
+
             server.event("newsUpdate")
             server.event("newMessage")
             server.event("newMessage", "/chat")
@@ -99,6 +111,29 @@ describe("Client", function()
                 client.call("sum", [5, 3]).then(function(response)
                 {
                     response.should.equal(8)
+
+                    done()
+                    client.close()
+                }, function(error)
+                {
+                    done(error)
+                })
+            })
+        })
+
+        it("should call an RPC method and receive a valid response when RPC method returns a circular object", function(done)
+        {
+            const client = new WebSocket("ws://" + host + ":" + port)
+
+            client.on("open", function()
+            {
+                client.call("circular").then(function(response)
+                {
+                    response.should.deep.equal({
+                        one: "one",
+                        two: "two",
+                        ref: response
+                    })
 
                     done()
                     client.close()
