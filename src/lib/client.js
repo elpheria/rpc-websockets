@@ -8,10 +8,9 @@
 
 import assertArgs from "assert-args"
 import EventEmitter from "eventemitter3"
-import WebSocket from "./client/websocket"
 import CircularJSON from "circular-json"
 
-export default class Client extends EventEmitter
+export default (WebSocket) => class Client extends EventEmitter
 {
     /**
      * Instantiate a Client class.
