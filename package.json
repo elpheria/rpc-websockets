@@ -1,10 +1,10 @@
 {
   "name": "rpc-websockets",
-  "version": "3.4.2",
+  "version": "3.4.3",
   "description": "JSON-RPC 2.0 implementation over WebSockets for Node.js",
   "main": "./dist/index.js",
   "scripts": {
-    "build": "mkdir -p ./dist && eslint --fix -c ./.eslintrc './src/**/*.js' './test/**/*.js' && babel ./src -d ./dist && browserify -s RPCWebSocket ./dist/lib/client.js > ./dist/index.browser.js",
+    "build": "mkdir -p ./dist && eslint --fix -c ./.eslintrc './src/**/*.js' './test/**/*.js' && babel ./src -d ./dist && browserify -s RPCWebSocket ./dist/index.browser.js > ./dist/index.browser-bundle.js",
     "pretest": "npm run-script build",
     "test": "mocha test/*spec.js",
     "coverage": "istanbul cover _mocha --report lcovonly -- -R spec",
