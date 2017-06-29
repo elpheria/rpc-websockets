@@ -150,7 +150,7 @@ export default (WebSocket) => class Client extends EventEmitter
         const result = await this.call("rpc.on", [event])
 
         if (result[event] !== "ok")
-            throw new Error("Failed subscribing to an event with: " + result[event])
+            throw new Error("Failed subscribing to an event '" + event + "' with: " + result[event])
     }
 
     /**

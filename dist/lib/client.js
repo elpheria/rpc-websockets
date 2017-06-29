@@ -229,7 +229,7 @@ exports.default = function (WebSocket) {
                                         break;
                                     }
 
-                                    throw new Error("Failed subscribing to an event with: " + result[event]);
+                                    throw new Error("Failed subscribing to an event '" + event + "' with: " + result[event]);
 
                                 case 6:
                                 case "end":
