@@ -809,8 +809,7 @@ describe("Server", function()
                     {
                         done(error)
                     })
-                })
-                .catch(function(error)
+                }).catch(function(error)
                 {
                     console.log("UNHANDLED", error)
                 })
