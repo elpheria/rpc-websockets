@@ -18,54 +18,54 @@ describe("Client", function()
     before(function(done)
     {
         runServer(Math.floor(Math.random() * (65536 - 40001) + 40000))
-        .then((srv) =>
-        {
-            server = srv
-            host = server.wss.httpServer.address().address
-            port = server.wss.httpServer.address().port
-
-            server.register("greet", function()
+            .then((srv) =>
             {
-                return "Hello, subscriber!"
-            })
+                server = srv
+                host = server.wss.httpServer.address().address
+                port = server.wss.httpServer.address().port
 
-            server.register("sum", function(args)
-            {
-                return args[0] + args[1]
-            })
-
-            server.register("notification", function()
-            {
-                return true
-            })
-
-            server.register("hang", function()
-            {
-                return new Promise(function(resolve, reject)
+                server.register("greet", function()
                 {
-                    setTimeout(function() { resolve() }, 3000)
+                    return "Hello, subscriber!"
                 })
-            })
 
-            server.register("circular", function()
-            {
-                const Obj = function()
+                server.register("sum", function(args)
                 {
-                    this.one = "one"
-                    this.two = "two"
-                    this.ref = this
-                }
+                    return args[0] + args[1]
+                })
 
-                return new Obj()
+                server.register("notification", function()
+                {
+                    return true
+                })
+
+                server.register("hang", function()
+                {
+                    return new Promise(function(resolve, reject)
+                    {
+                        setTimeout(function() { resolve() }, 3000)
+                    })
+                })
+
+                server.register("circular", function()
+                {
+                    const Obj = function()
+                    {
+                        this.one = "one"
+                        this.two = "two"
+                        this.ref = this
+                    }
+
+                    return new Obj()
+                })
+
+                server.event("newsUpdate")
+                server.event("newMessage")
+                server.event("newMessage", "/chat")
+                server.event("chatMessage", "/chat")
+
+                done()
             })
-
-            server.event("newsUpdate")
-            server.event("newMessage")
-            server.event("newMessage", "/chat")
-            server.event("chatMessage", "/chat")
-
-            done()
-        })
     })
 
     after(function(done)
@@ -187,11 +187,11 @@ describe("Client", function()
                 {
                     exception = true
                 })
-                .catch(function(error)
-                {
-                    expect(error.code).to.exist
-                    expect(error.message).to.exist
-                })
+                    .catch(function(error)
+                    {
+                        expect(error.code).to.exist
+                        expect(error.message).to.exist
+                    })
 
                 expect(exception).to.be.false
             })
@@ -207,11 +207,11 @@ describe("Client", function()
                 {
                     done(new Error("didn't hang"))
                 })
-                .catch(function(error)
-                {
-                    expect(error.message).to.equal("reply timeout")
-                    done()
-                })
+                    .catch(function(error)
+                    {
+                        expect(error.message).to.equal("reply timeout")
+                        done()
+                    })
             })
         })
     })
@@ -276,7 +276,7 @@ describe("Client", function()
             client.subscribe("inexistent").catch(function(error)
             {
                 error.name.should.equal("Error")
-                error.message.should.equal("Failed subscribing to an event with: provided event invalid")
+                error.message.should.equal("Failed subscribing to an event 'inexistent' with: provided event invalid")
             })
         })
 

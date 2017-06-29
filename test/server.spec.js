@@ -113,11 +113,11 @@ describe("Server", function()
         {
             const ns = server.of("/chatroom")
 
-            ns.should.be.an.object
-            expect(ns.emit).to.be.a.function
-            expect(ns.name).to.be.a.string
-            expect(ns.connected).to.be.a.function
-            expect(ns.clients).to.be.a.function
+            ns.should.be.an("object")
+            expect(ns.emit).to.be.a("function")
+            expect(ns.name).to.be.a("string")
+            expect(ns.connected).to.be.a("function")
+            expect(ns.clients).to.be.a("function")
         })
     })
 
@@ -131,31 +131,31 @@ describe("Server", function()
                 server.wss.httpServer.address().port,
                 server.wss.httpServer.address().address,
                 "/chatroom")
-            .then((ws) =>
-            {
-                ws.send(JSON.stringify({
-                    id: rpc_id,
-                    jsonrpc: "2.0",
-                    method: "sendMsg",
-                    params: ["Hello, everyone!"]
-                }))
-
-                ws.once("message", function(message)
+                .then((ws) =>
                 {
-                    message = JSON.parse(message)
+                    ws.send(JSON.stringify({
+                        id: rpc_id,
+                        jsonrpc: "2.0",
+                        method: "sendMsg",
+                        params: ["Hello, everyone!"]
+                    }))
 
-                    message.id.should.equal(rpc_id)
-                    message.result.should.equal("Message received")
+                    ws.once("message", function(message)
+                    {
+                        message = JSON.parse(message)
 
-                    ws.close()
-                    done()
+                        message.id.should.equal(rpc_id)
+                        message.result.should.equal("Message received")
+
+                        ws.close()
+                        done()
+                    })
+
+                    ws.once("error", function(error)
+                    {
+                        done(error)
+                    })
                 })
-
-                ws.once("error", function(error)
-                {
-                    done(error)
-                })
-            })
         })
     })
 
@@ -166,12 +166,12 @@ describe("Server", function()
             const ns = server.of("/chat1")
 
             ns.event("alert1")
-            expect(ns.eventList).to.have.length.of(1)
+            expect(ns.eventList).to.have.lengthOf(1)
 
             server.event("alert2", "/chat2")
-            expect(ns.eventList).to.have.length.of(1)
+            expect(ns.eventList).to.have.lengthOf(1)
 
-            expect(server.eventList()).to.have.length.of(0)
+            expect(server.eventList()).to.have.lengthOf(0)
         })
     })
 
@@ -720,7 +720,7 @@ describe("Server", function()
                     ws.on("message", function(message)
                     {
                         message = JSON.parse(message)
-                        message.should.be.an.array
+                        message.should.be.an("array")
                         message[0].error.code.should.equal(-32600)
                         message[0].error.message.should.equal("Invalid Request")
 
@@ -745,7 +745,7 @@ describe("Server", function()
                     ws.on("message", function(message)
                     {
                         message = JSON.parse(message)
-                        message.should.be.an.array
+                        message.should.be.an("array")
                         message[0].error.code.should.equal(-32600)
                         message[0].error.message.should.equal("Invalid Request")
 
