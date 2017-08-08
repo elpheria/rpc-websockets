@@ -205,6 +205,60 @@ var Server = function (_EventEmitter) {
         }
 
         /**
+         * Removes a namespace and closes all connections
+         * @method
+         * @param {String} ns - namespace identifier
+         * @throws {TypeError}
+         * @return {Undefined}
+         */
+
+    }, {
+        key: "closeNamespace",
+        value: function closeNamespace(ns) {
+            console.log(0, ns, this.namespaces);
+            (0, _assertArgs2.default)(arguments, {
+                ns: "string"
+            });
+            console.log(1);
+            var namespace = this.namespaces[ns];
+            if (namespace) {
+                console.log(2);
+                delete namespace.rpc_methods;
+                delete namespace.events;
+                console.log(3);
+                var _iteratorNormalCompletion2 = true;
+                var _didIteratorError2 = false;
+                var _iteratorError2 = undefined;
+
+                try {
+                    for (var _iterator2 = (0, _getIterator3.default)(namespace.clients.values()), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+                        var socket = _step2.value;
+
+                        socket.close();
+                    }
+                } catch (err) {
+                    _didIteratorError2 = true;
+                    _iteratorError2 = err;
+                } finally {
+                    try {
+                        if (!_iteratorNormalCompletion2 && _iterator2.return) {
+                            _iterator2.return();
+                        }
+                    } finally {
+                        if (_didIteratorError2) {
+                            throw _iteratorError2;
+                        }
+                    }
+                }
+
+                console.log(4);
+                delete this.namespaces[ns];
+            }
+
+            console.log(5);
+        }
+
+        /**
          * Creates a new event that can be emitted to clients.
          * @method
          * @param {String} name - event name
@@ -235,13 +289,13 @@ var Server = function (_EventEmitter) {
                     params[_key] = arguments[_key];
                 }
 
-                var _iteratorNormalCompletion2 = true;
-                var _didIteratorError2 = false;
-                var _iteratorError2 = undefined;
+                var _iteratorNormalCompletion3 = true;
+                var _didIteratorError3 = false;
+                var _iteratorError3 = undefined;
 
                 try {
-                    for (var _iterator2 = (0, _getIterator3.default)(_this2.namespaces[ns].events[name]), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-                        var socket_id = _step2.value;
+                    for (var _iterator3 = (0, _getIterator3.default)(_this2.namespaces[ns].events[name]), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+                        var socket_id = _step3.value;
 
                         _this2.namespaces[ns].clients.get(socket_id).send((0, _stringify2.default)({
                             notification: name,
@@ -249,16 +303,16 @@ var Server = function (_EventEmitter) {
                         }));
                     }
                 } catch (err) {
-                    _didIteratorError2 = true;
-                    _iteratorError2 = err;
+                    _didIteratorError3 = true;
+                    _iteratorError3 = err;
                 } finally {
                     try {
-                        if (!_iteratorNormalCompletion2 && _iterator2.return) {
-                            _iterator2.return();
+                        if (!_iteratorNormalCompletion3 && _iterator3.return) {
+                            _iterator3.return();
                         }
                     } finally {
-                        if (_didIteratorError2) {
-                            throw _iteratorError2;
+                        if (_didIteratorError3) {
+                            throw _iteratorError3;
                         }
                     }
                 }
@@ -503,19 +557,19 @@ var Server = function (_EventEmitter) {
 
                                 case 12:
                                     responses = [];
-                                    _iteratorNormalCompletion3 = true;
-                                    _didIteratorError3 = false;
-                                    _iteratorError3 = undefined;
+                                    _iteratorNormalCompletion4 = true;
+                                    _didIteratorError4 = false;
+                                    _iteratorError4 = undefined;
                                     _context.prev = 16;
-                                    _iterator3 = (0, _getIterator3.default)(data);
+                                    _iterator4 = (0, _getIterator3.default)(data);
 
                                 case 18:
-                                    if (_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done) {
+                                    if (_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done) {
                                         _context.next = 29;
                                         break;
                                     }
 
-                                    message = _step3.value;
+                                    message = _step4.value;
                                     _context.next = 22;
                                     return _this4._runMethod(message, socket._id, ns);
 
@@ -534,7 +588,7 @@ var Server = function (_EventEmitter) {
                                     responses.push(_response);
 
                                 case 26:
-                                    _iteratorNormalCompletion3 = true;
+                                    _iteratorNormalCompletion4 = true;
                                     _context.next = 18;
                                     break;
 
@@ -545,26 +599,26 @@ var Server = function (_EventEmitter) {
                                 case 31:
                                     _context.prev = 31;
                                     _context.t1 = _context["catch"](16);
-                                    _didIteratorError3 = true;
-                                    _iteratorError3 = _context.t1;
+                                    _didIteratorError4 = true;
+                                    _iteratorError4 = _context.t1;
 
                                 case 35:
                                     _context.prev = 35;
                                     _context.prev = 36;
 
-                                    if (!_iteratorNormalCompletion3 && _iterator3.return) {
-                                        _iterator3.return();
+                                    if (!_iteratorNormalCompletion4 && _iterator4.return) {
+                                        _iterator4.return();
                                     }
 
                                 case 38:
                                     _context.prev = 38;
 
-                                    if (!_didIteratorError3) {
+                                    if (!_didIteratorError4) {
                                         _context.next = 41;
                                         break;
                                     }
 
-                                    throw _iteratorError3;
+                                    throw _iteratorError4;
 
                                 case 41:
                                     return _context.finish(38);
@@ -629,7 +683,7 @@ var Server = function (_EventEmitter) {
             var _ref2 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee2(message, socket_id) {
                 var ns = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "/";
 
-                var results, event_names, _iteratorNormalCompletion4, _didIteratorError4, _iteratorError4, _iterator4, _step4, name, index, _results, _iteratorNormalCompletion5, _didIteratorError5, _iteratorError5, _iterator5, _step5, _name, _index, response;
+                var results, event_names, _iteratorNormalCompletion5, _didIteratorError5, _iteratorError5, _iterator5, _step5, name, index, _results, _iteratorNormalCompletion6, _didIteratorError6, _iteratorError6, _iterator6, _step6, _name, _index, response;
 
                 return _regenerator2.default.wrap(function _callee2$(_context2) {
                     while (1) {
@@ -714,19 +768,19 @@ var Server = function (_EventEmitter) {
                             case 13:
                                 results = {};
                                 event_names = (0, _keys2.default)(this.namespaces[ns].events);
-                                _iteratorNormalCompletion4 = true;
-                                _didIteratorError4 = false;
-                                _iteratorError4 = undefined;
+                                _iteratorNormalCompletion5 = true;
+                                _didIteratorError5 = false;
+                                _iteratorError5 = undefined;
                                 _context2.prev = 18;
-                                _iterator4 = (0, _getIterator3.default)(message.params);
+                                _iterator5 = (0, _getIterator3.default)(message.params);
 
                             case 20:
-                                if (_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done) {
+                                if (_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done) {
                                     _context2.next = 31;
                                     break;
                                 }
 
-                                name = _step4.value;
+                                name = _step5.value;
                                 index = event_names.indexOf(name);
 
                                 if (!(index === -1)) {
@@ -744,7 +798,7 @@ var Server = function (_EventEmitter) {
                                 results[name] = "ok";
 
                             case 28:
-                                _iteratorNormalCompletion4 = true;
+                                _iteratorNormalCompletion5 = true;
                                 _context2.next = 20;
                                 break;
 
@@ -755,26 +809,26 @@ var Server = function (_EventEmitter) {
                             case 33:
                                 _context2.prev = 33;
                                 _context2.t0 = _context2["catch"](18);
-                                _didIteratorError4 = true;
-                                _iteratorError4 = _context2.t0;
+                                _didIteratorError5 = true;
+                                _iteratorError5 = _context2.t0;
 
                             case 37:
                                 _context2.prev = 37;
                                 _context2.prev = 38;
 
-                                if (!_iteratorNormalCompletion4 && _iterator4.return) {
-                                    _iterator4.return();
+                                if (!_iteratorNormalCompletion5 && _iterator5.return) {
+                                    _iterator5.return();
                                 }
 
                             case 40:
                                 _context2.prev = 40;
 
-                                if (!_didIteratorError4) {
+                                if (!_didIteratorError5) {
                                     _context2.next = 43;
                                     break;
                                 }
 
-                                throw _iteratorError4;
+                                throw _iteratorError5;
 
                             case 43:
                                 return _context2.finish(40);
@@ -808,19 +862,19 @@ var Server = function (_EventEmitter) {
 
                             case 51:
                                 _results = {};
-                                _iteratorNormalCompletion5 = true;
-                                _didIteratorError5 = false;
-                                _iteratorError5 = undefined;
+                                _iteratorNormalCompletion6 = true;
+                                _didIteratorError6 = false;
+                                _iteratorError6 = undefined;
                                 _context2.prev = 55;
-                                _iterator5 = (0, _getIterator3.default)(message.params);
+                                _iterator6 = (0, _getIterator3.default)(message.params);
 
                             case 57:
-                                if (_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done) {
+                                if (_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done) {
                                     _context2.next = 71;
                                     break;
                                 }
 
-                                _name = _step5.value;
+                                _name = _step6.value;
 
                                 if (this.namespaces[ns].events[_name]) {
                                     _context2.next = 62;
@@ -847,7 +901,7 @@ var Server = function (_EventEmitter) {
                                 _results[_name] = "ok";
 
                             case 68:
-                                _iteratorNormalCompletion5 = true;
+                                _iteratorNormalCompletion6 = true;
                                 _context2.next = 57;
                                 break;
 
@@ -858,26 +912,26 @@ var Server = function (_EventEmitter) {
                             case 73:
                                 _context2.prev = 73;
                                 _context2.t1 = _context2["catch"](55);
-                                _didIteratorError5 = true;
-                                _iteratorError5 = _context2.t1;
+                                _didIteratorError6 = true;
+                                _iteratorError6 = _context2.t1;
 
                             case 77:
                                 _context2.prev = 77;
                                 _context2.prev = 78;
 
-                                if (!_iteratorNormalCompletion5 && _iterator5.return) {
-                                    _iterator5.return();
+                                if (!_iteratorNormalCompletion6 && _iterator6.return) {
+                                    _iterator6.return();
                                 }
 
                             case 80:
                                 _context2.prev = 80;
 
-                                if (!_didIteratorError5) {
+                                if (!_didIteratorError6) {
                                     _context2.next = 83;
                                     break;
                                 }
 
-                                throw _iteratorError5;
+                                throw _iteratorError6;
 
                             case 83:
                                 return _context2.finish(80);

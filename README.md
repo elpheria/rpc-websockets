@@ -256,6 +256,10 @@ Parameters:
 * `message` {String}: Provides a short description of the error.
 * `data` {String|Object}: Details containing additional information about the error.
 
+### server.closeNamespace(ns) -> Promise
+
+Closes the given namespace and terminates all its clients.
+
 ### server.close() -> Promise
 
 Closes the server and terminates all clients.
