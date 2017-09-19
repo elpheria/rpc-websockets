@@ -207,7 +207,7 @@ exports.default = function (WebSocket) {
         }, {
             key: "subscribe",
             value: function () {
-                var _ref2 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee(event) {
+                var _ref2 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee(event) {
                     var result,
                         _args = arguments;
                     return _regenerator2.default.wrap(function _callee$(_context) {
@@ -257,7 +257,7 @@ exports.default = function (WebSocket) {
         }, {
             key: "unsubscribe",
             value: function () {
-                var _ref3 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee2(event) {
+                var _ref3 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee2(event) {
                     var result,
                         _args2 = arguments;
                     return _regenerator2.default.wrap(function _callee2$(_context2) {

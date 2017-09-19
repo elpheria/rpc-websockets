@@ -12,10 +12,11 @@ export default class WebSocket extends EventEmitter
     /** Instantiate a WebSocket class
      * @constructor
      * @param {String} address - url to a websocket server
+     * @param {(Object)} options - websocket options
      * @param {(String|Array)} protocols - a list of protocols
      * @return {WebSocket} - returns a WebSocket instance
      */
-    constructor(address, protocols)
+    constructor(address, options, protocols)
     {
         super()
 

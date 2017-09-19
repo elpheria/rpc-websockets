@@ -455,7 +455,7 @@ var Server = function (_EventEmitter) {
             var ns = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "/";
 
             socket.on("message", function () {
-                var _ref = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee(data) {
+                var _ref = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee(data) {
                     var msg_options, responses, _iteratorNormalCompletion3, _didIteratorError3, _iteratorError3, _iterator3, _step3, message, _response, response;
 
                     return _regenerator2.default.wrap(function _callee$(_context) {
@@ -626,7 +626,7 @@ var Server = function (_EventEmitter) {
     }, {
         key: "_runMethod",
         value: function () {
-            var _ref2 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee2(message, socket_id) {
+            var _ref2 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee2(message, socket_id) {
                 var ns = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "/";
 
                 var results, event_names, _iteratorNormalCompletion4, _didIteratorError4, _iteratorError4, _iterator4, _step4, name, index, _results, _iteratorNormalCompletion5, _didIteratorError5, _iteratorError5, _iterator5, _step5, _name, _index, response;
