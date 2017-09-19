@@ -51,8 +51,8 @@ server.register('sum', function(params) {
 // create an event
 server.event('feedUpdated')
 
-// get events (getter method)
-console.log(server.eventList)
+// get events
+console.log(server.eventList())
 
 // emit an event to subscribers
 server.emit('feedUpdated')
@@ -297,9 +297,9 @@ Parameters:
 * `name` {String}: Name of the event.
 * `...params`: Parameters forwarded to clients in this namespace.
 
-### **get** namespace.eventList -> Array
+### namespace.eventList -> Array
 
-A convenience getter method that lists all created events in this namespace.
+A convenience method that lists all created events in this namespace.
 
 ### namespace.clients() -> Array
 

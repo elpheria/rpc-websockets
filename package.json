@@ -1,10 +1,10 @@
 {
   "name": "rpc-websockets",
-  "version": "3.4.0",
+  "version": "3.4.6",
   "description": "JSON-RPC 2.0 implementation over WebSockets for Node.js",
   "main": "./dist/index.js",
   "scripts": {
-    "build": "mkdir -p ./dist && eslint --fix -c ./.eslintrc './src/**/*.js' './test/**/*.js' && babel ./src -d ./dist && browserify -s RPCWebSocket ./dist/lib/client.js > ./dist/index.browser.js",
+    "build": "mkdir -p ./dist && eslint --fix -c ./.eslintrc './src/**/*.js' './test/**/*.js' && babel ./src -d ./dist && browserify -s RPCWebSocket ./dist/index.browser.js > ./dist/index.browser-bundle.js",
     "pretest": "npm run-script build",
     "test": "mocha test/*spec.js",
     "coverage": "istanbul cover _mocha --report lcovonly -- -R spec",
@@ -19,22 +19,22 @@
     "babel-runtime": "^6.11.6",
     "circular-json": "^0.3.1",
     "eventemitter3": "^2.0.3",
-    "uuid": "^3.0.0",
-    "uws": "^0.14.1"
+    "uuid": "^3.1.0",
+    "uws": "^8.14.0"
   },
   "devDependencies": {
     "babel-cli": "^6.14.0",
-    "babel-core": "^6.14.0",
+    "babel-core": "^6.25.0",
     "babel-eslint": "^7.0.0",
     "babel-plugin-add-module-exports": "^0.2.1",
     "babel-plugin-transform-runtime": "^6.15.0",
-    "babel-preset-env": "^1.2.2",
-    "browserify": "^14.1.0",
-    "chai": "^3.5.0",
+    "babel-preset-env": "^1.5.2",
+    "browserify": "^14.4.0",
+    "chai": "^4.0.2",
     "coveralls": "^2.11.14",
-    "eslint": "^3.6.1",
+    "eslint": "^4.1.1",
     "istanbul": "^0.4.5",
-    "mocha": "^3.0.2",
+    "mocha": "^3.4.2",
     "mocha-lcov-reporter": "^1.2.0"
   },
   "browser": "./dist/index.browser.js",
