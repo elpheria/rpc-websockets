@@ -41,10 +41,11 @@ var WebSocket = function (_EventEmitter) {
     /** Instantiate a WebSocket class
      * @constructor
      * @param {String} address - url to a websocket server
+     * @param {(Object)} options - websocket options
      * @param {(String|Array)} protocols - a list of protocols
      * @return {WebSocket} - returns a WebSocket instance
      */
-    function WebSocket(address, protocols) {
+    function WebSocket(address, options, protocols) {
         (0, _classCallCheck3.default)(this, WebSocket);
 
         var _this = (0, _possibleConstructorReturn3.default)(this, (WebSocket.__proto__ || (0, _getPrototypeOf2.default)(WebSocket)).call(this));
