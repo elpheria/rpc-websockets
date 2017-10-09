@@ -108,15 +108,14 @@ export default class Server extends EventEmitter
         })
 
         var namespace = this.namespaces[ns]
+
         if (namespace)
         {
             delete namespace.rpc_methods
             delete namespace.events
 
             for (const socket of namespace.clients.values())
-            {
                 socket.close()
-            }
 
             delete this.namespaces[ns]
         }
