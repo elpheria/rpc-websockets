@@ -215,17 +215,15 @@ var Server = function (_EventEmitter) {
     }, {
         key: "closeNamespace",
         value: function closeNamespace(ns) {
-            console.log(0, ns, this.namespaces);
             (0, _assertArgs2.default)(arguments, {
                 ns: "string"
             });
-            console.log(1);
+
             var namespace = this.namespaces[ns];
             if (namespace) {
-                console.log(2);
                 delete namespace.rpc_methods;
                 delete namespace.events;
-                console.log(3);
+
                 var _iteratorNormalCompletion2 = true;
                 var _didIteratorError2 = false;
                 var _iteratorError2 = undefined;
@@ -251,11 +249,8 @@ var Server = function (_EventEmitter) {
                     }
                 }
 
-                console.log(4);
                 delete this.namespaces[ns];
             }
-
-            console.log(5);
         }
 
         /**
@@ -510,7 +505,7 @@ var Server = function (_EventEmitter) {
 
             socket.on("message", function () {
                 var _ref = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee(data) {
-                    var msg_options, responses, _iteratorNormalCompletion3, _didIteratorError3, _iteratorError3, _iterator3, _step3, message, _response, response;
+                    var msg_options, responses, _iteratorNormalCompletion4, _didIteratorError4, _iteratorError4, _iterator4, _step4, message, _response, response;
 
                     return _regenerator2.default.wrap(function _callee$(_context) {
                         while (1) {
