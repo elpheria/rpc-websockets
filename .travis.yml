@@ -2,7 +2,7 @@ language: node_js
 node_js:
    - "6.11"
    - "7.10"
-   - "8.5"
+   - "8.6"
 before_install: npm install -g npm
 install: npm install
 after_script:
