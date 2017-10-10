@@ -228,7 +228,7 @@ Emits a created event to clients.
 
 Parameters:
 * `name` {String}: Name of the event.
-* `...params`: Parameters forwarded to clients.
+* `...params`: Parameters forwarded to clients. If an object (```{ }```) is provided, parameters delivered to a client will appear in a by-name fashion.
 
 ### server.eventList([namespace]) -> Array
 
