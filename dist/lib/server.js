@@ -220,6 +220,7 @@ var Server = function (_EventEmitter) {
             });
 
             var namespace = this.namespaces[ns];
+
             if (namespace) {
                 delete namespace.rpc_methods;
                 delete namespace.events;
@@ -283,6 +284,9 @@ var Server = function (_EventEmitter) {
                 for (var _len = arguments.length, params = Array(_len), _key = 0; _key < _len; _key++) {
                     params[_key] = arguments[_key];
                 }
+
+                // flatten an object if no spreading is wanted
+                if (params.length === 1 && params[0] instanceof Object) params = params[0];
 
                 var _iteratorNormalCompletion3 = true;
                 var _didIteratorError3 = false;

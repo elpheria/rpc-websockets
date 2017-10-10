@@ -322,6 +322,18 @@ describe("Client", function()
                 done()
             })
         })
+
+        it("should receive an event with a single object value", function(done)
+        {
+            server.emit("newsUpdate", { foo: "bar", boo: "baz" })
+
+            client.once("newsUpdate", function(obj)
+            {
+                obj.should.be.an.instanceOf(Object)
+                expect(obj).to.deep.equal({ foo: "bar", boo: "baz" })
+                done()
+            })
+        })
     })
 
     describe(".unsubscribe", function()

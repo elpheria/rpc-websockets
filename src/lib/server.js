@@ -143,6 +143,10 @@ export default class Server extends EventEmitter
         // forward emitted event to subscribers
         this.on(name, (...params) =>
         {
+            // flatten an object if no spreading is wanted
+            if (params.length === 1 && params[0] instanceof Object)
+                params = params[0]
+
             for (const socket_id of this.namespaces[ns].events[name])
             {
                 this.namespaces[ns].clients.get(socket_id).send(JSON.stringify({
