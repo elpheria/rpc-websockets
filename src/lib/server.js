@@ -95,6 +95,33 @@ export default class Server extends EventEmitter
     }
 
     /**
+     * Removes a namespace and closes all connections
+     * @method
+     * @param {String} ns - namespace identifier
+     * @throws {TypeError}
+     * @return {Undefined}
+     */
+    closeNamespace(ns)
+    {
+        assertArgs(arguments, {
+            ns: "string"
+        })
+
+        var namespace = this.namespaces[ns]
+
+        if (namespace)
+        {
+            delete namespace.rpc_methods
+            delete namespace.events
+
+            for (const socket of namespace.clients.values())
+                socket.close()
+
+            delete this.namespaces[ns]
+        }
+    }
+
+    /**
      * Creates a new event that can be emitted to clients.
      * @method
      * @param {String} name - event name
@@ -116,6 +143,10 @@ export default class Server extends EventEmitter
         // forward emitted event to subscribers
         this.on(name, (...params) =>
         {
+            // flatten an object if no spreading is wanted
+            if (params.length === 1 && params[0] instanceof Object)
+                params = params[0]
+
             for (const socket_id of this.namespaces[ns].events[name])
             {
                 this.namespaces[ns].clients.get(socket_id).send(JSON.stringify({
