@@ -21,6 +21,10 @@ var _regenerator = require("babel-runtime/regenerator");
 
 var _regenerator2 = _interopRequireDefault(_regenerator);
 
+var _stringify = require("babel-runtime/core-js/json/stringify");
+
+var _stringify2 = _interopRequireDefault(_stringify);
+
 var _asyncToGenerator2 = require("babel-runtime/helpers/asyncToGenerator");
 
 var _asyncToGenerator3 = _interopRequireDefault(_asyncToGenerator2);
@@ -32,10 +36,6 @@ var _promise2 = _interopRequireDefault(_promise);
 var _toConsumableArray2 = require("babel-runtime/helpers/toConsumableArray");
 
 var _toConsumableArray3 = _interopRequireDefault(_toConsumableArray2);
-
-var _stringify = require("babel-runtime/core-js/json/stringify");
-
-var _stringify2 = _interopRequireDefault(_stringify);
 
 var _keys = require("babel-runtime/core-js/object/keys");
 
@@ -243,7 +243,7 @@ var Server = function (_EventEmitter) {
                     for (var _iterator2 = (0, _getIterator3.default)(_this2.namespaces[ns].events[name]), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
                         var socket_id = _step2.value;
 
-                        _this2.namespaces[ns].clients.get(socket_id).send((0, _stringify2.default)({
+                        _this2.namespaces[ns].clients.get(socket_id).send(_circularJson2.default.stringify({
                             notification: name,
                             params: params || null
                         }));
@@ -324,7 +324,7 @@ var Server = function (_EventEmitter) {
                     var socket_ids = [].concat((0, _toConsumableArray3.default)(self.namespaces[name].clients.keys()));
 
                     for (var i = 0, id; id = socket_ids[i]; ++i) {
-                        self.namespaces[name].clients.get(id).send((0, _stringify2.default)({
+                        self.namespaces[name].clients.get(id).send(_circularJson2.default.stringify({
                             notification: event,
                             params: params || []
                         }));
