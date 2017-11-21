@@ -61,6 +61,7 @@ describe("Client", function()
 
                 server.event("newsUpdate")
                 server.event("newMessage")
+                server.event("circularUpdate")
                 server.event("newMessage", "/chat")
                 server.event("chatMessage", "/chat")
 
@@ -254,7 +255,11 @@ describe("Client", function()
         {
             client = new WebSocket("ws://" + host + ":" + port)
 
-            client.on("open", done)
+            client.on("open", function()
+            {
+                client.subscribe("circularUpdate")
+                done()
+            })
         })
 
         after(function(done)
@@ -331,6 +336,28 @@ describe("Client", function()
             {
                 obj.should.be.an.instanceOf(Object)
                 expect(obj).to.deep.equal({ foo: "bar", boo: "baz" })
+                done()
+            })
+        })
+
+        it("should receive an event with circular object", function(done)
+        {
+            const Obj = function()
+            {
+                this.one = "one"
+                this.two = "two"
+                this.ref = this
+            }
+
+            server.emit("circularUpdate", new Obj())
+
+            client.once("circularUpdate", function(value)
+            {
+                value.should.deep.equal({
+                    one: "one",
+                    two: "two",
+                    ref: value
+                })
                 done()
             })
         })

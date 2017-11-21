@@ -149,7 +149,7 @@ export default class Server extends EventEmitter
 
             for (const socket_id of this.namespaces[ns].events[name])
             {
-                this.namespaces[ns].clients.get(socket_id).send(JSON.stringify({
+                this.namespaces[ns].clients.get(socket_id).send(CircularJSON.stringify({
                     notification: name,
                     params: params || null
                 }))
@@ -222,7 +222,7 @@ export default class Server extends EventEmitter
 
                 for (var i = 0, id; id = socket_ids[i]; ++i)
                 {
-                    self.namespaces[name].clients.get(id).send(JSON.stringify({
+                    self.namespaces[name].clients.get(id).send(CircularJSON.stringify({
                         notification: event,
                         params: params || []
                     }))

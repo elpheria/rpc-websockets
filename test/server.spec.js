@@ -296,6 +296,7 @@ describe("Server", function()
 
                 inst.event("newMail")
                 inst.event("updatedNews")
+                inst.event("circularUpdate")
 
                 done()
             })
@@ -995,6 +996,56 @@ describe("Server", function()
 
                         if (message.result.updatedNews === "ok")
                             return server.emit("updatedNews", "fox", "mtv", "eurosport")
+                    })
+
+                    ws.once("error", function(error)
+                    {
+                        done(error)
+                    })
+                })
+            })
+
+            it("should emit an event with circular objects to subscribed clients", function(done)
+            {
+                connect(port, host).then(function(ws)
+                {
+                    ws.send(JSON.stringify({
+                        id: ++rpc_id,
+                        jsonrpc: "2.0",
+                        method: "rpc.on",
+                        params: ["circularUpdate"]
+                    }))
+
+                    ws.on("message", function(message)
+                    {
+                        try { message = JSON.parse(message) }
+
+                        catch (error) { done(error) }
+
+                        if (message.notification)
+                        {
+                            message.notification.should.equal("circularUpdate")
+                            expect(message.params).to.deep.equal({
+                                one: "one",
+                                two: "two",
+                                ref: "~params"
+                            })
+
+                            ws.close()
+                            done()
+                        }
+
+                        if (message.result.circularUpdate === "ok")
+                        {
+                            const Obj = function()
+                            {
+                                this.one = "one"
+                                this.two = "two"
+                                this.ref = this
+                            }
+
+                            return server.emit("circularUpdate", new Obj())
+                        }
                     })
 
                     ws.once("error", function(error)
