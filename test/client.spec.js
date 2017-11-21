@@ -328,6 +328,18 @@ describe("Client", function()
             })
         })
 
+        it("should receive an event with a single object value", function(done)
+        {
+            server.emit("newsUpdate", { foo: "bar", boo: "baz" })
+
+            client.once("newsUpdate", function(obj)
+            {
+                obj.should.be.an.instanceOf(Object)
+                expect(obj).to.deep.equal({ foo: "bar", boo: "baz" })
+                done()
+            })
+        })
+
         it("should receive an event with circular object", function(done)
         {
             const Obj = function()
@@ -346,7 +358,6 @@ describe("Client", function()
                     two: "two",
                     ref: value
                 })
-                done()
             })
         })
     })

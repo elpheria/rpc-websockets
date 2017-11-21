@@ -215,14 +215,17 @@ export default (WebSocket) => class Client extends EventEmitter
             // check if any listeners are attached and forward event
             if (message.notification && this.listeners(message.notification).length)
             {
-                if (!message.params.length)
+                if (!Object.keys(message.params).length)
                     return this.emit(message.notification)
 
                 const args = [message.notification]
 
-                // using for-loop instead of unshift/spread because performance is better
-                for (let i = 0; i < message.params.length; i++)
-                    args.push(message.params[i])
+                if (message.params.constructor === Object)
+                    args.push(message.params)
+                else
+                    // using for-loop instead of unshift/spread because performance is better
+                    for (let i = 0; i < message.params.length; i++)
+                        args.push(message.params[i])
 
                 return this.emit.apply(this, args)
             }

@@ -228,7 +228,7 @@ Emits a created event to clients.
 
 Parameters:
 * `name` {String}: Name of the event.
-* `...params`: Parameters forwarded to clients.
+* `...params`: Parameters forwarded to clients. If an object (```{ }```) is provided, parameters delivered to a client will appear in a by-name fashion.
 
 ### server.eventList([namespace]) -> Array
 
@@ -255,6 +255,10 @@ Parameters:
 * `code` {Number}: Indicates the error type that occurred.
 * `message` {String}: Provides a short description of the error.
 * `data` {String|Object}: Details containing additional information about the error.
+
+### server.closeNamespace(ns) -> Promise
+
+Closes the given namespace and terminates all its clients.
 
 ### server.close() -> Promise
 

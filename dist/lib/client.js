@@ -10,6 +10,10 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
+var _keys = require("babel-runtime/core-js/object/keys");
+
+var _keys2 = _interopRequireDefault(_keys);
+
 var _regenerator = require("babel-runtime/regenerator");
 
 var _regenerator2 = _interopRequireDefault(_regenerator);
@@ -207,7 +211,7 @@ exports.default = function (WebSocket) {
         }, {
             key: "subscribe",
             value: function () {
-                var _ref2 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee(event) {
+                var _ref2 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee(event) {
                     var result,
                         _args = arguments;
                     return _regenerator2.default.wrap(function _callee$(_context) {
@@ -257,7 +261,7 @@ exports.default = function (WebSocket) {
         }, {
             key: "unsubscribe",
             value: function () {
-                var _ref3 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee2(event) {
+                var _ref3 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee2(event) {
                     var result,
                         _args2 = arguments;
                     return _regenerator2.default.wrap(function _callee2$(_context2) {
@@ -343,14 +347,15 @@ exports.default = function (WebSocket) {
 
                     // check if any listeners are attached and forward event
                     if (message.notification && _this4.listeners(message.notification).length) {
-                        if (!message.params.length) return _this4.emit(message.notification);
+                        if (!(0, _keys2.default)(message.params).length) return _this4.emit(message.notification);
 
                         var args = [message.notification];
 
-                        // using for-loop instead of unshift/spread because performance is better
-                        for (var i = 0; i < message.params.length; i++) {
-                            args.push(message.params[i]);
-                        }return _this4.emit.apply(_this4, args);
+                        if (message.params.constructor === Object) args.push(message.params);else
+                            // using for-loop instead of unshift/spread because performance is better
+                            for (var i = 0; i < message.params.length; i++) {
+                                args.push(message.params[i]);
+                            }return _this4.emit.apply(_this4, args);
                     }
 
                     if (!_this4.queue[message.id]) return;

@@ -175,6 +175,24 @@ describe("Server", function()
         })
     })
 
+    it(".closeNamespace", function(done)
+    {
+        getInstance().then((server) =>
+        {
+            const ns = server.of("/chat1")
+
+            ns.event("alert1")
+            expect(ns.eventList).to.have.lengthOf(1)
+
+            server.event("alert2", "/chat2")
+            expect(ns.eventList).to.have.lengthOf(1)
+
+            server.closeNamespace("/chat1")
+            expect(server.namespaces["/chat1"]).to.be.undefined
+            done()
+        })
+    })
+
     it(".createError", function()
     {
         let exception = false
