@@ -351,13 +351,14 @@ describe("Client", function()
 
             server.emit("circularUpdate", new Obj())
 
-            client.on("circularUpdate", function(value)
+            client.once("circularUpdate", function(value)
             {
                 value.should.deep.equal({
                     one: "one",
                     two: "two",
                     ref: value
                 })
+                done()
             })
         })
     })

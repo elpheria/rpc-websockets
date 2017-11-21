@@ -1025,11 +1025,11 @@ describe("Server", function()
                         if (message.notification)
                         {
                             message.notification.should.equal("circularUpdate")
-                            expect(message.params).to.deep.equal([{
+                            expect(message.params).to.deep.equal({
                                 one: "one",
                                 two: "two",
-                                ref: "~params~0"
-                            }])
+                                ref: "~params"
+                            })
 
                             ws.close()
                             done()
