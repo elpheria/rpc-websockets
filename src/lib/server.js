@@ -7,7 +7,7 @@
 
 import assertArgs from "assert-args"
 import EventEmitter from "eventemitter3"
-import { Server as WebSocketServer } from "uws"
+import { Server as WebSocketServer } from "qaap-uws"
 import uuid from "uuid"
 import url from "url"
 import CircularJSON from "circular-json"

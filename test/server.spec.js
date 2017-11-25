@@ -5,7 +5,7 @@
 
 const should = require("chai").should()
 const expect = require("chai").expect
-const WebSocket = require("uws")
+const WebSocket = require("qaap-uws")
 
 const WebSocketServer = require("../dist").Server
 const SERVER_HOST = "localhost"
@@ -24,7 +24,7 @@ describe("Server", function()
         })
     })
 
-    it("should forward throw an error from 'uws' if no params object is passed", function()
+    it("should forward throw an error from 'qaap-uws' if no params object is passed", function()
     {
         let exception = false
 

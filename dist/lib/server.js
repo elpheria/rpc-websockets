@@ -73,7 +73,7 @@ var _eventemitter = require("eventemitter3");
 
 var _eventemitter2 = _interopRequireDefault(_eventemitter);
 
-var _uws = require("uws");
+var _qaapUws = require("qaap-uws");
 
 var _uuid = require("uuid");
 
@@ -122,7 +122,7 @@ var Server = function (_EventEmitter) {
 
         _this.namespaces = {};
 
-        _this.wss = new _uws.Server(options, function () {
+        _this.wss = new _qaapUws.Server(options, function () {
             return _this.emit("listening");
         });
 
