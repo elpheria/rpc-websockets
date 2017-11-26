@@ -1,5 +1,5 @@
 /**
- * "Client" wraps the "uWebSockets/bindings" or a browser-implemented "WebSocket" library
+ * "Client" wraps "qaap/uws-bindings" or a browser-implemented "WebSocket" library
  * according to the environment providing JSON RPC 2.0 support on top.
  * @module Client
  */

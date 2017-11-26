@@ -1,5 +1,5 @@
 /**
- * "Server" wraps the "uWebSockets/bindings" library providing JSON RPC 2.0 support on top.
+ * "Server" wraps the "qaap/uws-bindings" library providing JSON RPC 2.0 support on top.
  * @module Server
  */
 
