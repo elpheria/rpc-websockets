@@ -98,6 +98,7 @@ exports.default = function (WebSocket) {
          * @constructor
          * @param {String} address - url to a websocket server
          * @param {Object} options - ws options object with reconnect parameters
+         * @param {Function} generate_request_id - custom generation request Id
          * @return {Client}
          */
         function Client() {
@@ -113,6 +114,7 @@ exports.default = function (WebSocket) {
                 _ref$max_reconnects = _ref.max_reconnects,
                 max_reconnects = _ref$max_reconnects === undefined ? 5 : _ref$max_reconnects;
 
+            var generate_request_id = arguments[2];
             (0, _classCallCheck3.default)(this, Client);
 
             var _this = (0, _possibleConstructorReturn3.default)(this, (Client.__proto__ || (0, _getPrototypeOf2.default)(Client)).call(this));
@@ -126,6 +128,9 @@ exports.default = function (WebSocket) {
             _this.reconnect_interval = reconnect_interval;
             _this.max_reconnects = max_reconnects;
             _this.current_reconnects = 0;
+            _this.generate_request_id = generate_request_id || function () {
+                return ++_this.rpc_id;
+            };
 
             if (_this.autoconnect) _this._connect(address, arguments[1]);
             return _this;
@@ -162,7 +167,7 @@ exports.default = function (WebSocket) {
                 return new _promise2.default(function (resolve, reject) {
                     if (!_this2.ready) return reject(new Error("socket not ready"));
 
-                    var rpc_id = ++_this2.rpc_id;
+                    var rpc_id = _this2.generate_request_id(method, params);
 
                     var message = {
                         jsonrpc: "2.0",

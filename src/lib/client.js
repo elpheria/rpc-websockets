@@ -17,6 +17,7 @@ export default (WebSocket) => class Client extends EventEmitter
      * @constructor
      * @param {String} address - url to a websocket server
      * @param {Object} options - ws options object with reconnect parameters
+     * @param {Function} generate_request_id - custom generation request Id
      * @return {Client}
      */
     constructor(address = "ws://localhost:8080", {
@@ -24,7 +25,9 @@ export default (WebSocket) => class Client extends EventEmitter
         reconnect = true,
         reconnect_interval = 1000,
         max_reconnects = 5
-    } = {})
+    } = {},
+    generate_request_id
+    )
     {
         super()
 
@@ -37,6 +40,7 @@ export default (WebSocket) => class Client extends EventEmitter
         this.reconnect_interval = reconnect_interval
         this.max_reconnects = max_reconnects
         this.current_reconnects = 0
+        this.generate_request_id = generate_request_id || (() => ++this.rpc_id)
 
         if (this.autoconnect)
             this._connect(address, arguments[1])
@@ -71,7 +75,7 @@ export default (WebSocket) => class Client extends EventEmitter
             if (!this.ready)
                 return reject(new Error("socket not ready"))
 
-            const rpc_id = ++this.rpc_id
+            const rpc_id = this.generate_request_id(method, params)
 
             const message = {
                 jsonrpc: "2.0",
