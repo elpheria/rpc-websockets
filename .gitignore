@@ -13,3 +13,4 @@ db/
 docker/src/
 
 node_modules/
+.idea/
