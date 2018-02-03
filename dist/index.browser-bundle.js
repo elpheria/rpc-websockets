@@ -20,7 +20,7 @@ var Client = exports.Client = (0, _client2.default)(_websocket2.default);
 },{"./lib/client":2,"./lib/client/websocket.browser":3}],2:[function(require,module,exports){
 (function (Buffer){
 /**
- * "Client" wraps the "uWebSockets/bindings" or a browser-implemented "WebSocket" library
+ * "Client" wraps "qaap/uws-bindings" or a browser-implemented "WebSocket" library
  * according to the environment providing JSON RPC 2.0 support on top.
  * @module Client
  */
@@ -384,7 +384,10 @@ exports.default = function (WebSocket) {
                             }return _this4.emit.apply(_this4, args);
                     }
 
-                    if (!_this4.queue[message.id]) return;
+                    if (!_this4.queue[message.id]) {
+                        // general JSON RPC 2.0 events
+                        if (message.method && message.params) return _this4.emit(message.method, message.params);else return;
+                    }
 
                     if (_this4.queue[message.id].timeout) clearTimeout(_this4.queue[message.id].timeout);
 

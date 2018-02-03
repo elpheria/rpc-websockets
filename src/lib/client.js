@@ -235,7 +235,13 @@ export default (WebSocket) => class Client extends EventEmitter
             }
 
             if (!this.queue[message.id])
-                return
+            {
+                // general JSON RPC 2.0 events
+                if (message.method && message.params)
+                    return this.emit(message.method, message.params)
+                else
+                    return
+            }
 
             if (this.queue[message.id].timeout)
                 clearTimeout(this.queue[message.id].timeout)

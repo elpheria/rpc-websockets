@@ -1,4 +1,4 @@
-/* A wrapper for the "uWebSockets/bindings" library. */
+/* A wrapper for the "qaap/uws-bindings" library. */
 
 "use strict";
 
