@@ -127,6 +127,8 @@ var Server = function (_EventEmitter) {
         });
 
         _this.wss.on("connection", function (socket) {
+            _this.emit("connection", socket);
+
             var ns = _url2.default.parse(socket.upgradeReq.url).pathname;
             socket._id = _uuid2.default.v1();
 

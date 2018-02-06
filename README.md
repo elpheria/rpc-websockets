@@ -269,6 +269,12 @@ Closes the server and terminates all clients.
 
 Emits when the server has started listening for requests.
 
+### Event: 'connection'
+
+* `socket` &lt;ws.WebSocket&gt;
+
+Emits when the client has connected.
+
 ### Event: 'error'
 
 * &lt;Error&gt;

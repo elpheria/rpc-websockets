@@ -43,6 +43,8 @@ export default class Server extends EventEmitter
 
         this.wss.on("connection", (socket) =>
         {
+            this.emit("connection", socket)
+
             const ns = url.parse(socket.upgradeReq.url).pathname
             socket._id = uuid.v1()
 
