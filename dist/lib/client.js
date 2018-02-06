@@ -1,5 +1,5 @@
 /**
- * "Client" wraps "qaap/uws-bindings" or a browser-implemented "WebSocket" library
+ * "Client" wraps "ws" or a browser-implemented "WebSocket" library
  * according to the environment providing JSON RPC 2.0 support on top.
  * @module Client
  */
@@ -121,25 +121,25 @@ exports.default = function (WebSocket) {
          * @param {String} method - RPC method name
          * @param {Object|Array} params - optional method parameters
          * @param {Number} timeout - RPC reply timeout value
-         * @param {Object} uws_opts - options passed to uWebSockets
+         * @param {Object} ws_opts - options passed to ws
          * @return {Promise}
          */
 
 
         (0, _createClass3.default)(Client, [{
             key: "call",
-            value: function call(method, params, timeout, uws_opts) {
+            value: function call(method, params, timeout, ws_opts) {
                 var _this2 = this;
 
                 (0, _assertArgs2.default)(arguments, {
                     "method": "string",
                     "[params]": ["object", Array],
                     "[timeout]": "number",
-                    "[uws_opts]": "object"
+                    "[ws_opts]": "object"
                 });
 
-                if (!uws_opts && "object" === (typeof timeout === "undefined" ? "undefined" : (0, _typeof3.default)(timeout))) {
-                    uws_opts = timeout;
+                if (!ws_opts && "object" === (typeof timeout === "undefined" ? "undefined" : (0, _typeof3.default)(timeout))) {
+                    ws_opts = timeout;
                     timeout = null;
                 }
 
@@ -155,7 +155,7 @@ exports.default = function (WebSocket) {
                         id: rpc_id
                     };
 
-                    _this2.socket.send((0, _stringify2.default)(message), uws_opts, function (error) {
+                    _this2.socket.send((0, _stringify2.default)(message), ws_opts, function (error) {
                         if (error) return reject(error);
 
                         _this2.queue[rpc_id] = { promise: [resolve, reject] };

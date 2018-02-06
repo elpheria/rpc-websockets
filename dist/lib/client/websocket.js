@@ -2,12 +2,12 @@
 
 "use strict";
 
-var _qaapUws = require("qaap-uws");
+var _ws = require("ws");
 
-var _qaapUws2 = _interopRequireDefault(_qaapUws);
+var _ws2 = _interopRequireDefault(_ws);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 module.exports = function (address, options) {
-    return new _qaapUws2.default(address, options);
+    return new _ws2.default(address, options);
 };

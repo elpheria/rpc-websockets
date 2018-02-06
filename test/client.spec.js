@@ -21,8 +21,8 @@ describe("Client", function()
             .then((srv) =>
             {
                 server = srv
-                host = server.wss.httpServer.address().address
-                port = server.wss.httpServer.address().port
+                host = server.wss.options.host
+                port = server.wss.options.port
 
                 server.register("greet", function()
                 {

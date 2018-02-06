@@ -1,5 +1,5 @@
 /**
- * "Server" wraps the "qaap/uws-bindings" library providing JSON RPC 2.0 support on top.
+ * "Server" wraps the "ws" library providing JSON RPC 2.0 support on top.
  * @module Server
  */
 
@@ -73,7 +73,7 @@ var _eventemitter = require("eventemitter3");
 
 var _eventemitter2 = _interopRequireDefault(_eventemitter);
 
-var _qaapUws = require("qaap-uws");
+var _ws = require("ws");
 
 var _uuid = require("uuid");
 
@@ -122,14 +122,16 @@ var Server = function (_EventEmitter) {
 
         _this.namespaces = {};
 
-        _this.wss = new _qaapUws.Server(options, function () {
+        _this.wss = new _ws.Server(options);
+
+        _this.wss.on("listening", function () {
             return _this.emit("listening");
         });
 
-        _this.wss.on("connection", function (socket) {
+        _this.wss.on("connection", function (socket, request) {
             _this.emit("connection", socket);
 
-            var ns = _url2.default.parse(socket.upgradeReq.url).pathname;
+            var ns = _url2.default.parse(request.url).pathname;
             socket._id = _uuid2.default.v1();
 
             // cleanup after the socket gets disconnected

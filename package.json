@@ -1,6 +1,6 @@
 {
   "name": "rpc-websockets",
-  "version": "3.6.3",
+  "version": "4.0.0",
   "description": "JSON-RPC 2.0 implementation over WebSockets for Node.js",
   "main": "./dist/index.js",
   "scripts": {
@@ -19,8 +19,8 @@
     "babel-runtime": "^6.26.0",
     "circular-json": "^0.5.1",
     "eventemitter3": "^3.0.0",
-    "qaap-uws": "^9.14.3",
-    "uuid": "^3.2.1"
+    "uuid": "^3.2.1",
+    "ws": "^4.0.0"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",

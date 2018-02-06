@@ -5,7 +5,7 @@
 
 const should = require("chai").should()
 const expect = require("chai").expect
-const WebSocket = require("qaap-uws")
+const WebSocket = require("ws")
 
 const WebSocketServer = require("../dist").Server
 const SERVER_HOST = "localhost"
@@ -24,7 +24,7 @@ describe("Server", function()
         })
     })
 
-    it("should forward throw an error from 'qaap-uws' if no params object is passed", function()
+    it("should forward throw an error from 'ws' if no params object is passed", function()
     {
         let exception = false
 
@@ -123,13 +123,13 @@ describe("Server", function()
 
     it(".namespaceMethod", function(done)
     {
-        getInstance().then((server) =>
+        getInstance(Math.floor(Math.random() * (65536 - 40001) + 40000)).then((server) =>
         {
             server.register("sendMsg", () => "Message received", "/chatroom")
 
             connect(
-                server.wss.httpServer.address().port,
-                server.wss.httpServer.address().address,
+                server.wss.options.port,
+                server.wss.options.host,
                 "/chatroom")
                 .then((ws) =>
                 {
@@ -156,6 +156,7 @@ describe("Server", function()
                         done(error)
                     })
                 })
+                .catch((error) => done(error))
         })
     })
 
@@ -233,8 +234,8 @@ describe("Server", function()
             getInstance(Math.floor(Math.random() * (65536 - 40001) + 40000)).then((inst) =>
             {
                 server = inst
-                host = server.wss.httpServer.address().address
-                port = server.wss.httpServer.address().port
+                host = server.wss.options.host
+                port = server.wss.options.port
 
                 inst.register("sqrt", function(param)
                 {

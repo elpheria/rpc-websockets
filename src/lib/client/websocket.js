@@ -2,7 +2,7 @@
 
 "use strict"
 
-import WebSocket from "qaap-uws"
+import WebSocket from "ws"
 
 module.exports = function(address, options)
 {

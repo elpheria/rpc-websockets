@@ -1,5 +1,5 @@
 /**
- * "Server" wraps the "qaap/uws-bindings" library providing JSON RPC 2.0 support on top.
+ * "Server" wraps the "ws" library providing JSON RPC 2.0 support on top.
  * @module Server
  */
 
@@ -7,7 +7,7 @@
 
 import assertArgs from "assert-args"
 import EventEmitter from "eventemitter3"
-import { Server as WebSocketServer } from "qaap-uws"
+import { Server as WebSocketServer } from "ws"
 import uuid from "uuid"
 import url from "url"
 import CircularJSON from "circular-json"
@@ -39,13 +39,15 @@ export default class Server extends EventEmitter
          */
         this.namespaces = {}
 
-        this.wss = new WebSocketServer(options, () => this.emit("listening"))
+        this.wss = new WebSocketServer(options)
 
-        this.wss.on("connection", (socket) =>
+        this.wss.on("listening", () => this.emit("listening"))
+
+        this.wss.on("connection", (socket, request) =>
         {
             this.emit("connection", socket)
 
-            const ns = url.parse(socket.upgradeReq.url).pathname
+            const ns = url.parse(request.url).pathname
             socket._id = uuid.v1()
 
             // cleanup after the socket gets disconnected
