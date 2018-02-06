@@ -87,11 +87,9 @@ ws.on('open', function() {
 })
 ```
 
-## Migrating to 3.x
+## Migrating to 3.x/4.x
 
 Departing from version 2.x, there's been some minor API changes. A breaking change is a server.eventList method, which is not a getter method anymore, because of the inclusion of a namespaces system throughout the library. Other methods will work seamlessly.
-
-Starting from version 3.1.0, we have also switched from `ws` to `uWebSockets`, because of a huge performance boost.
 
 ## Client
 
@@ -106,14 +104,14 @@ Instantiate a WebSocket client.
 
 Parameters:
 * `address` {String}: The URL of the WebSocket server. The URL path portion resolves to a server namespace. Defaults to 'ws://localhost:8080'.
-* `options` {Object}: Client options that are also forwarded to `μws`.
+* `options` {Object}: Client options that are also forwarded to `ws`.
   * `autoconnect` {Boolean}: Client autoconnect upon Client class instantiation. Defaults to `true`.
   * `reconnect` {Boolean}: Whether client should reconnect automatically once the connection is down. Defaults to `true`.
   * `reconnect_interval` {Number}: Time between adjacent reconnects. Defaults to `1000`.
   * `max_reconnects` {Number}: Maximum number of times the client should try to reconnect. Defaults to `5`.
 * `generate_request_id` {Function} Custom function to generate request id instead of simple increment by default. Passes `method` and `params` to parameters.
 
-### ws.call(method[, params[, timeout[, μws_options]]]) -> Promise
+### ws.call(method[, params[, timeout[, ws_options]]]) -> Promise
 
 Calls a registered RPC method on server. Resolves once the response is ready. Throws if an RPC error was received.
 
@@ -121,7 +119,7 @@ Parameters:
 * `method` {String}: An RPC method name to run on server-side.
 * `params` {Object|Array}: Optional parameter(s) to be sent along the request.
 * `timeout` {Number}: Optional RPC reply timeout in milliseconds.
-* `μws_options` {Object}: Optional parameters passed to μws. Not available on web browsers.
+* `ws_options` {Object}: Optional parameters passed to ws. Not available on web browsers.
   * `compress` {Boolean}: Specifies whether data should be compressed or not. Defaults to true when permessage-deflate is enabled.
   * `binary` {Boolean}: Specifies whether data should be sent as a binary or not. Default is autodetected.
   * `mask` {Boolean} Specifies whether data should be masked or not. Defaults to true when websocket is not a server client.
@@ -200,11 +198,11 @@ var server = new WebSocketServer({
 Instantiate a WebSocket server.
 
 Parameters:
-* `options` {Object}: Server options that are also forwarded to `μws`.
+* `options` {Object}: Server options that are also forwarded to `ws`.
   * `port` {Number}: Port number on which the server will listen for incoming requests.
   * `host` {String}: Address on which the server will listen for incoming requests.
 
-Once the Server class is instantiated, you can use a `μws` library's instance via server.wss object.
+Once the Server class is instantiated, you can use a `ws` library's instance via server.wss object.
 
 ### server.register(method, handler[, namespace])
 
