@@ -148,7 +148,7 @@ var Server = function (_EventEmitter) {
 
                         var index = _this.namespaces[ns].events[event].indexOf(socket._id);
 
-                        if (index === 0) _this.namespaces[ns].events[event].splice(index, 1);
+                        if (index >= 0) _this.namespaces[ns].events[event].splice(index, 1);
                     }
                 } catch (err) {
                     _didIteratorError = true;
