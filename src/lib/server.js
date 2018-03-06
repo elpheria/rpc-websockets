@@ -59,7 +59,7 @@ export default class Server extends EventEmitter
                 {
                     const index = this.namespaces[ns].events[event].indexOf(socket._id)
 
-                    if (index === 0)
+                    if (index >= 0)
                         this.namespaces[ns].events[event].splice(index, 1)
                 }
             })
