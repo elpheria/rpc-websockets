@@ -108,7 +108,7 @@ Parameters:
   * `autoconnect` {Boolean}: Client autoconnect upon Client class instantiation. Defaults to `true`.
   * `reconnect` {Boolean}: Whether client should reconnect automatically once the connection is down. Defaults to `true`.
   * `reconnect_interval` {Number}: Time between adjacent reconnects. Defaults to `1000`.
-  * `max_reconnects` {Number}: Maximum number of times the client should try to reconnect. Defaults to `5`.
+  * `max_reconnects` {Number}: Maximum number of times the client should try to reconnect. Defaults to `5`. `0` means unlimited.
 * `generate_request_id` {Function} Custom function to generate request id instead of simple increment by default. Passes `method` and `params` to parameters.
 
 ### ws.call(method[, params[, timeout[, ws_options]]]) -> Promise
