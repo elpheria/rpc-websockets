@@ -38,8 +38,8 @@ export default class WebSocket extends EventEmitter
      */
     send(data, options, callback)
     {
-        callback = callback || options;
-        
+        callback = callback || options
+
         try
         {
             this.socket.send(data)
