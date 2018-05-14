@@ -141,6 +141,15 @@ export default class Server extends EventEmitter
         })
 
         if (!this.namespaces[ns]) this._generateNamespace(ns)
+        else 
+        {
+            const index = this.namespaces[ns].events[name]
+
+            if (index !== undefined)
+            {
+                throw new Error(`Already registered event ${ns}${name}`)
+            }
+        }
 
         this.namespaces[ns].events[name] = []
 
@@ -153,10 +162,14 @@ export default class Server extends EventEmitter
 
             for (const socket_id of this.namespaces[ns].events[name])
             {
-                this.namespaces[ns].clients.get(socket_id).send(CircularJSON.stringify({
-                    notification: name,
-                    params: params || null
-                }))
+                const socket = this.namespaces[ns].clients.get(socket_id)
+                if (socket)
+                {
+                    socket.send(CircularJSON.stringify({
+                        notification: name,
+                        params: params || null
+                    }))
+                }
             }
         })
     }
