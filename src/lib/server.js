@@ -141,7 +141,7 @@ export default class Server extends EventEmitter
         })
 
         if (!this.namespaces[ns]) this._generateNamespace(ns)
-        else 
+        else
         {
             const index = this.namespaces[ns].events[name]
 
