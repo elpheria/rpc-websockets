@@ -463,6 +463,7 @@ export default class Server extends EventEmitter
             for (const name of message.params)
             {
                 const index = event_names.indexOf(name)
+                const namespace = this.namespaces[ns]
 
                 if (index === -1)
                 {
@@ -470,7 +471,13 @@ export default class Server extends EventEmitter
                     continue
                 }
 
-                this.namespaces[ns].events[event_names[index]].push(socket_id)
+                const socket_index = namespace.events[event_names[index]].indexOf(socket_id)
+                if (socket_index >= 0)
+                {
+                    results[name] = "socket has already been subscribed to event"
+                    continue
+                }
+                namespace.events[event_names[index]].push(socket_id)
 
                 results[name] = "ok"
             }
