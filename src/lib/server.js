@@ -141,14 +141,12 @@ export default class Server extends EventEmitter
         })
 
         if (!this.namespaces[ns]) this._generateNamespace(ns)
-        else 
+        else
         {
             const index = this.namespaces[ns].events[name]
 
             if (index !== undefined)
-            {
                 throw new Error(`Already registered event ${ns}${name}`)
-            }
         }
 
         this.namespaces[ns].events[name] = []

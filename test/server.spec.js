@@ -918,7 +918,7 @@ describe("Server", function()
                             message.notification.should.equal("newMail")
 
                             ws.close()
-                            done()
+                            return done()
                         }
 
                         if (message.result.newMail === "ok")
@@ -955,7 +955,7 @@ describe("Server", function()
                             message.params[0].should.equal("fox")
 
                             ws.close()
-                            done()
+                            return done()
                         }
 
                         if (message.result.updatedNews === "ok")
@@ -992,7 +992,7 @@ describe("Server", function()
                             expect(message.params).to.deep.equal(["fox", "mtv", "eurosport"])
 
                             ws.close()
-                            done()
+                            return done()
                         }
 
                         if (message.result.updatedNews === "ok")
@@ -1033,7 +1033,7 @@ describe("Server", function()
                             })
 
                             ws.close()
-                            done()
+                            return done()
                         }
 
                         if (message.result.circularUpdate === "ok")
