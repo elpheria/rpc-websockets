@@ -141,6 +141,15 @@ export default class Server extends EventEmitter
         })
 
         if (!this.namespaces[ns]) this._generateNamespace(ns)
+        else 
+        {
+            const index = this.namespaces[ns].events[name]
+
+            if (index !== undefined)
+            {
+                throw new Error(`Already registered event ${ns}${name}`)
+            }
+        }
 
         this.namespaces[ns].events[name] = []
 
@@ -153,10 +162,14 @@ export default class Server extends EventEmitter
 
             for (const socket_id of this.namespaces[ns].events[name])
             {
-                this.namespaces[ns].clients.get(socket_id).send(CircularJSON.stringify({
-                    notification: name,
-                    params: params || null
-                }))
+                const socket = this.namespaces[ns].clients.get(socket_id)
+                if (socket)
+                {
+                    socket.send(CircularJSON.stringify({
+                        notification: name,
+                        params: params || null
+                    }))
+                }
             }
         })
     }
@@ -463,6 +476,7 @@ export default class Server extends EventEmitter
             for (const name of message.params)
             {
                 const index = event_names.indexOf(name)
+                const namespace = this.namespaces[ns]
 
                 if (index === -1)
                 {
@@ -470,7 +484,13 @@ export default class Server extends EventEmitter
                     continue
                 }
 
-                this.namespaces[ns].events[event_names[index]].push(socket_id)
+                const socket_index = namespace.events[event_names[index]].indexOf(socket_id)
+                if (socket_index >= 0)
+                {
+                    results[name] = "socket has already been subscribed to event"
+                    continue
+                }
+                namespace.events[event_names[index]].push(socket_id)
 
                 results[name] = "ok"
             }
