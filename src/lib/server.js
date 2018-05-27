@@ -45,7 +45,7 @@ export default class Server extends EventEmitter
 
         this.wss.on("connection", (socket, request) =>
         {
-            this.emit("connection", socket)
+            this.emit("connection", socket, request)
 
             const ns = url.parse(request.url).pathname
             socket._id = uuid.v1()
