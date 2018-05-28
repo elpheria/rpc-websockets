@@ -270,6 +270,7 @@ Emits when the server has started listening for requests.
 ### Event: 'connection'
 
 * `socket` &lt;ws.WebSocket&gt;
+* `request` &lt;http.IncomingMessage&gt;
 
 Emits when the client has connected.
 
