@@ -129,7 +129,7 @@ var Server = function (_EventEmitter) {
         });
 
         _this.wss.on("connection", function (socket, request) {
-            _this.emit("connection", socket);
+            _this.emit("connection", socket, request);
 
             var ns = _url2.default.parse(request.url).pathname;
             socket._id = _uuid2.default.v1();
