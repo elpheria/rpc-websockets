@@ -1,5 +1,5 @@
 <div align="center">
-  <a href="https://github.com/qaap/rpc-websockets">
+  <a href="https://github.com/elpheria/rpc-websockets">
     <img src="http://i.imgur.com/5drhsqV.png">
   </a>
   <br>
@@ -7,14 +7,14 @@
       WebSockets for <a href="http://nodejs.org">node</a> with JSON RPC 2.0 support on top.
   </p>
   <br>
-	<a href="https://github.com/qaap/rpc-websockets/blob/master/LICENSE">
+	<a href="https://github.com/elpheria/rpc-websockets/blob/master/LICENSE">
 		<img src="https://img.shields.io/github/license/mashape/apistatus.svg">
 	</a>
-  <a href="https://travis-ci.org/qaap/rpc-websockets">
-		<img src="https://travis-ci.org/qaap/rpc-websockets.svg?branch=master">
+  <a href="https://travis-ci.org/elpheria/rpc-websockets">
+		<img src="https://travis-ci.org/elpheria/rpc-websockets.svg?branch=master">
 	</a>
-  <a href="https://coveralls.io/github/qaap/rpc-websockets?branch=master">
-		<img src="https://coveralls.io/repos/github/qaap/rpc-websockets/badge.svg?branch=master">
+  <a href="https://coveralls.io/github/elpheria/rpc-websockets?branch=master">
+		<img src="https://coveralls.io/repos/github/elpheria/rpc-websockets/badge.svg?branch=master">
 	</a>
   <a href="https://www.npmjs.com/package/rpc-websockets">
     <img src="https://img.shields.io/npm/dm/rpc-websockets.svg?maxAge=2592000">
