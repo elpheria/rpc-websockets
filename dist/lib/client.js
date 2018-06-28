@@ -101,6 +101,8 @@ exports.default = function (WebSocket) {
             _this.queue = {};
             _this.rpc_id = 0;
 
+            _this.address = address;
+            _this.options = arguments[1];
             _this.autoconnect = autoconnect;
             _this.ready = false;
             _this.reconnect = reconnect;
@@ -111,7 +113,7 @@ exports.default = function (WebSocket) {
                 return ++_this.rpc_id;
             };
 
-            if (_this.autoconnect) _this._connect(address, arguments[1]);
+            if (_this.autoconnect) _this._connect(_this.address, _this.options);
             return _this;
         }
 
@@ -317,6 +319,20 @@ exports.default = function (WebSocket) {
             key: "close",
             value: function close(code, data) {
                 this.socket.close(code || 1000, data);
+            }
+
+            /**
+             * Connects to a defined server if not connected already.
+             * @method
+             * @return {Undefined}
+             */
+
+        }, {
+            key: "connect",
+            value: function connect() {
+                if (this.socket) return;
+
+                this._connect(this.address, this.options);
             }
 
             /**

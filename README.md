@@ -111,6 +111,10 @@ Parameters:
   * `max_reconnects` {Number}: Maximum number of times the client should try to reconnect. Defaults to `5`. `0` means unlimited.
 * `generate_request_id` {Function} Custom function to generate request id instead of simple increment by default. Passes `method` and `params` to parameters.
 
+### ws.connect()
+
+Connects to a previously defined server if not connected already. Should only be used in case `autoconnect` was disabled.
+
 ### ws.call(method[, params[, timeout[, ws_options]]]) -> Promise
 
 Calls a registered RPC method on server. Resolves once the response is ready. Throws if an RPC error was received.

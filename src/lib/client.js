@@ -34,6 +34,8 @@ export default (WebSocket) => class Client extends EventEmitter
         this.queue = {}
         this.rpc_id = 0
 
+        this.address = address
+        this.options = arguments[1]
         this.autoconnect = autoconnect
         this.ready = false
         this.reconnect = reconnect
@@ -43,7 +45,7 @@ export default (WebSocket) => class Client extends EventEmitter
         this.generate_request_id = generate_request_id || (() => ++this.rpc_id)
 
         if (this.autoconnect)
-            this._connect(address, arguments[1])
+            this._connect(this.address, this.options)
     }
 
     /**
@@ -186,6 +188,19 @@ export default (WebSocket) => class Client extends EventEmitter
     close(code, data)
     {
         this.socket.close(code || 1000, data)
+    }
+
+    /**
+     * Connects to a defined server if not connected already.
+     * @method
+     * @return {Undefined}
+     */
+    connect()
+    {
+        if (this.socket)
+            return
+
+        this._connect(this.address, this.options)
     }
 
     /**

@@ -80,6 +80,18 @@ describe("Client", function()
         client.should.be.an.instanceOf(WebSocket)
     })
 
+    describe(".connect", function()
+    {
+        it("should explicitly connect to server", function(done)
+        {
+            const client = new WebSocket("ws://" + host + ":" + port, { autoconnect: false })
+            client.should.be.an.instanceOf(WebSocket)
+
+            client.connect()
+            client.on("open", done)
+        })
+    })
+
     describe(".call", function()
     {
         it("should call an RPC method without parameters and receive a valid response", function(done)
