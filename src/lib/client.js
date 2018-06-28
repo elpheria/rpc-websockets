@@ -49,6 +49,19 @@ export default (WebSocket) => class Client extends EventEmitter
     }
 
     /**
+     * Connects to a defined server if not connected already.
+     * @method
+     * @return {Undefined}
+     */
+    connect()
+    {
+        if (this.socket)
+            return
+
+        this._connect(this.address, this.options)
+    }
+
+    /**
      * Calls a registered RPC method on server.
      * @method
      * @param {String} method - RPC method name
@@ -188,19 +201,6 @@ export default (WebSocket) => class Client extends EventEmitter
     close(code, data)
     {
         this.socket.close(code || 1000, data)
-    }
-
-    /**
-     * Connects to a defined server if not connected already.
-     * @method
-     * @return {Undefined}
-     */
-    connect()
-    {
-        if (this.socket)
-            return
-
-        this._connect(this.address, this.options)
     }
 
     /**
