@@ -161,13 +161,14 @@ export default class Server extends EventEmitter
             for (const socket_id of this.namespaces[ns].events[name])
             {
                 const socket = this.namespaces[ns].clients.get(socket_id)
-                if (socket)
-                {
-                    socket.send(CircularJSON.stringify({
-                        notification: name,
-                        params: params || null
-                    }))
-                }
+
+                if (!socket)
+                    continue
+
+                socket.send(CircularJSON.stringify({
+                    notification: name,
+                    params: params || null
+                }))
             }
         })
     }

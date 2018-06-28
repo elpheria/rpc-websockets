@@ -305,12 +305,13 @@ var Server = function (_EventEmitter) {
                         var socket_id = _step3.value;
 
                         var socket = _this2.namespaces[ns].clients.get(socket_id);
-                        if (socket) {
-                            socket.send(_circularJson2.default.stringify({
-                                notification: name,
-                                params: params || null
-                            }));
-                        }
+
+                        if (!socket) continue;
+
+                        socket.send(_circularJson2.default.stringify({
+                            notification: name,
+                            params: params || null
+                        }));
                     }
                 } catch (err) {
                     _didIteratorError3 = true;

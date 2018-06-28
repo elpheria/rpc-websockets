@@ -139,17 +139,31 @@ exports.default = function (WebSocket) {
         }
 
         /**
-         * Calls a registered RPC method on server.
+         * Connects to a defined server if not connected already.
          * @method
-         * @param {String} method - RPC method name
-         * @param {Object|Array} params - optional method parameters
-         * @param {Number} timeout - RPC reply timeout value
-         * @param {Object} ws_opts - options passed to ws
-         * @return {Promise}
+         * @return {Undefined}
          */
 
 
         (0, _createClass3.default)(Client, [{
+            key: "connect",
+            value: function connect() {
+                if (this.socket) return;
+
+                this._connect(this.address, this.options);
+            }
+
+            /**
+             * Calls a registered RPC method on server.
+             * @method
+             * @param {String} method - RPC method name
+             * @param {Object|Array} params - optional method parameters
+             * @param {Number} timeout - RPC reply timeout value
+             * @param {Object} ws_opts - options passed to ws
+             * @return {Promise}
+             */
+
+        }, {
             key: "call",
             value: function call(method, params, timeout, ws_opts) {
                 var _this2 = this;
@@ -340,20 +354,6 @@ exports.default = function (WebSocket) {
             key: "close",
             value: function close(code, data) {
                 this.socket.close(code || 1000, data);
-            }
-
-            /**
-             * Connects to a defined server if not connected already.
-             * @method
-             * @return {Undefined}
-             */
-
-        }, {
-            key: "connect",
-            value: function connect() {
-                if (this.socket) return;
-
-                this._connect(this.address, this.options);
             }
 
             /**
