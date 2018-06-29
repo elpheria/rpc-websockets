@@ -208,6 +208,41 @@ exports.default = function (WebSocket) {
             }
 
             /**
+             * Fetches a list of client's methods registered on server.
+             * @method
+             * @return {Array}
+             */
+
+        }, {
+            key: "listMethods",
+            value: function () {
+                var _ref2 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee() {
+                    return _regenerator2.default.wrap(function _callee$(_context) {
+                        while (1) {
+                            switch (_context.prev = _context.next) {
+                                case 0:
+                                    _context.next = 2;
+                                    return this.call("__listMethods");
+
+                                case 2:
+                                    return _context.abrupt("return", _context.sent);
+
+                                case 3:
+                                case "end":
+                                    return _context.stop();
+                            }
+                        }
+                    }, _callee, this);
+                }));
+
+                function listMethods() {
+                    return _ref2.apply(this, arguments);
+                }
+
+                return listMethods;
+            }()
+
+            /**
              * Sends a JSON-RPC 2.0 notification to server.
              * @method
              * @param {String} method - RPC method name
@@ -253,25 +288,25 @@ exports.default = function (WebSocket) {
         }, {
             key: "subscribe",
             value: function () {
-                var _ref2 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee(event) {
+                var _ref3 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee2(event) {
                     var result,
-                        _args = arguments;
-                    return _regenerator2.default.wrap(function _callee$(_context) {
+                        _args2 = arguments;
+                    return _regenerator2.default.wrap(function _callee2$(_context2) {
                         while (1) {
-                            switch (_context.prev = _context.next) {
+                            switch (_context2.prev = _context2.next) {
                                 case 0:
-                                    (0, _assertArgs2.default)(_args, {
+                                    (0, _assertArgs2.default)(_args2, {
                                         event: "string"
                                     });
 
-                                    _context.next = 3;
+                                    _context2.next = 3;
                                     return this.call("rpc.on", [event]);
 
                                 case 3:
-                                    result = _context.sent;
+                                    result = _context2.sent;
 
                                     if (!(result[event] !== "ok")) {
-                                        _context.next = 6;
+                                        _context2.next = 6;
                                         break;
                                     }
 
@@ -279,14 +314,14 @@ exports.default = function (WebSocket) {
 
                                 case 6:
                                 case "end":
-                                    return _context.stop();
+                                    return _context2.stop();
                             }
                         }
-                    }, _callee, this);
+                    }, _callee2, this);
                 }));
 
                 function subscribe(_x3) {
-                    return _ref2.apply(this, arguments);
+                    return _ref3.apply(this, arguments);
                 }
 
                 return subscribe;
@@ -303,25 +338,25 @@ exports.default = function (WebSocket) {
         }, {
             key: "unsubscribe",
             value: function () {
-                var _ref3 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee2(event) {
+                var _ref4 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee3(event) {
                     var result,
-                        _args2 = arguments;
-                    return _regenerator2.default.wrap(function _callee2$(_context2) {
+                        _args3 = arguments;
+                    return _regenerator2.default.wrap(function _callee3$(_context3) {
                         while (1) {
-                            switch (_context2.prev = _context2.next) {
+                            switch (_context3.prev = _context3.next) {
                                 case 0:
-                                    (0, _assertArgs2.default)(_args2, {
+                                    (0, _assertArgs2.default)(_args3, {
                                         event: "string"
                                     });
 
-                                    _context2.next = 3;
+                                    _context3.next = 3;
                                     return this.call("rpc.off", [event]);
 
                                 case 3:
-                                    result = _context2.sent;
+                                    result = _context3.sent;
 
                                     if (!(result[event] !== "ok")) {
-                                        _context2.next = 6;
+                                        _context3.next = 6;
                                         break;
                                     }
 
@@ -329,14 +364,14 @@ exports.default = function (WebSocket) {
 
                                 case 6:
                                 case "end":
-                                    return _context2.stop();
+                                    return _context3.stop();
                             }
                         }
-                    }, _callee2, this);
+                    }, _callee3, this);
                 }));
 
                 function unsubscribe(_x4) {
-                    return _ref3.apply(this, arguments);
+                    return _ref4.apply(this, arguments);
                 }
 
                 return unsubscribe;

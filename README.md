@@ -129,6 +129,10 @@ Parameters:
   * `mask` {Boolean} Specifies whether data should be masked or not. Defaults to true when websocket is not a server client.
   * `fin` {Boolean} Specifies whether data is the last fragment of a message or not. Defaults to true.
 
+### ws.listMethods() -> Promise
+
+Fetches a list of client's methods registered on server.
+
 ### ws.notify(method[, params])
 
 Sends a JSON-RPC 2.0 notification to server.

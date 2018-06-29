@@ -585,7 +585,8 @@ export default class Server extends EventEmitter
     }
 
     /**
-     * Generate a new namespace store
+     * Generate a new namespace store.
+     * Also preregister some special namespace methods.
      * @private
      * @param {String} name - namespaces identifier
      * @return {undefined}
@@ -593,7 +594,9 @@ export default class Server extends EventEmitter
     _generateNamespace(name)
     {
         this.namespaces[name] = {
-            rpc_methods: {},
+            rpc_methods: {
+                "__listMethods": () => Object.keys(this.namespaces[name].rpc_methods)
+            },
             clients: new Map(),
             events: {}
         }

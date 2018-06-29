@@ -1055,7 +1055,8 @@ var Server = function (_EventEmitter) {
         }()
 
         /**
-         * Generate a new namespace store
+         * Generate a new namespace store.
+         * Also preregister some special namespace methods.
          * @private
          * @param {String} name - namespaces identifier
          * @return {undefined}
@@ -1064,8 +1065,14 @@ var Server = function (_EventEmitter) {
     }, {
         key: "_generateNamespace",
         value: function _generateNamespace(name) {
+            var _this5 = this;
+
             this.namespaces[name] = {
-                rpc_methods: {},
+                rpc_methods: {
+                    "__listMethods": function __listMethods() {
+                        return (0, _keys2.default)(_this5.namespaces[name].rpc_methods);
+                    }
+                },
                 clients: new _map2.default(),
                 events: {}
             };

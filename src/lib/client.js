@@ -119,6 +119,16 @@ export default (WebSocket) => class Client extends EventEmitter
     }
 
     /**
+     * Fetches a list of client's methods registered on server.
+     * @method
+     * @return {Array}
+     */
+    async listMethods()
+    {
+        return await this.call("__listMethods")
+    }
+
+    /**
      * Sends a JSON-RPC 2.0 notification to server.
      * @method
      * @param {String} method - RPC method name

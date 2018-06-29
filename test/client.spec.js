@@ -92,6 +92,22 @@ describe("Client", function()
         })
     })
 
+    it("should get registered methods from server", function(done)
+    {
+        const client = new WebSocket("ws://" + host + ":" + port)
+        client.should.be.an.instanceOf(WebSocket)
+
+        client.on("open", function()
+        {
+            client.listMethods().then(function(response)
+            {
+                response.should.be.an.instanceOf(Array)
+                done()
+                client.close()
+            })
+        })
+    })
+
     describe(".call", function()
     {
         it("should call an RPC method without parameters and receive a valid response", function(done)
