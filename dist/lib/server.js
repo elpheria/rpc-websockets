@@ -114,7 +114,7 @@ var Server = function (_EventEmitter) {
          * Stores all events as keys and subscribed users in array as value
          * @private
          * @name namespaces
-         * @param {Array} namespaces.rpc_methods
+         * @param {Object} namespaces.rpc_methods
          * @param {Map} namespaces.clients
          * @param {Object} namespaces.events
          */
@@ -1065,7 +1065,7 @@ var Server = function (_EventEmitter) {
         key: "_generateNamespace",
         value: function _generateNamespace(name) {
             this.namespaces[name] = {
-                rpc_methods: new Array(),
+                rpc_methods: {},
                 clients: new _map2.default(),
                 events: {}
             };
