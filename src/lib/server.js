@@ -68,7 +68,6 @@ export default class Server extends EventEmitter
 
             // store socket and method
             this.namespaces[ns].clients.set(socket._id, socket)
-            this.namespaces[ns].rpc_methods.push(socket._id)
 
             return this._handleRPC(socket, ns)
         })

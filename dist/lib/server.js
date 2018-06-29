@@ -170,7 +170,6 @@ var Server = function (_EventEmitter) {
 
             // store socket and method
             _this.namespaces[ns].clients.set(socket._id, socket);
-            _this.namespaces[ns].rpc_methods.push(socket._id);
 
             return _this._handleRPC(socket, ns);
         });
