@@ -31,7 +31,7 @@ The **rpc-websockets** library enables developers to easily implement their busi
 
 **rpc-websockets** is built on Node.js and supports both LTS and Current versions.
 
-Use the free OSS version in order to implement and manage your own WebSocket server instances, or subscribe for our [Pro plan](#pro-plan) and have us manage your instances and provide you with management of your methods, events and notifications on an easy-to-use Web Management portal.
+Use the free OSS version in order to implement and manage your own WebSocket server instances, or subscribe for our [Pro plan](#pro-features) and have us manage your instances and provide you with management of your methods, events and notifications on an easy-to-use Web Management portal.
 
 ## Quick start
 
@@ -103,10 +103,14 @@ Please consult our [API documentation](API.md) for both WebSocket server and cli
 
 Departing from version 2.x, there's been some minor API changes. A breaking change is a server.eventList method, which is not a getter method anymore, because of the inclusion of a namespaces system throughout the library. Other methods will work seamlessly.
 
-## Pro plan
+## OSS Features
 
-It order to support your production-ready environments, we can provide you with additional features built on top of our free OSS version along with the skill set to turn your business case or a Proof-of-Concept idea into a reality.
-Describe us your use case by [contacting us](mailto:mario.kozjak@qaap.io?subject=Pro%20plan%20request) and we will get back to you with a proposed solution.
+All library's open-source features are documented in our [API documentation](API.md) and can be used free of charge. You are free to implement your solutions based on provided methods in any way you are comfortable with, as long as you use our work along our [license](LICENSE).
+
+## Pro Features
+
+It order to support your production-ready environments, we can provide you with additional features built on top of our free OSS version along with the skill set to turn your business case or a Proof-of-Concept idea into reality.
+Describe us your use case by [contacting us](mailto:mario.kozjak@qaap.io?subject=Pro%20Plan%20enquiry) and we will swiftly get back to you with a proposed solution that meets your needs.
 
 ## License
 
