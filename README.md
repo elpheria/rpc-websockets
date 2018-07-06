@@ -99,10 +99,6 @@ ws.on('open', function() {
 
 Please consult our [API documentation](API.md) for both WebSocket server and client JavaScript classes.
 
-## Migrating to 3.x/4.x
-
-Departing from version 2.x, there's been some minor API changes. A breaking change is a server.eventList method, which is not a getter method anymore, because of the inclusion of a namespaces system throughout the library. Other methods will work seamlessly.
-
 ## OSS Features
 
 Features of the free open-source edition.

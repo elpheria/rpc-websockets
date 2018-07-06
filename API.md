@@ -38,6 +38,10 @@ This is a JavaScript classes documentation which describes both client and serve
     * [eventList](#namespaceeventlist---array)
     * [clients](#namespaceclients---array)
 
+## Migrating to 3.x/4.x
+
+Departing from version 2.x, there's been some minor API changes. A breaking change is a server.eventList method, which is not a getter method anymore, because of the inclusion of a namespaces system throughout the library. Other methods will work seamlessly.
+
 ## Client
 
 ```js
