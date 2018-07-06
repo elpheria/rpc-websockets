@@ -32,7 +32,7 @@ The **rpc-websockets** library enables developers to easily implement their busi
 
 **rpc-websockets** is built on Node.js and supports both LTS and Current versions.
 
-Use the free OSS version in order to implement and manage your own WebSocket server instances, or subscribe for our [Pro plan](#pro-plan) and have us manage your instances and provide you with management of your methods, events and notification on an easy-to-use Web Management portal.
+Use the free OSS version in order to implement and manage your own WebSocket server instances, or subscribe for our [Pro plan](#pro-plan) and have us manage your instances and provide you with management of your methods, events and notifications on an easy-to-use Web Management portal.
 
 ## Quick start
 
