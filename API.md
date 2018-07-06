@@ -2,7 +2,7 @@
 
 This is a JavaScript classes documentation which describes both client and server instance creation and management.
 
-<!--ts-->
+#### Table of Contents
 * [Client](#client)
     * [Constructor](#new-websocketaddress-options---client)
     * [connect](#wsconnect)
@@ -29,7 +29,7 @@ This is a JavaScript classes documentation which describes both client and serve
     * [event:listening](#event-listening)
     * [event:connection](#event-connection)
     * [event:error](#event-error-1)
-* [Namespace](#namespace)
+* [Namespaces](#namespaces)
     * [register](#namespaceregistermethod-handler)
     * [event](#namespaceeventname)
     * [name](#get-namespacename---string)
@@ -37,7 +37,6 @@ This is a JavaScript classes documentation which describes both client and serve
     * [emit](#namespaceemitname-params)
     * [eventList](#namespaceeventlist---array)
     * [clients](#namespaceclients---array)
-<!--te-->
 
 ## Client
 
