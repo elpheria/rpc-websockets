@@ -2,6 +2,43 @@
 
 This is a JavaScript classes documentation which describes both client and server instance creation and management.
 
+<!--ts-->
+* [Client](#client)
+    * [Constructor](#new-websocketaddress-options---client)
+    * [connect](#wsconnect)
+    * [call](#wscallmethod-params-timeout-ws_options---promise)
+    * [listMethods](#wslistmethods---promise)
+    * [notify](#wsnotifymethod-params)
+    * [subscribe](#wssubscribeevent---promise)
+    * [unsubscribe](#wsunsubscribeevent---promise)
+    * [close](#wsclosecode-data)
+    * [event:open](#event-open)
+    * [event:error](#event-error)
+    * [event:close](#event-close)
+    * [event:notification](#event-notification)
+* [Server](#server)
+    * [Constructor](#new-websocketserveroptions---server)
+    * [register](#serverregistermethod-handler-namespace)
+    * [event](#servereventname-namespace)
+    * [emit](#serveremitname-params)
+    * [eventList](#servereventlistnamespace---array)
+    * [of](#serverofname---namespace)
+    * [createError](#servercreateerrorcode-message-data---object)
+    * [closeNamespace](#serverclosenamespacens---promise)
+    * [close](#serverclose---promise)
+    * [event:listening](#event-listening)
+    * [event:connection](#event-connection)
+    * [event:error](#event-error-1)
+* [Namespace](#namespace)
+    * [register](#namespaceregistermethod-handler)
+    * [event](#namespaceeventname)
+    * [name](#get-namespacename---string)
+    * [connected](#namespaceconnected---object)
+    * [emit](#namespaceemitname-params)
+    * [eventList](#namespaceeventlist---array)
+    * [clients](#namespaceclients---array)
+<!--te-->
+
 ## Client
 
 ```js
