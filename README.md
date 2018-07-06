@@ -115,7 +115,7 @@ In order to support your production-ready environments, we can provide you with 
 
 Describe us your use case by [contacting us](mailto:mario.kozjak@qaap.io?subject=Pro%20Plan%20enquiry) and we will swiftly get back to you with a proposed solution that meets your needs.
 
-## Support
+## Professional Support
 
 We offer professional support for **rpc-websockets** and beyond. We have many years of expertise on building robust, scalable Node.js applications and can help you overcome issues and challenges preventing you to ship your great products. Feel free to [contact us](mailto:mario.kozjak@qaap.io?subject=rpc-websockets%20support%20enquiry) so we can discuss how to help you finish your products!
 
