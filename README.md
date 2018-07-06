@@ -31,7 +31,7 @@ The **rpc-websockets** library enables developers to easily implement their busi
 
 **rpc-websockets** is built on Node.js and supports both LTS and Current versions.
 
-Use the free OSS version in order to implement and manage your own WebSocket server instances, or subscribe for our [Pro plan](#pro-features) and have us manage your instances and provide you with management of your methods, events and notifications on an easy-to-use Web Management portal.
+Use the free OSS edition in order to implement and manage your own WebSocket server instances, or subscribe for our [Pro plan](#pro-features) and have us manage your instances and provide you with management of your methods, events and notifications on an easy-to-use Web Management portal.
 
 ## Quick start
 
@@ -113,7 +113,9 @@ All library's open-source features are documented in our [API documentation](API
 
 ## Pro Features
 
-It order to support your production-ready environments, we can provide you with additional features built on top of our free OSS version along with the skill set to turn your business case or a Proof-of-Concept idea into reality.
+In order to support your production-ready environments, we can provide you with additional features built on top of our free OSS edition along with the skill set to turn your business case or a Proof-of-Concept idea into reality. [Contact us!](mailto:mario.kozjak@qaap.io?subject=Pro%20Plan%20enquiry)
+
+![Pro Features](assets/pro-features.png)
 
 Describe us your use case by [contacting us](mailto:mario.kozjak@qaap.io?subject=Pro%20Plan%20enquiry) and we will swiftly get back to you with a proposed solution that meets your needs.
 
