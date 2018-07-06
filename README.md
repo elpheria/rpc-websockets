@@ -8,7 +8,7 @@
   </p>
   <br>
 	<a href="https://github.com/elpheria/rpc-websockets/blob/master/LICENSE">
-		<img src="https://img.shields.io/github/license/mashape/apistatus.svg">
+		<img src="https://github.com/elpheria/rpc-websockets/blob/master/misc/images/mit.svg">
 	</a>
   <a href="https://travis-ci.org/elpheria/rpc-websockets">
 		<img src="https://travis-ci.org/elpheria/rpc-websockets.svg?branch=master">
