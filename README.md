@@ -4,7 +4,7 @@
   </a>
   <br>
   <p>
-      WebSockets for <a href="http://nodejs.org">node</a> with JSON RPC 2.0 support on top.
+      WebSockets for <a href="http://nodejs.org">Node.js</a> with JSON RPC 2.0 support on top.
   </p>
   <br>
 	<a href="https://github.com/elpheria/rpc-websockets/blob/master/LICENSE">
@@ -23,16 +23,25 @@
   <a href="https://nodei.co/npm/rpc-websockets">
 		<img src="https://nodei.co/npm/rpc-websockets.png?downloads=true&downloadRank=true&stars=true">
 	</a>
+  <br><br><br>
 </div>
 
-## Installation
+## About
 
+The **rpc-websockets** library enables developers to easily implement their business logic that includes messaging between users, machines or any devices. It provides a possibility to send an receive JSON data through the WebSocket communication protocol in order to support two-way notification push, running RPC methods and firing any types of event signalling.
+
+**rpc-websockets** is built on Node.js and supports both LTS and Current versions.
+
+Use the free OSS version in order to implement and manage your own WebSocket server instances, or subscribe for our [Pro plan](#pro-plan) and have us manage your instances and provide you with management of your methods, events and notification on an easy-to-use Web Management portal.
+
+## Quick start
+
+Install our OSS library in your project:
 ```
 npm install rpc-websockets
 ```
 
-## Examples
-
+Write your source code using `rpc-websockets`:
 ```js
 var WebSocket = require('rpc-websockets').Client
 var WebSocketServer = require('rpc-websockets').Server
@@ -90,6 +99,11 @@ ws.on('open', function() {
 ## Migrating to 3.x/4.x
 
 Departing from version 2.x, there's been some minor API changes. A breaking change is a server.eventList method, which is not a getter method anymore, because of the inclusion of a namespaces system throughout the library. Other methods will work seamlessly.
+
+## Pro plan
+
+It order to support your production-ready environments, we can provide you with additional features built on top of our free OSS version and a skill set to make your business case or a Proof-of-Concept idea a reality.
+Describe us your use case by [contacting us](mailto:mario.kozjak@qaap.io?subject=Pro%20plan%20request) and we will get back to you with a proposed solution.
 
 ## Client
 
