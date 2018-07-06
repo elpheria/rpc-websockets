@@ -103,7 +103,7 @@ Please consult our [API documentation](API.md) for both WebSocket server and cli
 
 Features of the free open-source edition.
 
-![OSS Features](assets/community-features.png)
+![OSS Features](assets/oss-features.png)
 
 All library's open-source features are documented in our [API documentation](API.md) and can be used free of charge. You are free to implement your solutions based on provided methods in any way you are comfortable with, as long as you use our work along our very permissive [license](LICENSE) conditions.
 
