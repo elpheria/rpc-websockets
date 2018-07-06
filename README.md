@@ -119,11 +119,12 @@ Describe us your use case by [contacting us](mailto:mario.kozjak@qaap.io?subject
 
 We offer professional support for **rpc-websockets** and beyond. We have many years of expertise on building robust, scalable Node.js applications and can help you overcome issues and challenges preventing you to ship your great products. We excel in software architecture and implementation, being able to provide you with development, planning, consulting, training and customization services. Feel free to [contact us](mailto:mario.kozjak@qaap.io?subject=rpc-websockets%20support%20enquiry) so we can discuss how to help you finish your products!
 
-## Partners
+## Companies using rpc-websockets
 
 **rpc-websockets** is being actively used in production in a variety of different use cases.
 
-<a href="https://scratchbox.io" target="_blank"><img src="https://github.com/elpheria/rpc-websockets/blob/master/assets/scratchbox.png" alt="Scratchbox" width=260px></a>
+<a href="https://scratchbox.io" target="_blank"><img src="https://github.com/elpheria/rpc-websockets/blob/master/assets/scratchbox.png" alt="Scratchbox" width=200px></a>
+<a href="https://bitflyer.com/en-jp" target="_blank"><img src="https://github.com/elpheria/rpc-websockets/blob/master/assets/bitflyer.png" alt="bitFlyer" width=200px></a>
 
 ## License
 
