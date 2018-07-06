@@ -105,11 +105,12 @@ Departing from version 2.x, there's been some minor API changes. A breaking chan
 
 ## OSS Features
 
-All library's open-source features are documented in our [API documentation](API.md) and can be used free of charge. You are free to implement your solutions based on provided methods in any way you are comfortable with, as long as you use our work along our [license](LICENSE).
+All library's open-source features are documented in our [API documentation](API.md) and can be used free of charge. You are free to implement your solutions based on provided methods in any way you are comfortable with, as long as you use our work along our very permissive [license](LICENSE) conditions.
 
 ## Pro Features
 
 It order to support your production-ready environments, we can provide you with additional features built on top of our free OSS version along with the skill set to turn your business case or a Proof-of-Concept idea into reality.
+
 Describe us your use case by [contacting us](mailto:mario.kozjak@qaap.io?subject=Pro%20Plan%20enquiry) and we will swiftly get back to you with a proposed solution that meets your needs.
 
 ## License
