@@ -28,7 +28,7 @@
 
 ## About
 
-The **rpc-websockets** library enables developers to easily implement their business logic that includes messaging between users, machines or any devices. It provides a possibility to send an receive JSON data through the WebSocket communication protocol in order to support two-way notification push, running RPC methods and firing any types of event signalling.
+The **rpc-websockets** library enables developers to easily implement their business logic that includes messaging between users, machines or any devices. It provides a possibility to send an receive JSON data through the WebSocket communication protocol in order to support two-way notification push, running RPC methods and firing any types of event signalling. Both frontend (HTML/JS-based) and backend (Node.js-based) development environments are supported.
 
 **rpc-websockets** is built on Node.js and supports both LTS and Current versions.
 
