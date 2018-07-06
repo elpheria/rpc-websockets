@@ -123,7 +123,7 @@ We offer professional support for **rpc-websockets** and beyond. We have many ye
 
 **rpc-websockets** is being actively used in production in a variety of different use cases.
 
-<a href="https://scratchbox.io" target="_blank"><img src="https://github.com/elpheria/rpc-websockets/blob/master/assets/scratchbox.png"></a>
+<a href="https://scratchbox.io" target="_blank"><img src="https://github.com/elpheria/rpc-websockets/blob/master/assets/scratchbox.png" alt="Scratchbox" width=260px></a>
 
 ## License
 
