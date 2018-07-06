@@ -1,6 +1,6 @@
 <div align="center">
   <a href="https://github.com/elpheria/rpc-websockets">
-    <img src="http://i.imgur.com/5drhsqV.png">
+    <img src="https://github.com/elpheria/rpc-websockets/blob/master/misc/images/logo.png">
   </a>
   <br>
   <p>
