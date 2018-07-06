@@ -106,7 +106,7 @@ Departing from version 2.x, there's been some minor API changes. A breaking chan
 
 ## Pro plan
 
-It order to support your production-ready environments, we can provide you with additional features built on top of our free OSS version and a skill set to make your business case or a Proof-of-Concept idea a reality.
+It order to support your production-ready environments, we can provide you with additional features built on top of our free OSS version along with the skill set to turn your business case or a Proof-of-Concept idea into a reality.
 Describe us your use case by [contacting us](mailto:mario.kozjak@qaap.io?subject=Pro%20plan%20request) and we will get back to you with a proposed solution.
 
 ## License
