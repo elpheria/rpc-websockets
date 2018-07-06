@@ -1,13 +1,13 @@
 <div align="center">
   <a href="https://github.com/elpheria/rpc-websockets">
-    <img src="https://github.com/elpheria/rpc-websockets/blob/master/misc/images/logo.png">
+    <img src="https://github.com/elpheria/rpc-websockets/blob/master/assets/logo.png">
   </a>
   <br>
   <p>
     WebSockets for <a href="http://nodejs.org">Node.js</a> and <a href="https://en.wikipedia.org/wiki/JavaScript">JavaScript</a> with <a href="https://www.jsonrpc.org/specification">JSON RPC 2.0</a> support on top.  </p>
   <br>
 	<a href="https://github.com/elpheria/rpc-websockets/blob/master/LICENSE">
-		<img src="https://github.com/elpheria/rpc-websockets/blob/master/misc/images/mit.svg">
+		<img src="https://github.com/elpheria/rpc-websockets/blob/master/assets/mit.svg">
 	</a>
   <a href="https://travis-ci.org/elpheria/rpc-websockets">
 		<img src="https://travis-ci.org/elpheria/rpc-websockets.svg?branch=master">
