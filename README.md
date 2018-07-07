@@ -109,7 +109,7 @@ All library's open-source features are documented in our [API documentation](API
 
 ## Pro Features
 
-In order to support your production-ready environments, we can provide you with additional features built on top of our free OSS edition along with the skill set to turn your business case or a Proof-of-Concept idea into reality. [Contact us!](mailto:mario.kozjak@qaap.io?subject=Pro%20Plan%20enquiry)
+In order to support your production-ready environments, we can provide you with additional features built on top of our free OSS edition along with the skill set to turn your business case or a Proof-of-Concept idea into reality.
 
 ![Pro Features](assets/pro-features.png)
 
@@ -125,7 +125,7 @@ We offer professional support for **rpc-websockets** and beyond. We have many ye
 
 &emsp;&emsp;
 <a href="https://scratchbox.io" target="_blank"><img src="https://github.com/elpheria/rpc-websockets/blob/master/assets/user-scratchbox.png" alt="Scratchbox" height=50px></a>&emsp;
-<a href="https://bitflyer.com/en-jp" target="_blank"><img src="https://github.com/elpheria/rpc-websockets/blob/master/assets/user-bitflyer.png" alt="bitFlyer" height=50px></a>&emsp;
+<a href="https://bitflyer.com/en-eu" target="_blank"><img src="https://github.com/elpheria/rpc-websockets/blob/master/assets/user-bitflyer.png" alt="bitFlyer" height=50px></a>&emsp;
 <a href="https://loomx.io" target="_blank"><img src="https://github.com/elpheria/rpc-websockets/blob/master/assets/user-loom.png" alt="Loom Network" height=50px></a>&emsp;
 <a href="https://www.uniqcast.com" target="_blank"><img src="https://github.com/elpheria/rpc-websockets/blob/master/assets/user-uniqcast.png" alt="uniqCast" height=50px></a>&emsp;
 
