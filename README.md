@@ -123,11 +123,8 @@ We offer professional support for **rpc-websockets** and beyond. We have many ye
 
 **rpc-websockets** is being actively used in production by multiple companies in a variety of different use cases.
 
-<br>
-&emsp;&emsp;<a href="https://scratchbox.io" target="_blank"><img src="https://github.com/elpheria/rpc-websockets/blob/master/assets/user-scratchbox.png" alt="Scratchbox"></a>
-&emsp;&emsp;<a href="https://bitflyer.com/en-eu" target="_blank"><img src="https://github.com/elpheria/rpc-websockets/blob/master/assets/user-bitflyer.png" alt="bitFlyer"></a>
-&emsp;&emsp;<a href="https://loomx.io" target="_blank"><img src="https://github.com/elpheria/rpc-websockets/blob/master/assets/user-loom.png" alt="Loom Network"></a>
-&emsp;&emsp;<a href="https://www.uniqcast.com" target="_blank"><img src="https://github.com/elpheria/rpc-websockets/blob/master/assets/user-uniqcast.png" alt="uniqCast"></a>
+<br>&emsp;&emsp;
+![Scratchbox](assets/user-scratchbox.png) ![bitFlyer](assets/user-bitflyer.png) ![Loom Network](assets/user-loom.png) ![UniqCast](assets/user-uniqcast.png)
 
 ## License
 
