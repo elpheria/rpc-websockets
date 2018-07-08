@@ -6,22 +6,18 @@
   <p>
     WebSockets for <a href="http://nodejs.org">Node.js</a> and <a href="https://en.wikipedia.org/wiki/JavaScript">JavaScript</a> with <a href="https://www.jsonrpc.org/specification">JSON RPC 2.0</a> support on top.  </p>
   <br>
-	<a href="https://github.com/elpheria/rpc-websockets/blob/master/LICENSE">
-		<img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRw%0D%0AOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB3aWR0aD0iNzgiIGhlaWdodD0iMjAiPjxsaW5lYXJH%0D%0AcmFkaWVudCBpZD0iYiIgeDI9IjAiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29s%0D%0Ab3I9IiNiYmIiIHN0b3Atb3BhY2l0eT0iLjEiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3Atb3BhY2l0%0D%0AeT0iLjEiLz48L2xpbmVhckdyYWRpZW50PjxjbGlwUGF0aCBpZD0iYSI+PHJlY3Qgd2lkdGg9Ijc4%0D%0AIiBoZWlnaHQ9IjIwIiByeD0iMyIgZmlsbD0iI2ZmZiIvPjwvY2xpcFBhdGg+PGcgY2xpcC1wYXRo%0D%0APSJ1cmwoI2EpIj48cGF0aCBmaWxsPSIjNTU1IiBkPSJNMCAwaDQ3djIwSDB6Ii8+PHBhdGggZmls%0D%0AbD0iIzk3Q0EwMCIgZD0iTTQ3IDBoMzF2MjBINDd6Ii8+PHBhdGggZmlsbD0idXJsKCNiKSIgZD0i%0D%0ATTAgMGg3OHYyMEgweiIvPjwvZz48ZyBmaWxsPSIjZmZmIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBm%0D%0Ab250LWZhbWlseT0iRGVqYVZ1IFNhbnMsVmVyZGFuYSxHZW5ldmEsc2Fucy1zZXJpZiIgZm9udC1z%0D%0AaXplPSIxMTAiPjx0ZXh0IHg9IjI0NSIgeT0iMTUwIiBmaWxsPSIjMDEwMTAxIiBmaWxsLW9wYWNp%0D%0AdHk9Ii4zIiB0cmFuc2Zvcm09InNjYWxlKC4xKSIgdGV4dExlbmd0aD0iMzcwIj5saWNlbnNlPC90%0D%0AZXh0Pjx0ZXh0IHg9IjI0NSIgeT0iMTQwIiB0cmFuc2Zvcm09InNjYWxlKC4xKSIgdGV4dExlbmd0%0D%0AaD0iMzcwIj5saWNlbnNlPC90ZXh0Pjx0ZXh0IHg9IjYxNSIgeT0iMTUwIiBmaWxsPSIjMDEwMTAx%0D%0AIiBmaWxsLW9wYWNpdHk9Ii4zIiB0cmFuc2Zvcm09InNjYWxlKC4xKSIgdGV4dExlbmd0aD0iMjEw%0D%0AIj5NSVQ8L3RleHQ+PHRleHQgeD0iNjE1IiB5PSIxNDAiIHRyYW5zZm9ybT0ic2NhbGUoLjEpIiB0%0D%0AZXh0TGVuZ3RoPSIyMTAiPk1JVDwvdGV4dD48L2c+IDwvc3ZnPg==">
-	</a>
+  <a href="https://www.npmjs.com/package/rpc-websockets">
+                <img src="https://img.shields.io/npm/v/rpc-websockets.svg">
+  </a>
   <a href="https://travis-ci.org/elpheria/rpc-websockets">
 		<img src="https://travis-ci.org/elpheria/rpc-websockets.svg?branch=master">
-	</a>
+  </a>
   <a href="https://coveralls.io/github/elpheria/rpc-websockets?branch=master">
 		<img src="https://coveralls.io/repos/github/elpheria/rpc-websockets/badge.svg?branch=master">
-	</a>
+  </a>
   <a href="https://www.npmjs.com/package/rpc-websockets">
     <img src="https://img.shields.io/npm/dm/rpc-websockets.svg?maxAge=2592000">
   </a>
-  <br>
-  <a href="https://nodei.co/npm/rpc-websockets">
-		<img src="https://nodei.co/npm/rpc-websockets.png?downloads=true&downloadRank=true&stars=true">
-	</a>
   <br><br><br>
 </div>
 
