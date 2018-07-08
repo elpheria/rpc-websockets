@@ -129,6 +129,9 @@ We offer professional support for **rpc-websockets** and beyond. We have many ye
 <a href="https://loomx.io" target="_blank"><img src="https://github.com/elpheria/rpc-websockets/blob/master/assets/user-loom.png" alt="Loom Network" height=50px></a>&emsp;
 <a href="https://www.uniqcast.com" target="_blank"><img src="https://github.com/elpheria/rpc-websockets/blob/master/assets/user-uniqcast.png" alt="uniqCast" height=50px></a>&emsp;
 
+## Sponsors
+Become a sponsor and get your logo on project's README on GitHub with a link to your site. Feel free to [contact us](mailto:mario.kozjak@qaap.io?subject=Sponsors) for the arrangement!
+
 ## License
 
   [MIT](LICENSE)
