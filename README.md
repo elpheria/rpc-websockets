@@ -124,6 +124,7 @@ We offer professional support for **rpc-websockets** and beyond. We have many ye
 <a href="https://loomx.io" target="_blank"><img src="https://raw.githubusercontent.com/elpheria/rpc-websockets/master/assets/user-loom.png" alt="Loom Network" height=50px></a>&emsp;
 <a href="https://www.uniqcast.com" target="_blank"><img src="https://raw.githubusercontent.com/elpheria/rpc-websockets/master/assets/user-uniqcast.png" alt="uniqCast" height=50px></a>&emsp;
 <a href="https://parseclabs.org" target="_blank"><img src="https://raw.githubusercontent.com/elpheria/rpc-websockets/master/assets/user-parsec.png" alt="PARSEC Labs" height=50px></a>&emsp;
+<a href="https://klika-tech.com" target="_blank"><img src="https://raw.githubusercontent.com/elpheria/rpc-websockets/master/assets/user-klikatech.png" alt="Klika Tech, Inc" height=50px></a>&emsp;
 
 ## Sponsors
 Become a sponsor and get your logo on project's README on GitHub with a link to your site. Feel free to [contact us](mailto:mario.kozjak@qaap.io?subject=Sponsors) for the arrangement!
