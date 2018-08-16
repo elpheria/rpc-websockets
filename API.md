@@ -54,7 +54,7 @@ var ws = new WebSocket('ws://localhost:8080')
 Instantiate a WebSocket client.
 
 Parameters:
-* `address` {String}: The URL of the WebSocket server. The URL path portion resolves to a server namespace. Defaults to 'ws://localhost:8080'.
+* `address` {String}: The URL of the WebSocket server. The URL path portion resolves to a server namespace. If the URL query key `socket_id` exists, it will be used as a socket identifier. Defaults to 'ws://localhost:8080'.
 * `options` {Object}: Client options that are also forwarded to `ws`.
   * `autoconnect` {Boolean}: Client autoconnect upon Client class instantiation. Defaults to `true`.
   * `reconnect` {Boolean}: Whether client should reconnect automatically once the connection is down. Defaults to `true`.

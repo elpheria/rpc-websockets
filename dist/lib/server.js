@@ -131,8 +131,10 @@ var Server = function (_EventEmitter) {
         _this.wss.on("connection", function (socket, request) {
             _this.emit("connection", socket, request);
 
-            var ns = _url2.default.parse(request.url).pathname;
-            socket._id = _uuid2.default.v1();
+            var u = _url2.default.parse(request.url, true);
+            var ns = u.pathname;
+
+            if (u.query.socket_id) socket._id = u.query.socket_id;else socket._id = _uuid2.default.v1();
 
             // cleanup after the socket gets disconnected
             socket.on("close", function () {

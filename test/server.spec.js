@@ -312,6 +312,18 @@ describe("Server", function()
             })
         })
 
+        describe("# connection", function()
+        {
+            it("should connect client with a custom socket id", function(done)
+            {
+                connect(port, host, "/custom", "?socket_id=foo").then((ws) =>
+                {
+                    expect(server.of("/custom").connected().foo).not.to.be.undefined
+                    done()
+                })
+            })
+        })
+
         describe("# single rpc request", function()
         {
             it("should return a valid response using single parameter", function(done)
@@ -1127,14 +1139,15 @@ function getInstance(port, host)
  * @param {Number} port - port number
  * @param {String} host - hostname
  * @param {String} path - uri path
+ * @param {String} query - uri query
  * @return {Promise}
  */
-function connect(port, host, path)
+function connect(port, host, path, query)
 {
     return new Promise((resolve, reject) =>
     {
         const client = new WebSocket("ws://" + (host || SERVER_HOST) +
-            ":" + (port || SERVER_PORT) + (path || "/"))
+            ":" + (port || SERVER_PORT) + (path || "/") + (query || ""))
 
         client.on("open", () => resolve(client))
         client.on("error", (error) => reject(error))

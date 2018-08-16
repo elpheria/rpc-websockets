@@ -47,8 +47,13 @@ export default class Server extends EventEmitter
         {
             this.emit("connection", socket, request)
 
-            const ns = url.parse(request.url).pathname
-            socket._id = uuid.v1()
+            const u = url.parse(request.url, true)
+            const ns = u.pathname
+
+            if (u.query.socket_id)
+                socket._id = u.query.socket_id
+            else
+                socket._id = uuid.v1()
 
             // cleanup after the socket gets disconnected
             socket.on("close", () =>
