@@ -298,7 +298,25 @@ describe("Client", function()
 
         it("should subscribe to an event", function(done)
         {
-            client.subscribe("newsUpdate").then(done, function(error)
+            client.subscribe("newsUpdate").then(function(data)
+            {
+                data.should.have.property("newsUpdate")
+                data.newsUpdate.should.equal("ok")
+                done()
+            }).catch(function(error)
+            {
+                done(error)
+            })
+        })
+
+        it("should subscribe to multiple events", function(done)
+        {
+            client.subscribe([ "newsUpdate", "orderUpdate" ]).then(function(data)
+            {
+                data.should.have.property("newsUpdate")
+                data.should.have.property("orderUpdate")
+                done()
+            }).catch(function(error)
             {
                 done(error)
             })
@@ -412,7 +430,28 @@ describe("Client", function()
         {
             client.subscribe("newsUpdate").then(function()
             {
-                client.unsubscribe("newsUpdate").then(done)
+                client.unsubscribe("newsUpdate").then(function(data)
+                {
+                    data.should.have.property("newsUpdate")
+                    data.newsUpdate.should.equal("ok")
+                    done()
+                })
+            }).catch(function(error)
+            {
+                done(error)
+            })
+        })
+
+        it("should unsubscribe from multiple events", function(done)
+        {
+            client.subscribe([ "newsUpdate", "orderUpdate" ]).then(function()
+            {
+                client.unsubscribe([ "newsUpdate", "orderUpdate" ]).then(function(data)
+                {
+                    data.should.have.property("newsUpdate")
+                    data.newsUpdate.should.equal("ok")
+                    done()
+                })
             }).catch(function(error)
             {
                 done(error)
@@ -448,7 +487,25 @@ describe("Client", function()
 
         it("should subscribe to an event", function(done)
         {
-            client.subscribe("newMessage").then(done, function(error)
+            client.subscribe("newMessage").then(function(data)
+            {
+                data.should.have.property("newMessage")
+                data.newMessage.should.equal("ok")
+                done()
+            }).catch(function(error)
+            {
+                done(error)
+            })
+        })
+
+        it("should subscribe to multiple events", function(done)
+        {
+            client.subscribe([ "newsUpdate", "orderUpdate" ]).then(function(data)
+            {
+                data.should.have.property("newsUpdate")
+                data.should.have.property("orderUpdate")
+                done()
+            }).catch(function(error)
             {
                 done(error)
             })

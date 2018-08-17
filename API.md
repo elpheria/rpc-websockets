@@ -94,17 +94,17 @@ Parameters:
 
 ### ws.subscribe(event) -> Promise
 
-Subscribes for a defined event.
+Subscribes for a defined event. If single event is provided, it throws in case of errors. If multiple events are provided, it returns status data from the server.
 
 Parameters:
-* `event` {String}: Event name.
+* `event` {String|Array}: Event name.
 
 ### ws.unsubscribe(event) -> Promise
 
-Unsubscribes from a defined event.
+Unsubscribes from a defined event. If single event is provided, it throws in case of errors. If multiple events are provided, it returns status data from the server.
 
 Parameters:
-* `event` {String}: Event name.
+* `event` {String|Array}: Event name.
 
 ### ws.close([code[, data]])
 

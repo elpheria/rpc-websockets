@@ -280,7 +280,7 @@ exports.default = function (WebSocket) {
             /**
              * Subscribes for a defined event.
              * @method
-             * @param {String} event - event name
+             * @param {String|Array} event - event name
              * @return {Undefined}
              * @throws {Error}
              */
@@ -296,23 +296,28 @@ exports.default = function (WebSocket) {
                             switch (_context2.prev = _context2.next) {
                                 case 0:
                                     (0, _assertArgs2.default)(_args2, {
-                                        event: "string"
+                                        event: ["string", Array]
                                     });
 
-                                    _context2.next = 3;
-                                    return this.call("rpc.on", [event]);
+                                    if (typeof event === "string") event = [event];
 
-                                case 3:
+                                    _context2.next = 4;
+                                    return this.call("rpc.on", event);
+
+                                case 4:
                                     result = _context2.sent;
 
-                                    if (!(result[event] !== "ok")) {
-                                        _context2.next = 6;
+                                    if (!(typeof event === "string" && result[event] !== "ok")) {
+                                        _context2.next = 7;
                                         break;
                                     }
 
                                     throw new Error("Failed subscribing to an event '" + event + "' with: " + result[event]);
 
-                                case 6:
+                                case 7:
+                                    return _context2.abrupt("return", result);
+
+                                case 8:
                                 case "end":
                                     return _context2.stop();
                             }
@@ -346,23 +351,28 @@ exports.default = function (WebSocket) {
                             switch (_context3.prev = _context3.next) {
                                 case 0:
                                     (0, _assertArgs2.default)(_args3, {
-                                        event: "string"
+                                        event: ["string", Array]
                                     });
 
-                                    _context3.next = 3;
-                                    return this.call("rpc.off", [event]);
+                                    if (typeof event === "string") event = [event];
 
-                                case 3:
+                                    _context3.next = 4;
+                                    return this.call("rpc.off", event);
+
+                                case 4:
                                     result = _context3.sent;
 
-                                    if (!(result[event] !== "ok")) {
-                                        _context3.next = 6;
+                                    if (!(typeof event === "string" && result[event] !== "ok")) {
+                                        _context3.next = 7;
                                         break;
                                     }
 
                                     throw new Error("Failed unsubscribing from an event with: " + result);
 
-                                case 6:
+                                case 7:
+                                    return _context3.abrupt("return", result);
+
+                                case 8:
                                 case "end":
                                     return _context3.stop();
                             }

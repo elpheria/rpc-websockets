@@ -166,20 +166,25 @@ export default (WebSocket) => class Client extends EventEmitter
     /**
      * Subscribes for a defined event.
      * @method
-     * @param {String} event - event name
+     * @param {String|Array} event - event name
      * @return {Undefined}
      * @throws {Error}
      */
     async subscribe(event)
     {
         assertArgs(arguments, {
-            event: "string"
+            event: [ "string", Array ]
         })
 
-        const result = await this.call("rpc.on", [event])
+        if (typeof event === "string")
+            event = [ event ]
 
-        if (result[event] !== "ok")
+        const result = await this.call("rpc.on", event)
+
+        if (typeof event === "string" && result[event] !== "ok")
             throw new Error("Failed subscribing to an event '" + event + "' with: " + result[event])
+
+        return result
     }
 
     /**
@@ -192,13 +197,18 @@ export default (WebSocket) => class Client extends EventEmitter
     async unsubscribe(event)
     {
         assertArgs(arguments, {
-            event: "string"
+            event: [ "string", Array ]
         })
 
-        const result = await this.call("rpc.off", [event])
+        if (typeof event === "string")
+            event = [ event ]
 
-        if (result[event] !== "ok")
+        const result = await this.call("rpc.off", event)
+
+        if (typeof event === "string" && result[event] !== "ok")
             throw new Error("Failed unsubscribing from an event with: " + result)
+
+        return result
     }
 
     /**
