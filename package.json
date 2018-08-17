@@ -1,6 +1,6 @@
 {
   "name": "rpc-websockets",
-  "version": "4.2.8",
+  "version": "4.3.0",
   "description": "JSON-RPC 2.0 implementation over WebSockets for Node.js",
   "main": "./dist/index.js",
   "scripts": {
@@ -17,15 +17,15 @@
   "dependencies": {
     "assert-args": "^1.2.1",
     "babel-runtime": "^6.26.0",
-    "circular-json": "^0.5.4",
+    "circular-json": "^0.5.5",
     "eventemitter3": "^3.1.0",
-    "uuid": "^3.2.1",
-    "ws": "^5.1.1"
+    "uuid": "^3.3.2",
+    "ws": "^5.2.2"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.3",
-    "babel-eslint": "^8.2.3",
+    "babel-eslint": "^8.2.6",
     "babel-plugin-add-module-exports": "^0.2.1",
     "babel-plugin-transform-runtime": "^6.15.0",
     "babel-preset-env": "^1.7.0",
@@ -34,7 +34,7 @@
     "coveralls": "^3.0.2",
     "eslint": "^4.19.1",
     "istanbul": "^0.4.5",
-    "mocha": "^5.1.1",
+    "mocha": "^5.2.0",
     "mocha-lcov-reporter": "^1.3.0"
   },
   "browser": "./dist/index.browser.js",
