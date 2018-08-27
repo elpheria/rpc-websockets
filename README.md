@@ -120,7 +120,6 @@ We offer professional support for **rpc-websockets** and beyond. We have many ye
 
 <br>
 <a href="https://scratchbox.io" target="_blank"><img src="https://raw.githubusercontent.com/elpheria/rpc-websockets/master/assets/user-scratchbox.png" alt="Scratchbox" height=50px></a>&emsp;
-<a href="https://bitflyer.com/en-eu" target="_blank"><img src="https://raw.githubusercontent.com/elpheria/rpc-websockets/master/assets/user-bitflyer.png" alt="bitFlyer" height=50px></a>&emsp;
 <a href="https://loomx.io" target="_blank"><img src="https://raw.githubusercontent.com/elpheria/rpc-websockets/master/assets/user-loom.png" alt="Loom Network" height=50px></a>&emsp;
 <a href="https://www.uniqcast.com" target="_blank"><img src="https://raw.githubusercontent.com/elpheria/rpc-websockets/master/assets/user-uniqcast.png" alt="uniqCast" height=50px></a>&emsp;
 <a href="https://parseclabs.org" target="_blank"><img src="https://raw.githubusercontent.com/elpheria/rpc-websockets/master/assets/user-parsec.png" alt="PARSEC Labs" height=50px></a>&emsp;
