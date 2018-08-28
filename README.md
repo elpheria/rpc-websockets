@@ -108,11 +108,11 @@ In order to support your production-ready environments, we can provide you with 
 
 ![Pro Features](assets/pro-features.png)
 
-Describe us your use case by [contacting us](mailto:mario.kozjak@qaap.io?subject=Pro%20Plan%20enquiry) and we will swiftly get back to you with a proposed solution that meets your needs.
+Describe us your use case by [contacting us](mailto:info@elpheria.com?subject=Pro%20Plan%20enquiry) and we will swiftly get back to you with a proposed solution that meets your needs.
 
 ## Professional support
 
-We offer professional support for **rpc-websockets** and beyond. We have many years of expertise on building robust, scalable Node.js applications and can help you overcome issues and challenges preventing you to ship your great products. We excel in software architecture and implementation, being able to provide you with development, planning, consulting, training and customization services. Feel free to [contact us](mailto:mario.kozjak@qaap.io?subject=rpc-websockets%20support%20enquiry) so we can discuss how to help you finish your products!
+We offer professional support for **rpc-websockets** and beyond. We have many years of expertise on building robust, scalable Node.js applications and can help you overcome issues and challenges preventing you to ship your great products. We excel in software architecture and implementation, being able to provide you with development, planning, consulting, training and customization services. Feel free to [contact us](mailto:support@elpheria.com?subject=rpc-websockets%20support%20enquiry) so we can discuss how to help you finish your products!
 
 ## Users
 
@@ -126,7 +126,7 @@ We offer professional support for **rpc-websockets** and beyond. We have many ye
 <a href="https://klika-tech.com" target="_blank"><img src="https://raw.githubusercontent.com/elpheria/rpc-websockets/master/assets/user-klikatech.png" alt="Klika Tech, Inc" height=50px></a>&emsp;
 
 ## Sponsors
-Become a sponsor and get your logo on project's README on GitHub with a link to your site. Feel free to [contact us](mailto:mario.kozjak@qaap.io?subject=Sponsors) for the arrangement!
+Become a sponsor and get your logo on project's README on GitHub with a link to your site. Feel free to [contact us](mailto:info@elpheria.com?subject=Sponsors) for the arrangement!
 
 ## License
 
