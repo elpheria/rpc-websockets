@@ -303,8 +303,8 @@ export default (WebSocket) => class Client extends EventEmitter
 
             this.current_reconnects++
 
-            if (this.reconnect && (this.max_reconnects > this.current_reconnects) ||
-                    this.max_reconnects === 0)
+            if (this.reconnect && ((this.max_reconnects > this.current_reconnects) ||
+                    this.max_reconnects === 0))
                 setTimeout(() => this._connect(address, options), this.reconnect_interval)
         })
     }

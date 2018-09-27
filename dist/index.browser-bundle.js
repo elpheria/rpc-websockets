@@ -470,7 +470,7 @@ exports.default = function (WebSocket) {
 
                     _this4.current_reconnects++;
 
-                    if (_this4.reconnect && _this4.max_reconnects > _this4.current_reconnects || _this4.max_reconnects === 0) setTimeout(function () {
+                    if (_this4.reconnect && (_this4.max_reconnects > _this4.current_reconnects || _this4.max_reconnects === 0)) setTimeout(function () {
                         return _this4._connect(address, options);
                     }, _this4.reconnect_interval);
                 });
