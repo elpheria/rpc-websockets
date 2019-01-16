@@ -66,6 +66,10 @@ var _circularJson = require("circular-json");
 
 var _circularJson2 = _interopRequireDefault(_circularJson);
 
+var _jsonRpcMsg = require("json-rpc-msg");
+
+var _jsonRpcMsg2 = _interopRequireDefault(_jsonRpcMsg);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.default = function (WebSocket) {
@@ -164,12 +168,7 @@ exports.default = function (WebSocket) {
 
                     var rpc_id = _this2.generate_request_id(method, params);
 
-                    var message = {
-                        jsonrpc: "2.0",
-                        method: method,
-                        params: params || null,
-                        id: rpc_id
-                    };
+                    var message = method.startsWith("rpc.") ? _jsonRpcMsg2.default.createInternalRequest(rpc_id, method, params) : _jsonRpcMsg2.default.createRequest(rpc_id, method, params);
 
                     _this2.socket.send((0, _stringify2.default)(message), ws_opts, function (error) {
                         if (error) return reject(error);
@@ -242,11 +241,7 @@ exports.default = function (WebSocket) {
                 return new _promise2.default(function (resolve, reject) {
                     if (!_this3.ready) return reject(new Error("socket not ready"));
 
-                    var message = {
-                        jsonrpc: "2.0",
-                        method: method,
-                        params: params || null
-                    };
+                    var message = method.startsWith("rpc.") ? _jsonRpcMsg2.default.createInternalNotification(method, params) : _jsonRpcMsg2.default.createNotification(method, params);
 
                     _this3.socket.send((0, _stringify2.default)(message), function (error) {
                         if (error) return reject(error);

@@ -19,6 +19,7 @@
     "babel-runtime": "^6.26.0",
     "circular-json": "^0.5.5",
     "eventemitter3": "^3.1.0",
+    "json-rpc-msg": "^1.1.0",
     "uuid": "^3.3.2",
     "ws": "^5.2.2"
   },

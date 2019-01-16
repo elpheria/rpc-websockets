@@ -13,17 +13,9 @@ var _map = require("babel-runtime/core-js/map");
 
 var _map2 = _interopRequireDefault(_map);
 
-var _typeof2 = require("babel-runtime/helpers/typeof");
-
-var _typeof3 = _interopRequireDefault(_typeof2);
-
 var _regenerator = require("babel-runtime/regenerator");
 
 var _regenerator2 = _interopRequireDefault(_regenerator);
-
-var _stringify = require("babel-runtime/core-js/json/stringify");
-
-var _stringify2 = _interopRequireDefault(_stringify);
 
 var _asyncToGenerator2 = require("babel-runtime/helpers/asyncToGenerator");
 
@@ -87,13 +79,23 @@ var _circularJson = require("circular-json");
 
 var _circularJson2 = _interopRequireDefault(_circularJson);
 
-var _utils = require("./utils");
+var _jsonRpcMsg = require("json-rpc-msg");
 
-var utils = _interopRequireWildcard(_utils);
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+var _jsonRpcMsg2 = _interopRequireDefault(_jsonRpcMsg);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/**
+ * List additional JSON RPC errors
+ *
+ * @type {object}
+ */
+var ERRORS = {
+    INTERNAL_SERVER_ERROR: {
+        code: -32000,
+        message: "Internal server error"
+    }
+};
 
 var Server = function (_EventEmitter) {
     (0, _inherits3.default)(Server, _EventEmitter);
@@ -522,7 +524,7 @@ var Server = function (_EventEmitter) {
 
             socket.on("message", function () {
                 var _ref = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee(data) {
-                    var msg_options, responses, _iteratorNormalCompletion4, _didIteratorError4, _iteratorError4, _iterator4, _step4, message, _response, response;
+                    var msg_options, message, responses, _iteratorNormalCompletion4, _didIteratorError4, _iteratorError4, _iterator4, _step4, batchMessage, response, _response;
 
                     return _regenerator2.default.wrap(function _callee$(_context) {
                         while (1) {
@@ -531,147 +533,154 @@ var Server = function (_EventEmitter) {
                                     msg_options = {};
 
 
-                                    if (data instanceof ArrayBuffer) {
+                                    if (data instanceof Buffer || data instanceof ArrayBuffer) {
                                         msg_options.binary = true;
 
                                         data = Buffer.from(data).toString();
                                     }
 
-                                    _context.prev = 2;
-                                    data = JSON.parse(data);_context.next = 9;
+                                    message = null;
+                                    _context.prev = 3;
+
+                                    message = _jsonRpcMsg2.default.parseMessage(data);
+                                    _context.next = 11;
                                     break;
 
-                                case 6:
-                                    _context.prev = 6;
-                                    _context.t0 = _context["catch"](2);
-                                    return _context.abrupt("return", socket.send((0, _stringify2.default)({
-                                        jsonrpc: "2.0",
-                                        error: utils.createError(-32700, _context.t0.toString()),
-                                        id: data.id || null
-                                    }, msg_options)));
+                                case 7:
+                                    _context.prev = 7;
+                                    _context.t0 = _context["catch"](3);
 
-                                case 9:
-                                    if (!Array.isArray(data)) {
-                                        _context.next = 46;
-                                        break;
+                                    if (_context.t0 instanceof _jsonRpcMsg2.default.ParserError) {
+                                        socket.send(_circularJson2.default.stringify(_context.t0.rpcError), msg_options);
+                                    } else {
+                                        // TODO: send "Internal Server Error"
                                     }
+                                    return _context.abrupt("return");
 
-                                    if (data.length) {
-                                        _context.next = 12;
-                                        break;
-                                    }
+                                case 11:
+                                    _context.t1 = message.type;
+                                    _context.next = _context.t1 === _jsonRpcMsg2.default.MESSAGE_TYPES.BATCH ? 14 : _context.t1 === _jsonRpcMsg2.default.MESSAGE_TYPES.REQUEST ? 53 : _context.t1 === _jsonRpcMsg2.default.MESSAGE_TYPES.NOTIFICATION ? 53 : _context.t1 === _jsonRpcMsg2.default.MESSAGE_TYPES.INTERNAL_REQUEST ? 53 : _context.t1 === _jsonRpcMsg2.default.MESSAGE_TYPES.INTERNAL_NOTIFICATION ? 53 : 59;
+                                    break;
 
-                                    return _context.abrupt("return", socket.send((0, _stringify2.default)({
-                                        jsonrpc: "2.0",
-                                        error: utils.createError(-32600, "Invalid array"),
-                                        id: null
-                                    }, msg_options)));
-
-                                case 12:
+                                case 14:
                                     responses = [];
                                     _iteratorNormalCompletion4 = true;
                                     _didIteratorError4 = false;
                                     _iteratorError4 = undefined;
-                                    _context.prev = 16;
-                                    _iterator4 = (0, _getIterator3.default)(data);
+                                    _context.prev = 18;
+                                    _iterator4 = (0, _getIterator3.default)(message.payload);
 
-                                case 18:
+                                case 20:
                                     if (_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done) {
-                                        _context.next = 29;
+                                        _context.next = 36;
                                         break;
                                     }
 
-                                    message = _step4.value;
-                                    _context.next = 22;
-                                    return _this4._runMethod(message, socket._id, ns);
+                                    batchMessage = _step4.value;
 
-                                case 22:
-                                    _response = _context.sent;
-
-                                    if (_response) {
-                                        _context.next = 25;
+                                    if (!(batchMessage instanceof _jsonRpcMsg2.default.ParserError)) {
+                                        _context.next = 26;
                                         break;
                                     }
 
-                                    return _context.abrupt("continue", 26);
-
-                                case 25:
-
-                                    responses.push(_response);
+                                    _context.t2 = batchMessage.rpcError;
+                                    _context.next = 29;
+                                    break;
 
                                 case 26:
-                                    _iteratorNormalCompletion4 = true;
-                                    _context.next = 18;
-                                    break;
+                                    _context.next = 28;
+                                    return _this4._runMethod(batchMessage.payload, socket._id, ns);
+
+                                case 28:
+                                    _context.t2 = _context.sent;
 
                                 case 29:
-                                    _context.next = 35;
+                                    response = _context.t2;
+
+                                    if (response) {
+                                        _context.next = 32;
+                                        break;
+                                    }
+
+                                    return _context.abrupt("continue", 33);
+
+                                case 32:
+
+                                    responses.push(response);
+
+                                case 33:
+                                    _iteratorNormalCompletion4 = true;
+                                    _context.next = 20;
                                     break;
 
-                                case 31:
-                                    _context.prev = 31;
-                                    _context.t1 = _context["catch"](16);
-                                    _didIteratorError4 = true;
-                                    _iteratorError4 = _context.t1;
+                                case 36:
+                                    _context.next = 42;
+                                    break;
 
-                                case 35:
-                                    _context.prev = 35;
-                                    _context.prev = 36;
+                                case 38:
+                                    _context.prev = 38;
+                                    _context.t3 = _context["catch"](18);
+                                    _didIteratorError4 = true;
+                                    _iteratorError4 = _context.t3;
+
+                                case 42:
+                                    _context.prev = 42;
+                                    _context.prev = 43;
 
                                     if (!_iteratorNormalCompletion4 && _iterator4.return) {
                                         _iterator4.return();
                                     }
 
-                                case 38:
-                                    _context.prev = 38;
+                                case 45:
+                                    _context.prev = 45;
 
                                     if (!_didIteratorError4) {
-                                        _context.next = 41;
+                                        _context.next = 48;
                                         break;
                                     }
 
                                     throw _iteratorError4;
 
-                                case 41:
-                                    return _context.finish(38);
-
-                                case 42:
-                                    return _context.finish(35);
-
-                                case 43:
-                                    if (responses.length) {
-                                        _context.next = 45;
-                                        break;
-                                    }
-
-                                    return _context.abrupt("return");
-
-                                case 45:
-                                    return _context.abrupt("return", socket.send(_circularJson2.default.stringify(responses), msg_options));
-
-                                case 46:
-                                    _context.next = 48;
-                                    return _this4._runMethod(data, socket._id, ns);
-
                                 case 48:
-                                    response = _context.sent;
+                                    return _context.finish(45);
 
-                                    if (response) {
-                                        _context.next = 51;
+                                case 49:
+                                    return _context.finish(42);
+
+                                case 50:
+                                    if (responses.length) {
+                                        _context.next = 52;
                                         break;
                                     }
 
                                     return _context.abrupt("return");
-
-                                case 51:
-                                    return _context.abrupt("return", socket.send(_circularJson2.default.stringify(response), msg_options));
 
                                 case 52:
+                                    return _context.abrupt("return", socket.send(_circularJson2.default.stringify(responses), msg_options));
+
+                                case 53:
+                                    _context.next = 55;
+                                    return _this4._runMethod(message.payload, socket._id, ns);
+
+                                case 55:
+                                    _response = _context.sent;
+
+                                    if (_response) {
+                                        _context.next = 58;
+                                        break;
+                                    }
+
+                                    return _context.abrupt("return");
+
+                                case 58:
+                                    return _context.abrupt("return", socket.send(_circularJson2.default.stringify(_response), msg_options));
+
+                                case 59:
                                 case "end":
                                     return _context.stop();
                             }
                         }
-                    }, _callee, _this4, [[2, 6], [16, 31, 35, 43], [36,, 38, 42]]);
+                    }, _callee, _this4, [[3, 7], [18, 38, 42, 50], [43,, 45, 49]]);
                 }));
 
                 return function (_x5) {
@@ -701,94 +710,30 @@ var Server = function (_EventEmitter) {
                     while (1) {
                         switch (_context2.prev = _context2.next) {
                             case 0:
-                                if (!((typeof message === "undefined" ? "undefined" : (0, _typeof3.default)(message)) !== "object")) {
-                                    _context2.next = 2;
-                                    break;
-                                }
-
-                                return _context2.abrupt("return", {
-                                    jsonrpc: "2.0",
-                                    error: utils.createError(-32600),
-                                    id: null
-                                });
-
-                            case 2:
-                                if (!(message.jsonrpc !== "2.0")) {
-                                    _context2.next = 4;
-                                    break;
-                                }
-
-                                return _context2.abrupt("return", {
-                                    jsonrpc: "2.0",
-                                    error: utils.createError(-32600, "Invalid JSON RPC version"),
-                                    id: message.id || null
-                                });
-
-                            case 4:
-                                if (message.method) {
-                                    _context2.next = 6;
-                                    break;
-                                }
-
-                                return _context2.abrupt("return", {
-                                    jsonrpc: "2.0",
-                                    error: utils.createError(-32602, "Method not specified"),
-                                    id: message.id || null
-                                });
-
-                            case 6:
-                                if (!(typeof message.method !== "string")) {
-                                    _context2.next = 8;
-                                    break;
-                                }
-
-                                return _context2.abrupt("return", {
-                                    jsonrpc: "2.0",
-                                    error: utils.createError(-32600, "Invalid method name"),
-                                    id: message.id || null
-                                });
-
-                            case 8:
-                                if (!(message.params && typeof message.params === "string")) {
-                                    _context2.next = 10;
-                                    break;
-                                }
-
-                                return _context2.abrupt("return", {
-                                    jsonrpc: "2.0",
-                                    error: utils.createError(-32600),
-                                    id: message.id || null
-                                });
-
-                            case 10:
                                 if (!(message.method === "rpc.on")) {
-                                    _context2.next = 53;
+                                    _context2.next = 43;
                                     break;
                                 }
 
                                 if (message.params) {
-                                    _context2.next = 13;
+                                    _context2.next = 3;
                                     break;
                                 }
 
-                                return _context2.abrupt("return", {
-                                    jsonrpc: "2.0",
-                                    error: utils.createError(-32000),
-                                    id: message.id || null
-                                });
+                                return _context2.abrupt("return", _jsonRpcMsg2.default.createError(message.id || null, ERRORS.INTERNAL_SERVER_ERROR));
 
-                            case 13:
+                            case 3:
                                 results = {};
                                 event_names = (0, _keys2.default)(this.namespaces[ns].events);
                                 _iteratorNormalCompletion5 = true;
                                 _didIteratorError5 = false;
                                 _iteratorError5 = undefined;
-                                _context2.prev = 18;
+                                _context2.prev = 8;
                                 _iterator5 = (0, _getIterator3.default)(message.params);
 
-                            case 20:
+                            case 10:
                                 if (_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done) {
-                                    _context2.next = 36;
+                                    _context2.next = 26;
                                     break;
                                 }
 
@@ -797,256 +742,224 @@ var Server = function (_EventEmitter) {
                                 namespace = this.namespaces[ns];
 
                                 if (!(index === -1)) {
-                                    _context2.next = 27;
+                                    _context2.next = 17;
                                     break;
                                 }
 
                                 results[name] = "provided event invalid";
-                                return _context2.abrupt("continue", 33);
+                                return _context2.abrupt("continue", 23);
 
-                            case 27:
+                            case 17:
                                 socket_index = namespace.events[event_names[index]].indexOf(socket_id);
 
                                 if (!(socket_index >= 0)) {
-                                    _context2.next = 31;
+                                    _context2.next = 21;
                                     break;
                                 }
 
                                 results[name] = "socket has already been subscribed to event";
-                                return _context2.abrupt("continue", 33);
+                                return _context2.abrupt("continue", 23);
 
-                            case 31:
+                            case 21:
                                 namespace.events[event_names[index]].push(socket_id);
 
                                 results[name] = "ok";
 
-                            case 33:
+                            case 23:
                                 _iteratorNormalCompletion5 = true;
-                                _context2.next = 20;
+                                _context2.next = 10;
                                 break;
 
-                            case 36:
-                                _context2.next = 42;
+                            case 26:
+                                _context2.next = 32;
                                 break;
 
-                            case 38:
-                                _context2.prev = 38;
-                                _context2.t0 = _context2["catch"](18);
+                            case 28:
+                                _context2.prev = 28;
+                                _context2.t0 = _context2["catch"](8);
                                 _didIteratorError5 = true;
                                 _iteratorError5 = _context2.t0;
 
-                            case 42:
-                                _context2.prev = 42;
-                                _context2.prev = 43;
+                            case 32:
+                                _context2.prev = 32;
+                                _context2.prev = 33;
 
                                 if (!_iteratorNormalCompletion5 && _iterator5.return) {
                                     _iterator5.return();
                                 }
 
-                            case 45:
-                                _context2.prev = 45;
+                            case 35:
+                                _context2.prev = 35;
 
                                 if (!_didIteratorError5) {
-                                    _context2.next = 48;
+                                    _context2.next = 38;
                                     break;
                                 }
 
                                 throw _iteratorError5;
 
-                            case 48:
-                                return _context2.finish(45);
+                            case 38:
+                                return _context2.finish(35);
 
-                            case 49:
-                                return _context2.finish(42);
+                            case 39:
+                                return _context2.finish(32);
 
-                            case 50:
-                                return _context2.abrupt("return", {
-                                    jsonrpc: "2.0",
-                                    result: results,
-                                    id: message.id || null
-                                });
+                            case 40:
+                                return _context2.abrupt("return", _jsonRpcMsg2.default.createResponse(message.id || null, results));
 
-                            case 53:
+                            case 43:
                                 if (!(message.method === "rpc.off")) {
-                                    _context2.next = 91;
+                                    _context2.next = 81;
                                     break;
                                 }
 
                                 if (message.params) {
-                                    _context2.next = 56;
+                                    _context2.next = 46;
                                     break;
                                 }
 
-                                return _context2.abrupt("return", {
-                                    jsonrpc: "2.0",
-                                    error: utils.createError(-32000),
-                                    id: message.id || null
-                                });
+                                return _context2.abrupt("return", _jsonRpcMsg2.default.createError(message.id || null, ERRORS.INTERNAL_SERVER_ERROR));
 
-                            case 56:
+                            case 46:
                                 _results = {};
                                 _iteratorNormalCompletion6 = true;
                                 _didIteratorError6 = false;
                                 _iteratorError6 = undefined;
-                                _context2.prev = 60;
+                                _context2.prev = 50;
                                 _iterator6 = (0, _getIterator3.default)(message.params);
 
-                            case 62:
+                            case 52:
                                 if (_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done) {
-                                    _context2.next = 76;
+                                    _context2.next = 66;
                                     break;
                                 }
 
                                 _name = _step6.value;
 
                                 if (this.namespaces[ns].events[_name]) {
-                                    _context2.next = 67;
+                                    _context2.next = 57;
                                     break;
                                 }
 
                                 _results[_name] = "provided event invalid";
-                                return _context2.abrupt("continue", 73);
+                                return _context2.abrupt("continue", 63);
 
-                            case 67:
+                            case 57:
                                 _index = this.namespaces[ns].events[_name].indexOf(socket_id);
 
                                 if (!(_index === -1)) {
-                                    _context2.next = 71;
+                                    _context2.next = 61;
                                     break;
                                 }
 
                                 _results[_name] = "not subscribed";
-                                return _context2.abrupt("continue", 73);
+                                return _context2.abrupt("continue", 63);
 
-                            case 71:
+                            case 61:
 
                                 this.namespaces[ns].events[_name].splice(_index, 1);
                                 _results[_name] = "ok";
 
-                            case 73:
+                            case 63:
                                 _iteratorNormalCompletion6 = true;
-                                _context2.next = 62;
+                                _context2.next = 52;
                                 break;
 
-                            case 76:
-                                _context2.next = 82;
+                            case 66:
+                                _context2.next = 72;
                                 break;
 
-                            case 78:
-                                _context2.prev = 78;
-                                _context2.t1 = _context2["catch"](60);
+                            case 68:
+                                _context2.prev = 68;
+                                _context2.t1 = _context2["catch"](50);
                                 _didIteratorError6 = true;
                                 _iteratorError6 = _context2.t1;
 
-                            case 82:
-                                _context2.prev = 82;
-                                _context2.prev = 83;
+                            case 72:
+                                _context2.prev = 72;
+                                _context2.prev = 73;
 
                                 if (!_iteratorNormalCompletion6 && _iterator6.return) {
                                     _iterator6.return();
                                 }
 
-                            case 85:
-                                _context2.prev = 85;
+                            case 75:
+                                _context2.prev = 75;
 
                                 if (!_didIteratorError6) {
-                                    _context2.next = 88;
+                                    _context2.next = 78;
                                     break;
                                 }
 
                                 throw _iteratorError6;
 
-                            case 88:
-                                return _context2.finish(85);
+                            case 78:
+                                return _context2.finish(75);
 
-                            case 89:
-                                return _context2.finish(82);
+                            case 79:
+                                return _context2.finish(72);
 
-                            case 90:
-                                return _context2.abrupt("return", {
-                                    jsonrpc: "2.0",
-                                    result: _results,
-                                    id: message.id || null
-                                });
+                            case 80:
+                                return _context2.abrupt("return", _jsonRpcMsg2.default.createResponse(message.id || null, _results));
 
-                            case 91:
+                            case 81:
                                 if (this.namespaces[ns].rpc_methods[message.method]) {
-                                    _context2.next = 93;
+                                    _context2.next = 83;
                                     break;
                                 }
 
-                                return _context2.abrupt("return", {
-                                    jsonrpc: "2.0",
-                                    error: utils.createError(-32601),
-                                    id: message.id || null
-                                });
+                                return _context2.abrupt("return", _jsonRpcMsg2.default.createError(message.id || null, _jsonRpcMsg2.default.ERRORS.METHOD_NOT_FOUND));
 
-                            case 93:
+                            case 83:
                                 response = null;
-                                _context2.prev = 94;
-                                _context2.next = 97;
+                                _context2.prev = 84;
+                                _context2.next = 87;
                                 return this.namespaces[ns].rpc_methods[message.method](message.params);
 
-                            case 97:
+                            case 87:
                                 response = _context2.sent;
-                                _context2.next = 107;
+                                _context2.next = 97;
                                 break;
 
-                            case 100:
-                                _context2.prev = 100;
-                                _context2.t2 = _context2["catch"](94);
+                            case 90:
+                                _context2.prev = 90;
+                                _context2.t2 = _context2["catch"](84);
 
                                 if (message.id) {
-                                    _context2.next = 104;
+                                    _context2.next = 94;
                                     break;
                                 }
 
                                 return _context2.abrupt("return");
 
-                            case 104:
+                            case 94:
                                 if (!(_context2.t2 instanceof Error)) {
-                                    _context2.next = 106;
+                                    _context2.next = 96;
                                     break;
                                 }
 
-                                return _context2.abrupt("return", {
-                                    jsonrpc: "2.0",
-                                    error: {
-                                        code: -32000,
-                                        message: _context2.t2.name,
-                                        data: _context2.t2.message
-                                    },
-                                    id: message.id
-                                });
+                                return _context2.abrupt("return", _jsonRpcMsg2.default.createError(message.id, ERRORS.INTERNAL_SERVER_ERROR, _context2.t2.message));
 
-                            case 106:
-                                return _context2.abrupt("return", {
-                                    jsonrpc: "2.0",
-                                    error: _context2.t2,
-                                    id: message.id
-                                });
+                            case 96:
+                                return _context2.abrupt("return", _jsonRpcMsg2.default.createError(message.id, _context2.t2));
 
-                            case 107:
+                            case 97:
                                 if (message.id) {
-                                    _context2.next = 109;
+                                    _context2.next = 99;
                                     break;
                                 }
 
                                 return _context2.abrupt("return");
 
-                            case 109:
-                                return _context2.abrupt("return", {
-                                    jsonrpc: "2.0",
-                                    result: response,
-                                    id: message.id
-                                });
+                            case 99:
+                                return _context2.abrupt("return", _jsonRpcMsg2.default.createResponse(message.id, response));
 
-                            case 110:
+                            case 100:
                             case "end":
                                 return _context2.stop();
                         }
                     }
-                }, _callee2, this, [[18, 38, 42, 50], [43,, 45, 49], [60, 78, 82, 90], [83,, 85, 89], [94, 100]]);
+                }, _callee2, this, [[8, 28, 32, 40], [33,, 35, 39], [50, 68, 72, 80], [73,, 75, 79], [84, 90]]);
             }));
 
             function _runMethod(_x7, _x8) {

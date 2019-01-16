@@ -9,6 +9,7 @@
 import assertArgs from "assert-args"
 import EventEmitter from "eventemitter3"
 import CircularJSON from "circular-json"
+import jsonrpc from "json-rpc-msg"
 
 export default (WebSocket) => class Client extends EventEmitter
 {
@@ -92,12 +93,9 @@ export default (WebSocket) => class Client extends EventEmitter
 
             const rpc_id = this.generate_request_id(method, params)
 
-            const message = {
-                jsonrpc: "2.0",
-                method: method,
-                params: params || null,
-                id: rpc_id
-            }
+            const message = method.startsWith("rpc.")
+                ? jsonrpc.createInternalRequest(rpc_id, method, params)
+                : jsonrpc.createRequest(rpc_id, method, params)
 
             this.socket.send(JSON.stringify(message), ws_opts, (error) =>
             {
@@ -147,11 +145,9 @@ export default (WebSocket) => class Client extends EventEmitter
             if (!this.ready)
                 return reject(new Error("socket not ready"))
 
-            const message = {
-                jsonrpc: "2.0",
-                method: method,
-                params: params || null
-            }
+            const message = method.startsWith("rpc.")
+                ? jsonrpc.createInternalNotification(method, params)
+                : jsonrpc.createNotification(method, params)
 
             this.socket.send(JSON.stringify(message), (error) =>
             {

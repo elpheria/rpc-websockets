@@ -617,7 +617,7 @@ describe("Server", function()
 
                         message.id.should.equal(rpc_id)
                         message.error.code.should.equal(-32000)
-                        message.error.message.should.equal("Error")
+                        message.error.message.should.equal("Internal server error")
                         message.error.data.should.equal("Server error details")
 
                         ws.close()
@@ -864,7 +864,7 @@ describe("Server", function()
                     {
                         message = JSON.parse(message)
                         message.error.code.should.equal(-32000)
-                        message.error.message.should.equal("Event not provided")
+                        message.error.message.should.equal("Internal server error")
 
                         rpc_id++
                         ws.close()

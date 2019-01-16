@@ -11,8 +11,19 @@ import { Server as WebSocketServer } from "ws"
 import uuid from "uuid"
 import url from "url"
 import CircularJSON from "circular-json"
+import jsonrpc from "json-rpc-msg"
 
-import * as utils from "./utils"
+/**
+ * List additional JSON RPC errors
+ *
+ * @type {object}
+ */
+const ERRORS = {
+    INTERNAL_SERVER_ERROR: {
+        code: -32000,
+        message: "Internal server error"
+    }
+}
 
 export default class Server extends EventEmitter
 {
@@ -364,38 +375,41 @@ export default class Server extends EventEmitter
         {
             const msg_options = {}
 
-            if (data instanceof ArrayBuffer)
+            if (data instanceof Buffer || data instanceof ArrayBuffer)
             {
                 msg_options.binary = true
 
                 data = Buffer.from(data).toString()
             }
 
-            try { data = JSON.parse(data) }
-
-            catch (error)
+            let message = null
+            try
             {
-                return socket.send(JSON.stringify({
-                    jsonrpc: "2.0",
-                    error: utils.createError(-32700, error.toString()),
-                    id: data.id || null
-                }, msg_options))
+                message = jsonrpc.parseMessage(data)
+            }
+            catch (e)
+            {
+                if (e instanceof jsonrpc.ParserError)
+                {
+                    socket.send(CircularJSON.stringify(e.rpcError), msg_options)
+                }
+                else
+                {
+                    // TODO: send "Internal Server Error"
+                }
+                return
             }
 
-            if (Array.isArray(data))
+            switch (message.type)
             {
-                if (!data.length)
-                    return socket.send(JSON.stringify({
-                        jsonrpc: "2.0",
-                        error: utils.createError(-32600, "Invalid array"),
-                        id: null
-                    }, msg_options))
-
+            case jsonrpc.MESSAGE_TYPES.BATCH: {
                 const responses = []
 
-                for (const message of data)
+                for (const batchMessage of message.payload)
                 {
-                    const response = await this._runMethod(message, socket._id, ns)
+                    const response = batchMessage instanceof jsonrpc.ParserError
+                        ? batchMessage.rpcError
+                        : await this._runMethod(batchMessage.payload, socket._id, ns)
 
                     if (!response)
                         continue
@@ -408,13 +422,18 @@ export default class Server extends EventEmitter
 
                 return socket.send(CircularJSON.stringify(responses), msg_options)
             }
+            case jsonrpc.MESSAGE_TYPES.REQUEST:
+            case jsonrpc.MESSAGE_TYPES.NOTIFICATION:
+            case jsonrpc.MESSAGE_TYPES.INTERNAL_REQUEST:
+            case jsonrpc.MESSAGE_TYPES.INTERNAL_NOTIFICATION: {
+                const response = await this._runMethod(message.payload, socket._id, ns)
 
-            const response = await this._runMethod(data, socket._id, ns)
+                if (!response)
+                    return
 
-            if (!response)
-                return
-
-            return socket.send(CircularJSON.stringify(response), msg_options)
+                return socket.send(CircularJSON.stringify(response), msg_options)
+            }
+            }
         })
     }
 
@@ -428,49 +447,12 @@ export default class Server extends EventEmitter
      */
     async _runMethod(message, socket_id, ns = "/")
     {
-        if (typeof message !== "object")
-            return {
-                jsonrpc: "2.0",
-                error: utils.createError(-32600),
-                id: null
-            }
-
-        if (message.jsonrpc !== "2.0")
-            return {
-                jsonrpc: "2.0",
-                error: utils.createError(-32600, "Invalid JSON RPC version"),
-                id: message.id || null
-            }
-
-        if (!message.method)
-            return {
-                jsonrpc: "2.0",
-                error: utils.createError(-32602, "Method not specified"),
-                id: message.id || null
-            }
-
-        if (typeof message.method !== "string")
-            return {
-                jsonrpc: "2.0",
-                error: utils.createError(-32600, "Invalid method name"),
-                id: message.id || null
-            }
-
-        if (message.params && typeof message.params === "string")
-            return {
-                jsonrpc: "2.0",
-                error: utils.createError(-32600),
-                id: message.id || null
-            }
-
         if (message.method === "rpc.on")
         {
             if (!message.params)
-                return {
-                    jsonrpc: "2.0",
-                    error: utils.createError(-32000),
-                    id: message.id || null
-                }
+                return jsonrpc.createError(
+                    message.id || null, ERRORS.INTERNAL_SERVER_ERROR
+                )
 
             const results = {}
 
@@ -498,20 +480,14 @@ export default class Server extends EventEmitter
                 results[name] = "ok"
             }
 
-            return {
-                jsonrpc: "2.0",
-                result: results,
-                id: message.id || null
-            }
+            return jsonrpc.createResponse(message.id || null, results)
         }
         else if (message.method === "rpc.off")
         {
             if (!message.params)
-                return {
-                    jsonrpc: "2.0",
-                    error: utils.createError(-32000),
-                    id: message.id || null
-                }
+                return jsonrpc.createError(
+                    message.id || null, ERRORS.INTERNAL_SERVER_ERROR
+                )
 
             const results = {}
 
@@ -535,20 +511,12 @@ export default class Server extends EventEmitter
                 results[name] = "ok"
             }
 
-            return {
-                jsonrpc: "2.0",
-                result: results,
-                id: message.id || null
-            }
+            return jsonrpc.createResponse(message.id || null, results)
         }
 
         if (!this.namespaces[ns].rpc_methods[message.method])
         {
-            return {
-                jsonrpc: "2.0",
-                error: utils.createError(-32601),
-                id: message.id || null
-            }
+            return jsonrpc.createError(message.id || null, jsonrpc.ERRORS.METHOD_NOT_FOUND)
         }
 
         let response = null
@@ -561,32 +529,16 @@ export default class Server extends EventEmitter
                 return
 
             if (error instanceof Error)
-                return {
-                    jsonrpc: "2.0",
-                    error: {
-                        code: -32000,
-                        message: error.name,
-                        data: error.message
-                    },
-                    id: message.id
-                }
+                return jsonrpc.createError(message.id, ERRORS.INTERNAL_SERVER_ERROR, error.message)
 
-            return {
-                jsonrpc: "2.0",
-                error: error,
-                id: message.id
-            }
+            return jsonrpc.createError(message.id, error)
         }
 
         // client sent a notification, so we won't need a reply
         if (!message.id)
             return
 
-        return {
-            jsonrpc: "2.0",
-            result: response,
-            id: message.id
-        }
+        return jsonrpc.createResponse(message.id, response)
     }
 
     /**
