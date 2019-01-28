@@ -17,23 +17,25 @@
   "dependencies": {
     "assert-args": "^1.2.1",
     "babel-runtime": "^6.26.0",
-    "circular-json": "^0.5.5",
+    "circular-json": "^0.5.9",
     "eventemitter3": "^3.1.0",
     "json-rpc-msg": "^1.1.0",
     "uuid": "^3.3.2",
-    "ws": "^5.2.2"
+    "ws": "^6.1.2"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.3",
     "babel-eslint": "^8.2.6",
     "babel-plugin-add-module-exports": "^0.2.1",
+    "babel-plugin-transform-class-properties": "^6.24.1",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "babel-plugin-transform-runtime": "^6.15.0",
     "babel-preset-env": "^1.7.0",
     "browserify": "^16.2.3",
-    "chai": "^4.0.2",
+    "chai": "^4.2.0",
     "coveralls": "^3.0.2",
-    "eslint": "^4.19.1",
+    "eslint": "^5.12.1",
     "istanbul": "^0.4.5",
     "mocha": "^5.2.0",
     "mocha-lcov-reporter": "^1.3.0"

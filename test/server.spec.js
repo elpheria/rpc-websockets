@@ -189,7 +189,7 @@ describe("Server", function()
             expect(ns.eventList).to.have.lengthOf(1)
 
             server.closeNamespace("/chat1")
-            expect(server.namespaces["/chat1"]).to.be.undefined
+            expect(server.hasNamespace("/chat1")).to.be.false
             done()
         })
     })
@@ -925,16 +925,15 @@ describe("Server", function()
 
                         catch (error) { done(error) }
 
-                        if (message.notification)
-                        {
-                            message.notification.should.equal("newMail")
+                        // This part handles successfull subscription:
+                        if (message.id === rpc_id && message.result.newMail === "ok")
+                            return server.sendNotification("newMail")
 
-                            ws.close()
-                            return done()
-                        }
-
-                        if (message.result.newMail === "ok")
-                            return server.emit("newMail")
+                        // This part handles incoming notification:
+                        expect(message.id).to.not.exist
+                        expect(message.method).to.be.equal("newMail")
+                        ws.close()
+                        return done()
                     })
 
                     ws.once("error", function(error)
@@ -961,17 +960,16 @@ describe("Server", function()
 
                         catch (error) { done(error) }
 
-                        if (message.notification)
-                        {
-                            message.notification.should.equal("updatedNews")
-                            message.params[0].should.equal("fox")
+                        // This part handles successfull subscription:
+                        if (message.id === rpc_id && message.result.updatedNews === "ok")
+                            return server.sendNotification("updatedNews", ["fox"])
 
-                            ws.close()
-                            return done()
-                        }
-
-                        if (message.result.updatedNews === "ok")
-                            return server.emit("updatedNews", "fox")
+                        // This part handles incoming notification:
+                        expect(message.id).to.not.exist
+                        expect(message.method).to.be.equal("updatedNews")
+                        expect(message.params).to.be.deep.equal(["fox"])
+                        ws.close()
+                        return done()
                     })
 
                     ws.once("error", function(error)
@@ -998,17 +996,16 @@ describe("Server", function()
 
                         catch (error) { done(error) }
 
-                        if (message.notification)
-                        {
-                            message.notification.should.equal("updatedNews")
-                            expect(message.params).to.deep.equal(["fox", "mtv", "eurosport"])
+                        // This part handles successfull subscription:
+                        if (message.id === rpc_id && message.result.updatedNews === "ok")
+                            return server.sendNotification("updatedNews", ["fox", "mtv", "eurosport"])
 
-                            ws.close()
-                            return done()
-                        }
-
-                        if (message.result.updatedNews === "ok")
-                            return server.emit("updatedNews", "fox", "mtv", "eurosport")
+                        // This part handles incoming notification:
+                        expect(message.id).to.not.exist
+                        expect(message.method).to.be.equal("updatedNews")
+                        expect(message.params).to.be.deep.equal(["fox", "mtv", "eurosport"])
+                        ws.close()
+                        return done()
                     })
 
                     ws.once("error", function(error)
@@ -1032,23 +1029,10 @@ describe("Server", function()
                     ws.on("message", function(message)
                     {
                         try { message = JSON.parse(message) }
-
                         catch (error) { done(error) }
 
-                        if (message.notification)
-                        {
-                            message.notification.should.equal("circularUpdate")
-                            expect(message.params).to.deep.equal({
-                                one: "one",
-                                two: "two",
-                                ref: "~params"
-                            })
-
-                            ws.close()
-                            return done()
-                        }
-
-                        if (message.result.circularUpdate === "ok")
+                        // This part handles successfull subscription:
+                        if (message.id === rpc_id && message.result.circularUpdate === "ok")
                         {
                             const Obj = function()
                             {
@@ -1056,9 +1040,19 @@ describe("Server", function()
                                 this.two = "two"
                                 this.ref = this
                             }
-
-                            return server.emit("circularUpdate", new Obj())
+                            return server.sendNotification("circularUpdate", [new Obj()])
                         }
+
+                        // This part handles incoming notification:
+                        expect(message.id).to.not.exist
+                        expect(message.method).to.be.equal("circularUpdate")
+                        expect(message.params).to.be.deep.equal([{
+                            one: "one",
+                            two: "two",
+                            ref: "~params~0"
+                        }])
+                        ws.close()
+                        return done()
                     })
 
                     ws.once("error", function(error)

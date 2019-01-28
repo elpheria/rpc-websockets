@@ -10,29 +10,17 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _keys = require("babel-runtime/core-js/object/keys");
-
-var _keys2 = _interopRequireDefault(_keys);
-
 var _regenerator = require("babel-runtime/regenerator");
 
 var _regenerator2 = _interopRequireDefault(_regenerator);
-
-var _asyncToGenerator2 = require("babel-runtime/helpers/asyncToGenerator");
-
-var _asyncToGenerator3 = _interopRequireDefault(_asyncToGenerator2);
-
-var _stringify = require("babel-runtime/core-js/json/stringify");
-
-var _stringify2 = _interopRequireDefault(_stringify);
 
 var _promise = require("babel-runtime/core-js/promise");
 
 var _promise2 = _interopRequireDefault(_promise);
 
-var _typeof2 = require("babel-runtime/helpers/typeof");
+var _asyncToGenerator2 = require("babel-runtime/helpers/asyncToGenerator");
 
-var _typeof3 = _interopRequireDefault(_typeof2);
+var _asyncToGenerator3 = _interopRequireDefault(_asyncToGenerator2);
 
 var _getPrototypeOf = require("babel-runtime/core-js/object/get-prototype-of");
 
@@ -62,18 +50,20 @@ var _eventemitter = require("eventemitter3");
 
 var _eventemitter2 = _interopRequireDefault(_eventemitter);
 
-var _circularJson = require("circular-json");
+var _Namespace = require("./Namespace");
 
-var _circularJson2 = _interopRequireDefault(_circularJson);
+var _Namespace2 = _interopRequireDefault(_Namespace);
 
-var _jsonRpcMsg = require("json-rpc-msg");
+var _JsonRpcSocket = require("./JsonRpcSocket");
 
-var _jsonRpcMsg2 = _interopRequireDefault(_jsonRpcMsg);
+var _JsonRpcSocket2 = _interopRequireDefault(_JsonRpcSocket);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.default = function (WebSocket) {
-    return function (_EventEmitter) {
+    var _class, _temp;
+
+    return _temp = _class = function (_EventEmitter) {
         (0, _inherits3.default)(Client, _EventEmitter);
 
         /**
@@ -95,117 +85,123 @@ exports.default = function (WebSocket) {
                 _ref$reconnect_interv = _ref.reconnect_interval,
                 reconnect_interval = _ref$reconnect_interv === undefined ? 1000 : _ref$reconnect_interv,
                 _ref$max_reconnects = _ref.max_reconnects,
-                max_reconnects = _ref$max_reconnects === undefined ? 5 : _ref$max_reconnects;
+                max_reconnects = _ref$max_reconnects === undefined ? 5 : _ref$max_reconnects,
+                _ref$strict_subscript = _ref.strict_subscriptions,
+                strict_subscriptions = _ref$strict_subscript === undefined ? true : _ref$strict_subscript;
 
             var generate_request_id = arguments[2];
             (0, _classCallCheck3.default)(this, Client);
 
             var _this = (0, _possibleConstructorReturn3.default)(this, (Client.__proto__ || (0, _getPrototypeOf2.default)(Client)).call(this));
 
-            _this.queue = {};
-            _this.rpc_id = 0;
-
-            _this.address = address;
-            _this.options = arguments[1];
-            _this.autoconnect = autoconnect;
-            _this.ready = false;
-            _this.reconnect = reconnect;
-            _this.reconnect_interval = reconnect_interval;
-            _this.max_reconnects = max_reconnects;
-            _this.current_reconnects = 0;
-            _this.generate_request_id = generate_request_id || function () {
-                return ++_this.rpc_id;
+            _this.wsOptions = arguments[1];
+            _this.options = {
+                address: address,
+                max_reconnects: max_reconnects,
+                reconnect: reconnect,
+                autoconnect: autoconnect,
+                reconnect_interval: reconnect_interval,
+                strict_subscriptions: strict_subscriptions,
+                generate_request_id: generate_request_id
             };
 
-            if (_this.autoconnect) _this._connect(_this.address, _this.options);
+            _this._ready = false;
+            _this._currentReconnects = 0;
+            _this._socket = null;
+            _this._rpcSocket = null;
+            _this._namespace = new _Namespace2.default("/", {
+                strict_subscriptions: strict_subscriptions,
+                // Client namespace should never use strict notifications, so client's events will
+                // always be delivered to server:
+                strict_notifications: false
+            });
+
+            if (_this.options.autoconnect) _this.connect();
             return _this;
         }
 
         /**
-         * Connects to a defined server if not connected already.
+         * Connection/Message handler.
          * @method
+         * @private
+         * @param {String} address - WebSocket API address
+         * @param {Object} options - ws options object
          * @return {Undefined}
          */
 
 
         (0, _createClass3.default)(Client, [{
-            key: "connect",
-            value: function connect() {
-                if (this.socket) return;
-
-                this._connect(this.address, this.options);
-            }
-
-            /**
-             * Calls a registered RPC method on server.
-             * @method
-             * @param {String} method - RPC method name
-             * @param {Object|Array} params - optional method parameters
-             * @param {Number} timeout - RPC reply timeout value
-             * @param {Object} ws_opts - options passed to ws
-             * @return {Promise}
-             */
-
-        }, {
-            key: "call",
-            value: function call(method, params, timeout, ws_opts) {
+            key: "_connect",
+            value: function _connect(address, options) {
                 var _this2 = this;
 
-                (0, _assertArgs2.default)(arguments, {
-                    "method": "string",
-                    "[params]": ["object", Array],
-                    "[timeout]": "number",
-                    "[ws_opts]": "object"
+                var socket = new WebSocket(address, options);
+                var rpcSocket = new _JsonRpcSocket2.default(socket, "main", {
+                    generate_request_id: this.options.generate_request_id || null
                 });
 
-                if (!ws_opts && "object" === (typeof timeout === "undefined" ? "undefined" : (0, _typeof3.default)(timeout))) {
-                    ws_opts = timeout;
-                    timeout = null;
-                }
-
-                return new _promise2.default(function (resolve, reject) {
-                    if (!_this2.ready) return reject(new Error("socket not ready"));
-
-                    var rpc_id = _this2.generate_request_id(method, params);
-
-                    var message = method.startsWith("rpc.") ? _jsonRpcMsg2.default.createInternalRequest(rpc_id, method, params) : _jsonRpcMsg2.default.createRequest(rpc_id, method, params);
-
-                    _this2.socket.send((0, _stringify2.default)(message), ws_opts, function (error) {
-                        if (error) return reject(error);
-
-                        _this2.queue[rpc_id] = { promise: [resolve, reject] };
-
-                        if (timeout) {
-                            _this2.queue[rpc_id].timeout = setTimeout(function () {
-                                _this2.queue[rpc_id] = null;
-                                reject(new Error("reply timeout"));
-                            }, timeout);
-                        }
-                    });
+                rpcSocket.on("open", function () {
+                    console.log("ready");
+                    _this2._ready = true;
+                    _this2.emit("open");
+                    _this2._currentReconnects = 0;
                 });
+
+                rpcSocket.on("error", function (error) {
+                    return _this2.emit("error", error);
+                });
+
+                rpcSocket.on("close", function (code, message) {
+                    if (_this2._ready) _this2.emit("close", code, message);
+
+                    _this2._ready = false;
+
+                    if (code === 1000) return;
+
+                    _this2._currentReconnects++;
+
+                    if (_this2.options.reconnect && (_this2.options.max_reconnects > _this2._currentReconnects || _this2.options.max_reconnects === 0)) setTimeout(function () {
+                        return _this2._connect(address, options);
+                    }, _this2.options.reconnect_interval);
+                });
+
+                this._socket = socket;
+                this._rpcSocket = rpcSocket;
+
+                // Add socket to namespace:
+                this._namespace.addClient(rpcSocket);
             }
 
             /**
-             * Fetches a list of client's methods registered on server.
+             * Connects to a defined server if not connected already.
              * @method
-             * @return {Array}
+             * @return {Undefined}
              */
 
         }, {
-            key: "listMethods",
+            key: "connect",
             value: function () {
                 var _ref2 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee() {
+                    var _this3 = this;
+
                     return _regenerator2.default.wrap(function _callee$(_context) {
                         while (1) {
                             switch (_context.prev = _context.next) {
                                 case 0:
-                                    _context.next = 2;
-                                    return this.call("__listMethods");
+                                    return _context.abrupt("return", new _promise2.default(function (resolve, reject) {
+                                        // Run new connection:
+                                        if (!_this3._rpcSocket) _this3._connect(_this3.options.address, _this3.wsOptions);
 
-                                case 2:
-                                    return _context.abrupt("return", _context.sent);
+                                        // If websocket is not in "OPENED" state then it's ready:
+                                        if (_this3._rpcSocket.getSocket().readyState === 1) return resolve();
+                                        // Otherwise wait till connection opened:
+                                        else {
+                                                _this3.once("open", resolve);
+                                                _this3.once("error", reject);
+                                            }
+                                    }));
 
-                                case 3:
+                                case 1:
                                 case "end":
                                     return _context.stop();
                             }
@@ -213,43 +209,84 @@ exports.default = function (WebSocket) {
                     }, _callee, this);
                 }));
 
-                function listMethods() {
+                function connect() {
                     return _ref2.apply(this, arguments);
                 }
 
-                return listMethods;
+                return connect;
             }()
 
             /**
-             * Sends a JSON-RPC 2.0 notification to server.
+             * Closes a WebSocket connection gracefully.
              * @method
-             * @param {String} method - RPC method name
-             * @param {Object} params - optional method parameters
-             * @return {Promise}
+             * @param {Number} code - socket close code
+             * @param {String} data - optional data to be sent before closing
+             * @return {Undefined}
              */
 
         }, {
-            key: "notify",
-            value: function notify(method, params) {
-                var _this3 = this;
-
-                (0, _assertArgs2.default)(arguments, {
-                    "method": "string",
-                    "[params]": ["object", Array]
-                });
-
-                return new _promise2.default(function (resolve, reject) {
-                    if (!_this3.ready) return reject(new Error("socket not ready"));
-
-                    var message = method.startsWith("rpc.") ? _jsonRpcMsg2.default.createInternalNotification(method, params) : _jsonRpcMsg2.default.createNotification(method, params);
-
-                    _this3.socket.send((0, _stringify2.default)(message), function (error) {
-                        if (error) return reject(error);
-
-                        resolve();
-                    });
-                });
+            key: "close",
+            value: function close(code, data) {
+                this._rpcSocket.close(code, data);
             }
+
+            /* ----------------------------------------
+             | RPC Notifications related methods
+             |----------------------------------------
+             |
+             |*/
+
+        }, {
+            key: "_updateSubscription",
+            value: function () {
+                var _ref3 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee2(subscribe, events) {
+                    var method;
+                    return _regenerator2.default.wrap(function _callee2$(_context2) {
+                        while (1) {
+                            switch (_context2.prev = _context2.next) {
+                                case 0:
+                                    if (typeof events === "string") events = [events];
+
+                                    if (Array.isArray(events)) {
+                                        _context2.next = 3;
+                                        break;
+                                    }
+
+                                    return _context2.abrupt("return", _promise2.default.reject(new TypeError("Passed events list is not an array")));
+
+                                case 3:
+                                    if (this.options.strict_subscriptions) {
+                                        _context2.next = 7;
+                                        break;
+                                    }
+
+                                    return _context2.abrupt("return", events.reduce(function (result, event) {
+                                        result[event] = "ok";
+                                        return result;
+                                    }, {}));
+
+                                case 7:
+                                    method = subscribe ? "on" : "off";
+                                    _context2.next = 10;
+                                    return this.callInternalMethod(method, events);
+
+                                case 10:
+                                    return _context2.abrupt("return", _context2.sent);
+
+                                case 11:
+                                case "end":
+                                    return _context2.stop();
+                            }
+                        }
+                    }, _callee2, this);
+                }));
+
+                function _updateSubscription(_x3, _x4) {
+                    return _ref3.apply(this, arguments);
+                }
+
+                return _updateSubscription;
+            }()
 
             /**
              * Subscribes for a defined event.
@@ -262,45 +299,23 @@ exports.default = function (WebSocket) {
         }, {
             key: "subscribe",
             value: function () {
-                var _ref3 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee2(event) {
-                    var result,
-                        _args2 = arguments;
-                    return _regenerator2.default.wrap(function _callee2$(_context2) {
+                var _ref4 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee3(event) {
+                    return _regenerator2.default.wrap(function _callee3$(_context3) {
                         while (1) {
-                            switch (_context2.prev = _context2.next) {
+                            switch (_context3.prev = _context3.next) {
                                 case 0:
-                                    (0, _assertArgs2.default)(_args2, {
-                                        event: ["string", Array]
-                                    });
+                                    return _context3.abrupt("return", this._updateSubscription(true, event));
 
-                                    if (typeof event === "string") event = [event];
-
-                                    _context2.next = 4;
-                                    return this.call("rpc.on", event);
-
-                                case 4:
-                                    result = _context2.sent;
-
-                                    if (!(typeof event === "string" && result[event] !== "ok")) {
-                                        _context2.next = 7;
-                                        break;
-                                    }
-
-                                    throw new Error("Failed subscribing to an event '" + event + "' with: " + result[event]);
-
-                                case 7:
-                                    return _context2.abrupt("return", result);
-
-                                case 8:
+                                case 1:
                                 case "end":
-                                    return _context2.stop();
+                                    return _context3.stop();
                             }
                         }
-                    }, _callee2, this);
+                    }, _callee3, this);
                 }));
 
-                function subscribe(_x3) {
-                    return _ref3.apply(this, arguments);
+                function subscribe(_x5) {
+                    return _ref4.apply(this, arguments);
                 }
 
                 return subscribe;
@@ -317,141 +332,631 @@ exports.default = function (WebSocket) {
         }, {
             key: "unsubscribe",
             value: function () {
-                var _ref4 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee3(event) {
-                    var result,
-                        _args3 = arguments;
-                    return _regenerator2.default.wrap(function _callee3$(_context3) {
+                var _ref5 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee4(event) {
+                    return _regenerator2.default.wrap(function _callee4$(_context4) {
                         while (1) {
-                            switch (_context3.prev = _context3.next) {
+                            switch (_context4.prev = _context4.next) {
                                 case 0:
-                                    (0, _assertArgs2.default)(_args3, {
-                                        event: ["string", Array]
-                                    });
+                                    return _context4.abrupt("return", this._updateSubscription(false, event));
 
-                                    if (typeof event === "string") event = [event];
-
-                                    _context3.next = 4;
-                                    return this.call("rpc.off", event);
-
-                                case 4:
-                                    result = _context3.sent;
-
-                                    if (!(typeof event === "string" && result[event] !== "ok")) {
-                                        _context3.next = 7;
-                                        break;
-                                    }
-
-                                    throw new Error("Failed unsubscribing from an event with: " + result);
-
-                                case 7:
-                                    return _context3.abrupt("return", result);
-
-                                case 8:
+                                case 1:
                                 case "end":
-                                    return _context3.stop();
+                                    return _context4.stop();
                             }
                         }
-                    }, _callee3, this);
+                    }, _callee4, this);
                 }));
 
-                function unsubscribe(_x4) {
-                    return _ref4.apply(this, arguments);
+                function unsubscribe(_x6) {
+                    return _ref5.apply(this, arguments);
                 }
 
                 return unsubscribe;
             }()
 
             /**
-             * Closes a WebSocket connection gracefully.
-             * @method
-             * @param {Number} code - socket close code
-             * @param {String} data - optional data to be sent before closing
+             * Retrieve list of remote events
+             *
+             * @returns {Promise<array<string>>}
+             */
+
+        }, {
+            key: "listRemoteEvents",
+            value: function () {
+                var _ref6 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee5() {
+                    return _regenerator2.default.wrap(function _callee5$(_context5) {
+                        while (1) {
+                            switch (_context5.prev = _context5.next) {
+                                case 0:
+                                    return _context5.abrupt("return", this._rpcSocket.listRemoteEvents());
+
+                                case 1:
+                                case "end":
+                                    return _context5.stop();
+                            }
+                        }
+                    }, _callee5, this);
+                }));
+
+                function listRemoteEvents() {
+                    return _ref6.apply(this, arguments);
+                }
+
+                return listRemoteEvents;
+            }()
+
+            /**
+             * Creates a new notification that can be emitted to clients.
+             *
+             * @param {String|array<string>} name - notification name
+             *
+             * @throws {TypeError}
+             *
              * @return {Undefined}
              */
 
         }, {
-            key: "close",
-            value: function close(code, data) {
-                this.socket.close(code || 1000, data);
+            key: "registerNotification",
+            value: function registerNotification(name) {
+                return this._namespace.registerNotification(name);
             }
 
             /**
-             * Connection/Message handler.
-             * @method
-             * @private
-             * @param {String} address - WebSocket API address
-             * @param {Object} options - ws options object
+             * Unregister notification with given name as possible to be fired
+             *
+             * @param {string|array<string>} names - notifications names
+             *
+             * @returns {void}
+             */
+
+        }, {
+            key: "unregisterNotification",
+            value: function unregisterNotification(names) {
+                return this._namespace.unregisterNotification(names);
+            }
+
+            /**
+             * Returns list of registered notification names
+             *
+             * @returns {Array}
+             */
+
+        }, {
+            key: "getRegisteredNotifications",
+            value: function getRegisteredNotifications() {
+                return this._namespace.getRegisteredNotifications();
+            }
+
+            /**
+             * Set handlers for given RPC notifications
+             * Function have two signatures:
+             *     - when notification and handler passed as two arguments
+             *     - when list of notifications with related handlers are provided as javascript object
+             *
+             * @param {string|object} notification - notification name or hash of notification => handler
+             * @param {function} handler? - notification handler (required if first argument is a string)
+             *
+             * @returns {void}
+             */
+
+        }, {
+            key: "onNotification",
+            value: function onNotification(notification, handler) {
+                return this._namespace.onNotification(notification, handler);
+            }
+
+            /**
+             * Set handlers for given RPC notifications
+             * Function have two signatures:
+             *     - when notification and handler passed as two arguments
+             *     - when list of notifications with related handlers are provided as javascript object
+             *
+             * @param {string|object} notification - notification name or hash of notification => handler
+             * @param {function} handler? - notification handler (required if first argument is a string)
+             *
+             * @returns {void}
+             */
+
+        }, {
+            key: "onceNotification",
+            value: function onceNotification(notification, handler) {
+                return this._namespace.onceNotification(notification, handler);
+            }
+
+            /**
+             * Unsubscribe from given RPC notifications
+             * Function have two signatures:
+             *     - when notification and handler passed as two arguments
+             *     - when list of notifications with related handlers are provided as javascript object
+             *
+             * @param {string|object} notification - notification name or hash of notification => handler
+             * @param {function} handler? - notification handler (required if first argument is a string)
+             *
+             * @returns {void}
+             */
+
+        }, {
+            key: "offNotification",
+            value: function offNotification(notification, handler) {
+                return this._namespace.offNotification(notification, handler);
+            }
+
+            /**
+             * Sends given notification
+             *
+             * @param {string} method - notification name
+             * @param {object|array} params - notification parameters
+             *
+             * @returns {Promise}
+             */
+
+        }, {
+            key: "sendNotification",
+            value: function () {
+                var _ref7 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee6(method, params) {
+                    return _regenerator2.default.wrap(function _callee6$(_context6) {
+                        while (1) {
+                            switch (_context6.prev = _context6.next) {
+                                case 0:
+                                    return _context6.abrupt("return", this._namespace.sendNotification(method, params));
+
+                                case 1:
+                                case "end":
+                                    return _context6.stop();
+                            }
+                        }
+                    }, _callee6, this);
+                }));
+
+                function sendNotification(_x7, _x8) {
+                    return _ref7.apply(this, arguments);
+                }
+
+                return sendNotification;
+            }()
+
+            /* ----------------------------------------
+             | RPC Internal Notifications related methods
+             |----------------------------------------
+             |
+             |*/
+
+            /**
+             * Creates a new internal notification that can be emitted to clients.
+             *
+             * @param {string|array<string>} name - notification name
+             *
              * @return {Undefined}
              */
 
         }, {
-            key: "_connect",
-            value: function _connect(address, options) {
-                var _this4 = this;
-
-                this.socket = new WebSocket(address, options);
-
-                this.socket.on("open", function () {
-                    _this4.ready = true;
-                    _this4.emit("open");
-                    _this4.current_reconnects = 0;
-                });
-
-                this.socket.on("message", function (message) {
-                    if (message instanceof ArrayBuffer) message = Buffer.from(message).toString();
-
-                    try {
-                        message = _circularJson2.default.parse(message);
-                    } catch (error) {
-                        return;
-                    }
-
-                    // check if any listeners are attached and forward event
-                    if (message.notification && _this4.listeners(message.notification).length) {
-                        if (!(0, _keys2.default)(message.params).length) return _this4.emit(message.notification);
-
-                        var args = [message.notification];
-
-                        if (message.params.constructor === Object) args.push(message.params);else
-                            // using for-loop instead of unshift/spread because performance is better
-                            for (var i = 0; i < message.params.length; i++) {
-                                args.push(message.params[i]);
-                            }return _this4.emit.apply(_this4, args);
-                    }
-
-                    if (!_this4.queue[message.id]) {
-                        // general JSON RPC 2.0 events
-                        if (message.method && message.params) return _this4.emit(message.method, message.params);else return;
-                    }
-
-                    if (_this4.queue[message.id].timeout) clearTimeout(_this4.queue[message.id].timeout);
-
-                    if (message.error) _this4.queue[message.id].promise[1](message.error);else _this4.queue[message.id].promise[0](message.result);
-
-                    _this4.queue[message.id] = null;
-                });
-
-                this.socket.on("error", function (error) {
-                    return _this4.emit("error", error);
-                });
-
-                this.socket.on("close", function (code, message) {
-                    if (_this4.ready) _this4.emit("close", code, message);
-
-                    _this4.ready = false;
-
-                    if (code === 1000) return;
-
-                    _this4.current_reconnects++;
-
-                    if (_this4.reconnect && (_this4.max_reconnects > _this4.current_reconnects || _this4.max_reconnects === 0)) setTimeout(function () {
-                        return _this4._connect(address, options);
-                    }, _this4.reconnect_interval);
-                });
+            key: "registerInternalNotification",
+            value: function registerInternalNotification(name) {
+                this._namespace.registerInternalNotification(name);
             }
+
+            /**
+             * Unregister notification with given name as possible to be fired
+             *
+             * @param {string|array<string>} names - notifications names
+             *
+             * @returns {void}
+             */
+
+        }, {
+            key: "unregisterInternalNotification",
+            value: function unregisterInternalNotification(names) {
+                this._namespace.unregisterInternalNotification(names);
+            }
+
+            /**
+             * Returns list of registered notification names
+             *
+             * @returns {Array}
+             */
+
+        }, {
+            key: "getRegisteredInternalNotifications",
+            value: function getRegisteredInternalNotifications() {
+                return this._namespace.getRegisteredInternalNotifications();
+            }
+
+            /**
+             * Subscribe to given internal RPC notifications
+             * Function have two signatures:
+             *     - when notification and handler passed as two arguments
+             *     - when list of notifications with related handlers are provided as javascript object
+             *
+             * @param {string|object} notification - notification name or hash of notification => handler
+             * @param {function} handler? - notification handler (required if first argument is a string)
+             *
+             * @returns {void}
+             */
+
+        }, {
+            key: "onInternalNotification",
+            value: function onInternalNotification(notification, handler) {
+                return this._namespace.onInternalNotification(notification, handler);
+            }
+
+            /**
+             * Subscribe to given internal RPC notifications
+             * Function have two signatures:
+             *     - when notification and handler passed as two arguments
+             *     - when list of notifications with related handlers are provided as javascript object
+             *
+             * @param {string|object} notification - notification name or hash of notification => handler
+             * @param {function} handler? - notification handler (required if first argument is a string)
+             *
+             * @returns {void}
+             */
+
+        }, {
+            key: "onceInternalNotification",
+            value: function onceInternalNotification(notification, handler) {
+                return this._namespace.onceInternalNotification(notification, handler);
+            }
+
+            /**
+             * Unsubscribe from given internal RPC notifications
+             * Function have two signatures:
+             *     - when notification and handler passed as two arguments
+             *     - when list of notifications with related handlers are provided as javascript object
+             *
+             * @param {string|object} notification - notification name or hash of notification => handler
+             * @param {function} handler? - notification handler (required if first argument is a string)
+             *
+             * @returns {void}
+             */
+
+        }, {
+            key: "offInternalNotification",
+            value: function offInternalNotification(notification, handler) {
+                return this._namespace.offInternalNotification(notification, handler);
+            }
+
+            /**
+             * Sends given notification
+             *
+             * @param {string} method - notification name
+             * @param {object|array} params - notification parameters
+             *
+             * @returns {Promise}
+             */
+
+        }, {
+            key: "sendInternalNotification",
+            value: function () {
+                var _ref8 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee7(method, params) {
+                    return _regenerator2.default.wrap(function _callee7$(_context7) {
+                        while (1) {
+                            switch (_context7.prev = _context7.next) {
+                                case 0:
+                                    return _context7.abrupt("return", this._namespace.sendInternalNotification(method, params));
+
+                                case 1:
+                                case "end":
+                                    return _context7.stop();
+                            }
+                        }
+                    }, _callee7, this);
+                }));
+
+                function sendInternalNotification(_x9, _x10) {
+                    return _ref8.apply(this, arguments);
+                }
+
+                return sendInternalNotification;
+            }()
+
+            /* ----------------------------------------
+             | RPC Methods related methods
+             |----------------------------------------
+             |
+             |*/
+            /**
+             * Retrieve list of remote methods
+             *
+             * @returns {Promise<array<string>>}
+             */
+
+        }, {
+            key: "listRemoteMethods",
+            value: function () {
+                var _ref9 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee8() {
+                    return _regenerator2.default.wrap(function _callee8$(_context8) {
+                        while (1) {
+                            switch (_context8.prev = _context8.next) {
+                                case 0:
+                                    return _context8.abrupt("return", this._rpcSocket.listRemoteMethods());
+
+                                case 1:
+                                case "end":
+                                    return _context8.stop();
+                            }
+                        }
+                    }, _callee8, this);
+                }));
+
+                function listRemoteMethods() {
+                    return _ref9.apply(this, arguments);
+                }
+
+                return listRemoteMethods;
+            }()
+
+            /**
+             * Registers an RPC method
+             *
+             * @param {string} name - method name
+             * @param {function} fn - method handler
+             *
+             * @returns {void}
+             */
+
+        }, {
+            key: "registerMethod",
+            value: function registerMethod(name, fn) {
+                this._namespace.registerMethod(name, fn);
+            }
+
+            /**
+             * Unregister an RPC method
+             *
+             * @param {string} name - method name
+             *
+             * @returns {void}
+             */
+
+        }, {
+            key: "unregisterMethod",
+            value: function unregisterMethod(name) {
+                this._namespace.unregisterMethod(name);
+            }
+
+            /**
+             * Returns list of registered methods names
+             *
+             * @returns {Array<string>}
+             */
+
+        }, {
+            key: "getRegisteredMethodsNames",
+            value: function getRegisteredMethodsNames() {
+                return this._namespace.getRegisteredMethodsNames();
+            }
+
+            /**
+             * Call remote method
+             * @param {string} method - method name to call
+             * @param {object|array} params - parameters to pass in method
+             * @param {number} waitTime? - max time to wait for response
+             * @param {object} wsOptions? - websocket options
+             * @returns {Promise<*>}
+             */
+
+        }, {
+            key: "callMethod",
+            value: function () {
+                var _ref10 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee9(method, params, waitTime, wsOptions) {
+                    return _regenerator2.default.wrap(function _callee9$(_context9) {
+                        while (1) {
+                            switch (_context9.prev = _context9.next) {
+                                case 0:
+                                    return _context9.abrupt("return", this._rpcSocket.callMethod(method, params, waitTime, wsOptions));
+
+                                case 1:
+                                case "end":
+                                    return _context9.stop();
+                            }
+                        }
+                    }, _callee9, this);
+                }));
+
+                function callMethod(_x11, _x12, _x13, _x14) {
+                    return _ref10.apply(this, arguments);
+                }
+
+                return callMethod;
+            }()
+
+            /* ----------------------------------------
+             | RPC Internal Methods related methods
+             |----------------------------------------
+             |
+             |*/
+
+            /**
+             * Registers an internal RPC method
+             *
+             * @param {string} name - method name
+             * @param {function} fn - method handler
+             * @param {string} ns? - namespace name to register
+             *
+             * @returns {void}
+             */
+
+        }, {
+            key: "registerInternalMethod",
+            value: function registerInternalMethod(name, fn) {
+                return this._namespace.registerInternalMethod(name, fn);
+            }
+
+            /**
+             * Registers an internal RPC method
+             *
+             * @param {string} name - method name
+             * @param {function} fn - method handler
+             * @param {string} ns? - namespace name to register
+             *
+             * @returns {void}
+             */
+
+        }, {
+            key: "unregisterInternalMethod",
+            value: function unregisterInternalMethod(name, fn) {
+                return this._namespace.unregisterInternalMethod(name, fn);
+            }
+
+            /**
+             * Returns list of registered internal methods
+             *
+             * @returns {Array<string>}
+             */
+
+        }, {
+            key: "getRegisteredInternalMethodsNames",
+            value: function getRegisteredInternalMethodsNames() {
+                return this._namespace.getRegisteredInternalMethodsNames();
+            }
+
+            /**
+             * Call remote method
+             * @param {string} method - method name to call
+             * @param {object|array} params - parameters to pass in method
+             * @param {number} waitTime? - max time to wait for response
+             * @param {object} wsOptions? - websocket options
+             * @returns {Promise<*>}
+             */
+
+        }, {
+            key: "callInternalMethod",
+            value: function () {
+                var _ref11 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee10(method, params, waitTime, wsOptions) {
+                    return _regenerator2.default.wrap(function _callee10$(_context10) {
+                        while (1) {
+                            switch (_context10.prev = _context10.next) {
+                                case 0:
+                                    return _context10.abrupt("return", this._rpcSocket.callInternalMethod(method, params, waitTime, wsOptions));
+
+                                case 1:
+                                case "end":
+                                    return _context10.stop();
+                            }
+                        }
+                    }, _callee10, this);
+                }));
+
+                function callInternalMethod(_x15, _x16, _x17, _x18) {
+                    return _ref11.apply(this, arguments);
+                }
+
+                return callInternalMethod;
+            }()
+
+            /* ----------------------------------------
+             | Deprecated methods
+             |----------------------------------------
+             |
+             |*/
+            /**
+             * Calls a registered RPC method on server.
+             * @method
+             * @param {String} method - RPC method name
+             * @param {Object|Array} params - optional method parameters
+             * @param {Number} timeout - RPC reply timeout value
+             * @param {Object} ws_opts - options passed to ws
+             * @return {Promise}
+             * @deprecated
+             */
+
+        }, {
+            key: "call",
+            value: function call(method, params, timeout, ws_opts) {
+                (0, _assertArgs2.default)(arguments, {
+                    "method": "string",
+                    "[params]": ["object", Array],
+                    "[timeout]": "number",
+                    "[ws_opts]": "object"
+                });
+
+                if (method.startsWith("rpc.")) return this.callInternalMethod(method, params, timeout, ws_opts);else return this.callMethod(method, params, timeout, ws_opts);
+            }
+
+            /**
+             * Fetches a list of client's methods registered on server.
+             * @method
+             * @return {Array}
+             * @deprecated
+             */
+
+        }, {
+            key: "listMethods",
+            value: function () {
+                var _ref12 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee11() {
+                    return _regenerator2.default.wrap(function _callee11$(_context11) {
+                        while (1) {
+                            switch (_context11.prev = _context11.next) {
+                                case 0:
+                                    return _context11.abrupt("return", this.listRemoteMethods());
+
+                                case 1:
+                                case "end":
+                                    return _context11.stop();
+                            }
+                        }
+                    }, _callee11, this);
+                }));
+
+                function listMethods() {
+                    return _ref12.apply(this, arguments);
+                }
+
+                return listMethods;
+            }()
+
+            /**
+             * Sends a JSON-RPC 2.0 notification to server.
+             * @method
+             * @param {String} method - RPC method name
+             * @param {Object} params - optional method parameters
+             * @return {Promise}
+             * @deprecated
+             */
+
+        }, {
+            key: "notify",
+            value: function () {
+                var _ref13 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee12(method, params) {
+                    return _regenerator2.default.wrap(function _callee12$(_context12) {
+                        while (1) {
+                            switch (_context12.prev = _context12.next) {
+                                case 0:
+                                    if (!(typeof method !== "string")) {
+                                        _context12.next = 2;
+                                        break;
+                                    }
+
+                                    return _context12.abrupt("return", _promise2.default.reject(new TypeError("Notification name should be a string")));
+
+                                case 2:
+                                    if (!method.startsWith("rpc.")) {
+                                        _context12.next = 6;
+                                        break;
+                                    }
+
+                                    return _context12.abrupt("return", this._rpcSocket.sendInternalNotification(method, params));
+
+                                case 6:
+                                    return _context12.abrupt("return", this._rpcSocket.sendNotification(method, params));
+
+                                case 7:
+                                case "end":
+                                    return _context12.stop();
+                            }
+                        }
+                    }, _callee12, this);
+                }));
+
+                function notify(_x19, _x20) {
+                    return _ref13.apply(this, arguments);
+                }
+
+                return notify;
+            }()
         }]);
         return Client;
-    }(_eventemitter2.default);
+    }(_eventemitter2.default), _class.RPCResponseTimeoutError = _JsonRpcSocket.TimeoutError, _class.RPCServerError = _JsonRpcSocket.RPCServerError, _temp;
 };
 
 module.exports = exports["default"];

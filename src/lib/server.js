@@ -5,37 +5,32 @@
 
 "use strict"
 
-import assertArgs from "assert-args"
 import EventEmitter from "eventemitter3"
-import { Server as WebSocketServer } from "ws"
+import {Server as WebSocketServer} from "ws"
 import uuid from "uuid"
 import url from "url"
-import CircularJSON from "circular-json"
-import jsonrpc from "json-rpc-msg"
-
-/**
- * List additional JSON RPC errors
- *
- * @type {object}
- */
-const ERRORS = {
-    INTERNAL_SERVER_ERROR: {
-        code: -32000,
-        message: "Internal server error"
-    }
-}
+import assertArgs from "assert-args"
+import JsonRPCSocket, {RPCServerError, TimeoutError} from "./JsonRpcSocket"
+import Namespace from "./Namespace"
 
 export default class Server extends EventEmitter
 {
-    /**
-     * Instantiate a Server class.
-     * @constructor
-     * @param {Object} options - ws constructor's parameters with rpc
-     * @return {Server} - returns a new Server instance
-     */
+    static RPCResponseTimeoutError = TimeoutError
+    static RPCServerError = RPCServerError
+
     constructor(options)
     {
         super()
+
+        /**
+         * Options of the server
+         *
+         * @type {object}
+         */
+        this.options = Object.assign({
+            strict_notifications: true,
+            idParam: "socket_id"
+        }, options)
 
         /**
          * Stores all connected sockets with a universally unique identifier
@@ -43,304 +38,70 @@ export default class Server extends EventEmitter
          * Stores all rpc methods to specific namespaces. "/" by default.
          * Stores all events as keys and subscribed users in array as value
          * @private
-         * @name namespaces
+         * @name _namespaces
          * @param {Object} namespaces.rpc_methods
          * @param {Map} namespaces.clients
          * @param {Object} namespaces.events
          */
-        this.namespaces = {}
+        this._namespaces = new Map()
 
-        this.wss = new WebSocketServer(options)
+        /**
+         * Stores all connected sockets as uuid => socket
+         *
+         * @type {Map<string|number, WebSocket>}
+         *
+         * @private
+         */
+        this._sockets = new Map()
 
-        this.wss.on("listening", () => this.emit("listening"))
+        /**
+         * Websocket server
+         *
+         * @type {WebSocketServer}
+         */
+        this.wss = this._startServer(this.options)
+    }
 
-        this.wss.on("connection", (socket, request) =>
+    /**
+     * Start websocket server
+     *
+     * @param {object} options - websocket server options
+     *
+     * @returns {WebSocketServer}
+     *
+     * @private
+     */
+    _startServer(options)
+    {
+        const server = new WebSocketServer(options)
+
+        server.on("listening", () => this.emit("listening"))
+
+        server.on("connection", (socket, request) =>
         {
             this.emit("connection", socket, request)
 
             const u = url.parse(request.url, true)
             const ns = u.pathname
+            const id = u.query[this.options.idParam] || uuid.v1()
 
-            if (u.query.socket_id)
-                socket._id = u.query.socket_id
-            else
-                socket._id = uuid.v1()
+            // Create RPC wrapper for socket:
+            const wrappedSocket = new JsonRPCSocket(socket, id)
 
-            // cleanup after the socket gets disconnected
-            socket.on("close", () =>
-            {
-                this.namespaces[ns].clients.delete(socket._id)
+            // Register socket and set it to some namespace:
+            this._sockets.set(id, wrappedSocket)
+            this.getOrCreateNamespace(ns).addClient(wrappedSocket)
 
-                for (const event of Object.keys(this.namespaces[ns].events))
-                {
-                    const index = this.namespaces[ns].events[event].indexOf(socket._id)
+            // Emit an event about RPC connection:
+            this.emit("RPCConnection", wrappedSocket, request)
 
-                    if (index >= 0)
-                        this.namespaces[ns].events[event].splice(index, 1)
-                }
-            })
-
-            if (!this.namespaces[ns]) this._generateNamespace(ns)
-
-            // store socket and method
-            this.namespaces[ns].clients.set(socket._id, socket)
-
-            return this._handleRPC(socket, ns)
+            // Clear socket data on delete:
+            socket.on("close", () => this._sockets.delete(id))
         })
 
-        this.wss.on("error", (error) => this.emit("error", error))
-    }
+        server.on("error", (error) => this.emit("error", error))
 
-    /**
-     * Registers an RPC method.
-     * @method
-     * @param {String} name - method name
-     * @param {Function} fn - a callee function
-     * @param {String} ns - namespace identifier
-     * @throws {TypeError}
-     * @return {Undefined}
-     */
-    register(name, fn, ns = "/")
-    {
-        assertArgs(arguments, {
-            name: "string",
-            fn: "function",
-            "[ns]": "string"
-        })
-
-        if (!this.namespaces[ns]) this._generateNamespace(ns)
-
-        this.namespaces[ns].rpc_methods[name] = fn
-    }
-
-    /**
-     * Removes a namespace and closes all connections
-     * @method
-     * @param {String} ns - namespace identifier
-     * @throws {TypeError}
-     * @return {Undefined}
-     */
-    closeNamespace(ns)
-    {
-        assertArgs(arguments, {
-            ns: "string"
-        })
-
-        var namespace = this.namespaces[ns]
-
-        if (namespace)
-        {
-            delete namespace.rpc_methods
-            delete namespace.events
-
-            for (const socket of namespace.clients.values())
-                socket.close()
-
-            delete this.namespaces[ns]
-        }
-    }
-
-    /**
-     * Creates a new event that can be emitted to clients.
-     * @method
-     * @param {String} name - event name
-     * @param {String} ns - namespace identifier
-     * @throws {TypeError}
-     * @return {Undefined}
-     */
-    event(name, ns = "/")
-    {
-        assertArgs(arguments, {
-            "name": "string",
-            "[ns]": "string"
-        })
-
-        if (!this.namespaces[ns]) this._generateNamespace(ns)
-        else
-        {
-            const index = this.namespaces[ns].events[name]
-
-            if (index !== undefined)
-                throw new Error(`Already registered event ${ns}${name}`)
-        }
-
-        this.namespaces[ns].events[name] = []
-
-        // forward emitted event to subscribers
-        this.on(name, (...params) =>
-        {
-            // flatten an object if no spreading is wanted
-            if (params.length === 1 && params[0] instanceof Object)
-                params = params[0]
-
-            for (const socket_id of this.namespaces[ns].events[name])
-            {
-                const socket = this.namespaces[ns].clients.get(socket_id)
-
-                if (!socket)
-                    continue
-
-                socket.send(CircularJSON.stringify({
-                    notification: name,
-                    params: params || null
-                }))
-            }
-        })
-    }
-
-    /**
-     * Returns a requested namespace object
-     * @method
-     * @param {String} name - namespace identifier
-     * @throws {TypeError}
-     * @return {Object} - namespace object
-     */
-    of(name)
-    {
-        assertArgs(arguments, {
-            "name": "string",
-        })
-
-        if (!this.namespaces[name]) this._generateNamespace(name)
-
-        const self = this
-
-        return {
-            // self.register convenience method
-            register(fn_name, fn)
-            {
-                if (arguments.length !== 2)
-                    throw new Error("must provide exactly two arguments")
-
-                if (typeof fn_name !== "string")
-                    throw new Error("name must be a string")
-
-                if (typeof fn !== "function")
-                    throw new Error("handler must be a function")
-
-                self.register(fn_name, fn, name)
-            },
-
-            // self.event convenience method
-            event(ev_name)
-            {
-                if (arguments.length !== 1)
-                    throw new Error("must provide exactly one argument")
-
-                if (typeof ev_name !== "string")
-                    throw new Error("name must be a string")
-
-                self.event(ev_name, name)
-            },
-
-            // self.eventList convenience method
-            get eventList()
-            {
-                return Object.keys(self.namespaces[name].events)
-            },
-
-            /**
-             * Emits a specified event to this namespace.
-             * @inner
-             * @method
-             * @param {String} event - event name
-             * @param {Array} params - event parameters
-             * @return {Undefined}
-             */
-            emit(event, params)
-            {
-                const socket_ids = [ ...self.namespaces[name].clients.keys() ]
-
-                for (var i = 0, id; id = socket_ids[i]; ++i)
-                {
-                    self.namespaces[name].clients.get(id).send(CircularJSON.stringify({
-                        notification: event,
-                        params: params || []
-                    }))
-                }
-            },
-
-            /**
-             * Returns a name of this namespace.
-             * @inner
-             * @method
-             * @kind constant
-             * @return {String}
-             */
-            get name()
-            {
-                return name
-            },
-
-            /**
-             * Returns a hash of websocket objects connected to this namespace.
-             * @inner
-             * @method
-             * @return {Object}
-             */
-            connected()
-            {
-                const clients = {}
-                const socket_ids = [ ...self.namespaces[name].clients.keys() ]
-
-                for (var i = 0, id; id = socket_ids[i]; ++i)
-                    clients[id] = self.namespaces[name].clients.get(id)
-
-                return clients
-            },
-
-            /**
-             * Returns a list of client unique identifiers connected to this namespace.
-             * @inner
-             * @method
-             * @return {Array}
-             */
-            clients()
-            {
-                return self.namespaces[name]
-            }
-        }
-    }
-
-    /**
-     * Lists all created events in a given namespace. Defaults to "/".
-     * @method
-     * @param {String} ns - namespaces identifier
-     * @readonly
-     * @return {Array} - returns a list of created events
-     */
-    eventList(ns = "/")
-    {
-        assertArgs(arguments, {
-            "[ns]": "string",
-        })
-
-        if (!this.namespaces[ns]) return []
-
-        return Object.keys(this.namespaces[ns].events)
-    }
-
-    /**
-     * Creates a JSON-RPC 2.0 compliant error
-     * @method
-     * @param {Number} code - indicates the error type that occurred
-     * @param {String} message - provides a short description of the error
-     * @param {String|Object} data - details containing additional information about the error
-     * @return {Object}
-     */
-    createError(code, message, data)
-    {
-        assertArgs(arguments, {
-            "code": "number",
-            "message": "string",
-            "[data]": ["string", "object"]
-        })
-
-        return {
-            code: code,
-            message: message,
-            data: data || null
-        }
+        return server
     }
 
     /**
@@ -362,200 +123,533 @@ export default class Server extends EventEmitter
         })
     }
 
+    /* ----------------------------------------
+     | RPC Sockets related methods
+     |-----------------------------------------
+     |
+     |*/
+
     /**
-     * Handles all WebSocket JSON RPC 2.0 requests.
-     * @private
-     * @param {Object} socket - ws socket instance
-     * @param {String} ns - namespaces identifier
+     * Returns socket with given ID
+     * @method
+     * @param {string|number} id - socket id
+     * @returns {RPCSocket}
+     */
+    getRPCSocket(id)
+    {
+        return this._sockets.get(id)
+    }
+
+    /* ----------------------------------------
+     | Namespaces related methods
+     |----------------------------------------
+     |
+     |*/
+
+    /**
+     * Creates namespace under given name
+     * @method
+     * @param {string} name - uuid of namespace
+     * @returns {Namespace}
+     */
+    createNamespace(name)
+    {
+        const ns = new Namespace(name, {
+            strict_notifications: this.options.strict_notifications
+        })
+        this._namespaces.set(name, ns)
+        // Handle notifications:
+        ns.on("rpc:notification", (notification, socket) =>
+        {
+            this.emit("rpc:notification", notification, socket, ns)
+            this.emit(
+                `rpc:notification:${notification.method}`,
+                notification.params,
+                socket,
+                ns
+            )
+        })
+
+        // Handle internal notifications:
+        ns.on("rpc:internal:notification", (notification, socket) =>
+        {
+            this.emit("rpc:internal:notification", notification, socket, ns)
+            this.emit(
+                `rpc:internal:notification:${notification.method}`,
+                notification.params,
+                socket,
+                ns
+            )
+        })
+        return ns
+    }
+
+    /**
+     * Check is namespace exists
+     * @method
+     * @param {String} name - namespace name
+     * @returns {Boolean}
+     */
+    hasNamespace(name)
+    {
+        return this._namespaces.has(name)
+    }
+
+    /**
+     * Returns namespace with given name
+     * @method
+     * @param {string} name - uuid of namespace
+     * @returns {Namespace|undefined}
+     */
+    getNamespace(name)
+    {
+        return this._namespaces.get(name)
+    }
+
+    /**
+     * Returns existing namespace or creates new and returns it
+     * @method
+     * @param {string} name - uuid of namespace
+     * @returns {Namespace}
+     */
+    getOrCreateNamespace(name)
+    {
+        return this.hasNamespace(name) ? this.getNamespace(name) : this.createNamespace(name)
+    }
+
+    /**
+     * Removes a namespace and closes all connections that belongs to it
+     * @method
+     * @param {String} name - namespace identifier
+     * @throws {TypeError}
      * @return {Undefined}
      */
-    _handleRPC(socket, ns = "/")
+    closeNamespace(name)
     {
-        socket.on("message", async(data) =>
+        if (this.hasNamespace(name))
         {
-            const msg_options = {}
+            this.getNamespace(name).close()
+            this._namespaces.delete(name)
+        }
+    }
 
-            if (data instanceof Buffer || data instanceof ArrayBuffer)
-            {
-                msg_options.binary = true
+    /**
+     * Returns a requested namespace object
+     * @method
+     * @param {String} name - namespace identifier
+     * @throws {TypeError}
+     * @return {Object} - namespace object
+     */
+    of(name)
+    {
+        return this.getOrCreateNamespace(name)
+    }
 
-                data = Buffer.from(data).toString()
-            }
+    /* ----------------------------------------
+     | RPC Notifications related methods
+     |----------------------------------------
+     |
+     |*/
+    /**
+     * Change subscription status on given type of request
+     *
+     * @param {string} action - "on" "off" or "once"
+     * @param {boolean} isInternal - subsribe to internal (true)
+     *                               or normal (false) notification/request
+     * @param {string|object} subscriptions - name of the method/notification
+     *                                        or hash of name => handler
+     * @param {function} handler? - required only if subscriptions is a string
+     *
+     * @returns {void}
+     *
+     * @private
+     */
+    _changeSubscriptionStatus(action, isInternal, subscriptions, handler)
+    {
+        if (subscriptions && typeof subscriptions !== "object")
+            subscriptions = {[subscriptions]: handler}
 
-            let message = null
-            try
-            {
-                message = jsonrpc.parseMessage(data)
-            }
-            catch (e)
-            {
-                if (e instanceof jsonrpc.ParserError)
-                {
-                    socket.send(CircularJSON.stringify(e.rpcError), msg_options)
-                }
-                else
-                {
-                    // TODO: send "Internal Server Error"
-                }
-                return
-            }
+        if (!subscriptions || typeof subscriptions !== "object" || Array.isArray(subscriptions))
+            throw new Error("Subsciptions is not a mapping of names to handlers")
 
-            switch (message.type)
-            {
-            case jsonrpc.MESSAGE_TYPES.BATCH: {
-                const responses = []
+        const eventPrefix = isInternal ? "rpc:internal:notification" : "rpc:notification"
+        Object.entries(subscriptions).forEach(([n, h]) =>
+        {
+            if (typeof n !== "string" || n.trim().length === 0)
+                throw new Error(`Notification name should be non-empty string, ${typeof n} passed`)
+            if (typeof h !== "function")
+                throw new Error("Notification handler is not defined, or have incorrect type")
+            if (!isInternal && n.startsWith("rpc."))
+                throw new Error(
+                    "Notification with 'rpc.' prefix is for internal use only. " +
+                    "To subscribe/unsubsrcibe to such notification use methods " +
+                    "\"subscribeInternal\"/\"ubsubscribeInternal\""
+                )
 
-                for (const batchMessage of message.payload)
-                {
-                    const response = batchMessage instanceof jsonrpc.ParserError
-                        ? batchMessage.rpcError
-                        : await this._runMethod(batchMessage.payload, socket._id, ns)
+            // Add "rpc." prefix for internal requests if omitted:
+            if (isInternal && !n.startsWith("rpc."))
+                n = `rpc.${n}`
 
-                    if (!response)
-                        continue
-
-                    responses.push(response)
-                }
-
-                if (!responses.length)
-                    return
-
-                return socket.send(CircularJSON.stringify(responses), msg_options)
-            }
-            case jsonrpc.MESSAGE_TYPES.REQUEST:
-            case jsonrpc.MESSAGE_TYPES.NOTIFICATION:
-            case jsonrpc.MESSAGE_TYPES.INTERNAL_REQUEST:
-            case jsonrpc.MESSAGE_TYPES.INTERNAL_NOTIFICATION: {
-                const response = await this._runMethod(message.payload, socket._id, ns)
-
-                if (!response)
-                    return
-
-                return socket.send(CircularJSON.stringify(response), msg_options)
-            }
-            }
+            this[action](`${eventPrefix}:${n}`, h)
         })
     }
 
     /**
-     * Runs a defined RPC method.
-     * @private
-     * @param {Object} message - a message received
-     * @param {Object} socket_id - user's socket id
-     * @param {String} ns - namespaces identifier
-     * @return {Object|undefined}
+     * Creates a new notification that can be emitted to clients.
+     *
+     * @param {array|array<string>} names - notifications names
+     * @param {String} ns? - namespace identifier
+     *
+     * @throws {TypeError}
+     *
+     * @return {Undefined}
      */
-    async _runMethod(message, socket_id, ns = "/")
+    registerNotification(names, ns = "/")
     {
-        if (message.method === "rpc.on")
-        {
-            if (!message.params)
-                return jsonrpc.createError(
-                    message.id || null, ERRORS.INTERNAL_SERVER_ERROR
-                )
-
-            const results = {}
-
-            const event_names = Object.keys(this.namespaces[ns].events)
-
-            for (const name of message.params)
-            {
-                const index = event_names.indexOf(name)
-                const namespace = this.namespaces[ns]
-
-                if (index === -1)
-                {
-                    results[name] = "provided event invalid"
-                    continue
-                }
-
-                const socket_index = namespace.events[event_names[index]].indexOf(socket_id)
-                if (socket_index >= 0)
-                {
-                    results[name] = "socket has already been subscribed to event"
-                    continue
-                }
-                namespace.events[event_names[index]].push(socket_id)
-
-                results[name] = "ok"
-            }
-
-            return jsonrpc.createResponse(message.id || null, results)
-        }
-        else if (message.method === "rpc.off")
-        {
-            if (!message.params)
-                return jsonrpc.createError(
-                    message.id || null, ERRORS.INTERNAL_SERVER_ERROR
-                )
-
-            const results = {}
-
-            for (const name of message.params)
-            {
-                if (!this.namespaces[ns].events[name])
-                {
-                    results[name] = "provided event invalid"
-                    continue
-                }
-
-                const index = this.namespaces[ns].events[name].indexOf(socket_id)
-
-                if (index === -1)
-                {
-                    results[name] = "not subscribed"
-                    continue
-                }
-
-                this.namespaces[ns].events[name].splice(index, 1)
-                results[name] = "ok"
-            }
-
-            return jsonrpc.createResponse(message.id || null, results)
-        }
-
-        if (!this.namespaces[ns].rpc_methods[message.method])
-        {
-            return jsonrpc.createError(message.id || null, jsonrpc.ERRORS.METHOD_NOT_FOUND)
-        }
-
-        let response = null
-
-        try { response = await this.namespaces[ns].rpc_methods[message.method](message.params) }
-
-        catch (error)
-        {
-            if (!message.id)
-                return
-
-            if (error instanceof Error)
-                return jsonrpc.createError(message.id, ERRORS.INTERNAL_SERVER_ERROR, error.message)
-
-            return jsonrpc.createError(message.id, error)
-        }
-
-        // client sent a notification, so we won't need a reply
-        if (!message.id)
-            return
-
-        return jsonrpc.createResponse(message.id, response)
+        return this.getOrCreateNamespace(ns).registerNotification(names)
     }
 
     /**
-     * Generate a new namespace store.
-     * Also preregister some special namespace methods.
-     * @private
-     * @param {String} name - namespaces identifier
-     * @return {undefined}
+     * Unregister notification with given name as possible to be fired
+     *
+     * @param {array|array<string>} names - notifications names
+     * @param {String} ns? - namespace identifier
+     *
+     * @returns {void}
      */
-    _generateNamespace(name)
+    unregisterNotification(names, ns = "/")
     {
-        this.namespaces[name] = {
-            rpc_methods: {
-                "__listMethods": () => Object.keys(this.namespaces[name].rpc_methods)
-            },
-            clients: new Map(),
-            events: {}
+        if (this.hasNamespace(ns))
+            this.getNamespace(ns).unregisterNotification(names)
+    }
+
+    /**
+     * Returns list of registered notification names
+     *
+     * @param {String} ns? - namespace identifier
+     *
+     * @returns {Array}
+     */
+    getRegisteredNotifications(ns = "/")
+    {
+        return this.hasNamespace(ns) ? this.getNamespace(ns).getRegisteredNotifications() : []
+    }
+
+    /**
+     * Set handlers for given RPC notifications
+     * Function have two signatures:
+     *     - when notification and handler passed as two arguments
+     *     - when list of notifications with related handlers are provided as javascript object
+     *
+     * @param {string|object} notification - notification name or hash of notification => handler
+     * @param {function} handler? - notification handler (required if first argument is a string)
+     *
+     * @returns {void}
+     */
+    onNotification(notification, handler)
+    {
+        return this._changeSubscriptionStatus("on", false, notification, handler)
+    }
+
+    /**
+     * Set handlers for given RPC notifications
+     * Function have two signatures:
+     *     - when notification and handler passed as two arguments
+     *     - when list of notifications with related handlers are provided as javascript object
+     *
+     * @param {string|object} notification - notification name or hash of notification => handler
+     * @param {function} handler? - notification handler (required if first argument is a string)
+     *
+     * @returns {void}
+     */
+    onceNotification(notification, handler)
+    {
+        return this._changeSubscriptionStatus("once", false, notification, handler)
+    }
+
+    /**
+     * Unsubscribe from given RPC notifications
+     * Function have two signatures:
+     *     - when notification and handler passed as two arguments
+     *     - when list of notifications with related handlers are provided as javascript object
+     *
+     * @param {string|object} notification - notification name or hash of notification => handler
+     * @param {function} handler? - notification handler (required if first argument is a string)
+     *
+     * @returns {void}
+     */
+    offNotification(notification, handler)
+    {
+        return this._changeSubscriptionStatus("off", false, notification, handler)
+    }
+
+    /**
+     * Send notification to all subscribed sockets
+     *
+     * @param {string} name - name of notification
+     * @param {object|array} params? - notification parameters
+     *
+     * @returns {void}
+     */
+    sendNotification(name, params)
+    {
+        for (const namespace of this._namespaces.values())
+            namespace.sendNotification(name, params)
+    }
+
+    /* ----------------------------------------
+     | RPC internal Notifications related methods
+     |----------------------------------------
+     |
+     |*/
+
+    /**
+     * Creates a new internal notification that can be emitted to clients.
+     *
+     * @param {array|array<string>} names - notifications names
+     * @param {String} ns? - namespace identifier
+     *
+     * @throws {TypeError}
+     *
+     * @return {Undefined}
+     */
+    registerInternalNotification(names, ns = "/")
+    {
+        return this.getOrCreateNamespace(ns).registerInternalNotification(names)
+    }
+
+    /**
+     * Unregister notification with given name as possible to be fired
+     *
+     * @param {array|array<string>} names - notifications names
+     * @param {String} ns? - namespace identifier
+     *
+     * @returns {void}
+     */
+    unregisterInternalNotification(names, ns = "/")
+    {
+        if (this.hasNamespace(ns))
+            this.getNamespace(ns).unregisterInternalNotification(names)
+    }
+
+    /**
+     * Returns list of registered internal notification names
+     *
+     * @param {String} ns? - namespace identifier
+     *
+     * @returns {Array}
+     */
+    getRegisteredInternalNotifications(ns = "/")
+    {
+        return this.hasNamespace(ns)
+            ? this.getNamespace(ns).getRegisteredInternalNotifications()
+            : []
+    }
+
+    /**
+     * Set handlers for given RPC notifications
+     * Function have two signatures:
+     *     - when notification and handler passed as two arguments
+     *     - when list of notifications with related handlers are provided as javascript object
+     *
+     * @param {string|object} notification - notification name or hash of notification => handler
+     * @param {function} handler? - notification handler (required if first argument is a string)
+     *
+     * @returns {void}
+     */
+    onInternalNotification(notification, handler)
+    {
+        return this._changeSubscriptionStatus("on", true, notification, handler)
+    }
+
+    /**
+     * Set handlers for given RPC notifications
+     * Function have two signatures:
+     *     - when notification and handler passed as two arguments
+     *     - when list of notifications with related handlers are provided as javascript object
+     *
+     * @param {string|object} notification - notification name or hash of notification => handler
+     * @param {function} handler? - notification handler (required if first argument is a string)
+     *
+     * @returns {void}
+     */
+    onceInternalNotification(notification, handler)
+    {
+        return this._changeSubscriptionStatus("once", true, notification, handler)
+    }
+
+    /**
+     * Unsubscribe from given RPC notifications
+     * Function have two signatures:
+     *     - when notification and handler passed as two arguments
+     *     - when list of notifications with related handlers are provided as javascript object
+     *
+     * @param {string|object} notification - notification name or hash of notification => handler
+     * @param {function} handler? - notification handler (required if first argument is a string)
+     *
+     * @returns {void}
+     */
+    offInternalNotification(notification, handler)
+    {
+        return this._changeSubscriptionStatus("off", true, notification, handler)
+    }
+
+    /**
+     * Send notification to all subscribed sockets
+     *
+     * @param {string} name - name of notification
+     * @param {object|array} params? - notification parameters
+     *
+     * @returns {void}
+     */
+    sendInternalNotification(name, params)
+    {
+        for (const namespace of this._namespaces.values())
+            namespace.sendInternalNotification(name, params)
+    }
+
+    /* ----------------------------------------
+     | RPC Methods related methods
+     |----------------------------------------
+     |
+     |*/
+
+    /**
+     * Registers an RPC method
+     *
+     * @param {string} name - method name
+     * @param {function} fn - method handler
+     * @param {string} ns? - namespace name to register
+     *
+     * @returns {void}
+     */
+    registerMethod(name, fn, ns = "/")
+    {
+        this.getOrCreateNamespace(ns).registerMethod(name, fn, ns)
+    }
+
+    /**
+     * Unregister an RPC method
+     *
+     * @param {string} name - method name
+     * @param {string} ns? - namespace name to register
+     *
+     * @returns {void}
+     */
+    unregisterMethod(name, ns)
+    {
+        if (this.hasNamespace(ns))
+            this.getNamespace(ns).unregisterMethod(name)
+    }
+
+    /**
+     * Registers an internal RPC method
+     *
+     * @param {string} name - method name
+     * @param {function} fn - method handler
+     * @param {string} ns? - namespace name to register
+     *
+     * @returns {void}
+     */
+    registerInternalMethod(name, fn, ns = "/")
+    {
+        this.getOrCreateNamespace(ns).registerInternalMethod(name, fn, ns)
+    }
+
+    /**
+     * Unregister an RPC method
+     *
+     * @param {string} name - method name
+     * @param {string} ns? - namespace name to register
+     *
+     * @returns {void}
+     */
+    unregisterInternalMethod(name, ns)
+    {
+        if (this.hasNamespace(ns))
+            this.getNamespace(ns).unregisterInternalMethod(name)
+    }
+
+    /* ----------------------------------------
+     | Deprecated methods & aliases
+     |----------------------------------------
+     |
+     |*/
+
+    /**
+     * Registers an RPC method.
+     * @method
+     * @param {String} name - method name
+     * @param {Function} fn - a callee function
+     * @param {String} ns - namespace identifier
+     * @throws {TypeError}
+     * @return {Undefined}
+     * @deprecated
+     */
+    register(name, fn, ns = "/")
+    {
+        assertArgs(arguments, {
+            name: "string",
+            fn: "function",
+            "[ns]": "string"
+        })
+
+        this.getOrCreateNamespace(ns).register(name, fn)
+    }
+
+    /**
+     * Creates a new event that can be emitted to clients.
+     * @method
+     * @param {String} name - event name
+     * @param {String} ns - namespace identifier
+     * @throws {TypeError}
+     * @return {Undefined}
+     * @deprecated
+     */
+    event(name, ns = "/")
+    {
+        assertArgs(arguments, {
+            "event": "string",
+            "[ns]": "string"
+        })
+
+        this.getOrCreateNamespace(ns).event(name)
+    }
+
+    /**
+     * Lists all created events in a given namespace. Defaults to "/".
+     * @method
+     * @param {String} ns - namespaces identifier
+     * @readonly
+     * @return {Array} - returns a list of created events
+     * @deprecated
+     */
+    eventList(ns = "/")
+    {
+        return this.hasNamespace(ns) ? this.getNamespace(ns).eventList : []
+    }
+
+    /**
+     * Creates a JSON-RPC 2.0 compliant error
+     * @method
+     * @param {Number} code - indicates the error type that occurred
+     * @param {String} message - provides a short description of the error
+     * @param {String|Object} data - details containing additional information about the error
+     * @return {Object}
+     * @deprecated
+     */
+    createError(code, message, data)
+    {
+        assertArgs(arguments, {
+            "code": "number",
+            "message": "string",
+            "[data]": ["string", "object"]
+        })
+
+        return {
+            code: code,
+            message: message,
+            data: data || null
         }
     }
 }

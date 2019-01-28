@@ -232,15 +232,17 @@ describe("Client", function()
 
             client.on("open", function()
             {
-                client.call("hang", null, 20).then(function()
-                {
-                    done(new Error("didn't hang"))
-                })
-                    .catch(function(error)
+                client.call("hang", null, 20).then(
+                    function()
                     {
-                        expect(error.message).to.equal("reply timeout")
+                        done(new Error("didn't hang"))
+                    },
+                    function(error)
+                    {
+                        expect(error).to.be.an.instanceof(WebSocket.RPCResponseTimeoutError)
                         done()
-                    })
+                    }
+                )
             })
         })
     })
@@ -264,13 +266,16 @@ describe("Client", function()
             })
         })
 
-        it("should throw TypeError if method not provided", function()
+        it("should throw TypeError if method not provided", function(done)
         {
             const client = new WebSocket("ws://" + host + ":" + port)
 
             client.on("open", function()
             {
-                expect(client.notify.bind(client)).to.throw(TypeError)
+                client.notify().then(
+                    () => done(new Error("Notify didn't thrown an error")),
+                    (e) => e instanceof TypeError ? done() : done(new Error("Thrown error is not a TypeError instance"))
+                )
             })
         })
     })
@@ -313,8 +318,8 @@ describe("Client", function()
         {
             client.subscribe([ "newsUpdate", "orderUpdate" ]).then(function(data)
             {
-                data.should.have.property("newsUpdate")
-                data.should.have.property("orderUpdate")
+                data.should.have.property("newsUpdate", "ok")
+                data.should.have.property("orderUpdate", "provided event invalid")
                 done()
             }).catch(function(error)
             {
@@ -331,20 +336,24 @@ describe("Client", function()
             })
         })
 
-        it("should throw TypeError if event name not provided", function()
+        it("should throw TypeError if event name not provided", function(done)
         {
-            client.subscribe().catch(function(error)
-            {
-                error.name.should.equal("TypeError")
-                error.message.should.equal("\"event\" is required")
-            })
+            client.subscribe().then(
+                () => done(new Error("No error was thrown")),
+                (error) =>
+                {
+                    expect(error).to.be.instanceof(TypeError)
+                    expect(error.message).to.be.equal("Passed events list is not an array")
+                    done()
+                }
+            )
         })
 
         it("should receive an event with no values", function(done)
         {
-            server.emit("newsUpdate")
+            server.sendNotification("newsUpdate")
 
-            client.once("newsUpdate", function()
+            client.onceNotification("newsUpdate", function()
             {
                 done()
             })
@@ -352,9 +361,9 @@ describe("Client", function()
 
         it("should receive an event with a single value", function(done)
         {
-            server.emit("newsUpdate", "fox")
+            server.sendNotification("newsUpdate", ["fox"])
 
-            client.once("newsUpdate", function(values)
+            client.onceNotification("newsUpdate", function([values])
             {
                 values.should.equal("fox")
                 done()
@@ -363,9 +372,9 @@ describe("Client", function()
 
         it("should receive an event with multiple values", function(done)
         {
-            server.emit("newsUpdate", "fox", "mtv", "eurosport")
+            server.sendNotification("newsUpdate", ["fox", "mtv", "eurosport"])
 
-            client.once("newsUpdate", function(arg1, arg2, arg3)
+            client.onceNotification("newsUpdate", function([arg1, arg2, arg3])
             {
                 arg1.should.equal("fox")
                 arg2.should.equal("mtv")
@@ -376,9 +385,9 @@ describe("Client", function()
 
         it("should receive an event with a single object value", function(done)
         {
-            server.emit("newsUpdate", { foo: "bar", boo: "baz" })
+            server.sendNotification("newsUpdate", { foo: "bar", boo: "baz" })
 
-            client.once("newsUpdate", function(obj)
+            client.onceNotification("newsUpdate", function(obj)
             {
                 obj.should.be.an.instanceOf(Object)
                 expect(obj).to.deep.equal({ foo: "bar", boo: "baz" })
@@ -395,9 +404,9 @@ describe("Client", function()
                 this.ref = this
             }
 
-            server.emit("circularUpdate", new Obj())
+            server.sendNotification("circularUpdate", new Obj())
 
-            client.once("circularUpdate", function(value)
+            client.onceNotification("circularUpdate", function(value)
             {
                 value.should.deep.equal({
                     one: "one",
@@ -458,13 +467,17 @@ describe("Client", function()
             })
         })
 
-        it("should throw TypeError if event name not provided", function()
+        it("should throw TypeError if event name not provided", function(done)
         {
-            client.unsubscribe().catch(function(error)
-            {
-                error.name.should.equal("TypeError")
-                error.message.should.equal("\"event\" is required")
-            })
+            client.unsubscribe().then(
+                () => done(new Error("No error was thrown")),
+                (error) =>
+                {
+                    expect(error).to.be.instanceof(TypeError)
+                    expect(error.message).to.be.equal("Passed events list is not an array")
+                    done()
+                }
+            )
         })
     })
 
@@ -513,12 +526,15 @@ describe("Client", function()
 
         it("should receive an event from a joined namespace", function(done)
         {
-            const chat = server.of("/chat")
-            chat.emit("chatMessage")
-
-            client.once("chatMessage", function()
+            client.subscribe("chatMessage").then(() =>
             {
-                done()
+                const chat = server.of("/chat")
+                chat.sendNotification("chatMessage")
+
+                client.onceNotification("chatMessage", function()
+                {
+                    done()
+                })
             })
         })
     })
@@ -556,3 +572,4 @@ function runServer(port, host)
         wss.on("listening", () => resolve(wss))
     })
 }
+
