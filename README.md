@@ -47,18 +47,18 @@ var server = new WebSocketServer({
 })
 
 // register an RPC method
-server.register('sum', function(params) {
+server.registerMethod('sum', function(params) {
   return params[0] + params[1]
 })
 
-// create an event
-server.event('feedUpdated')
+// create a notification
+server.registerNotification('feedUpdated')
 
-// get events
-console.log(server.eventList())
+// get notifications 
+console.log(server.getRegisteredNotifications())
 
-// emit an event to subscribers
-server.emit('feedUpdated')
+// send notification to subscribers
+server.sendNotification('feedUpdated')
 
 // close the server
 server.close()
@@ -68,17 +68,17 @@ var ws = new WebSocket('ws://localhost:8080')
 
 ws.on('open', function() {
   // call an RPC method with parameters
-  ws.call('sum', [5, 3]).then(function(result) {
+  ws.callMethod('sum', [5, 3]).then(function(result) {
     require('assert').equal(result, 8)
   })
 
   // send a notification to an RPC server
-  ws.notify('openedNewsModule')
+  ws.sendNotification('openedNewsModule')
 
   // subscribe to receive an event
   ws.subscribe('feedUpdated')
 
-  ws.on('feedUpdated', function() {
+  ws.onNotification('feedUpdated', function() {
     updateLogic()
   })
 
