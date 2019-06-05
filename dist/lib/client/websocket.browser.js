@@ -2,111 +2,102 @@
  * WebSocket implements a browser-side WebSocket specification.
  * @module Client
  */
-
 "use strict";
 
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
+
 Object.defineProperty(exports, "__esModule", {
-    value: true
+  value: true
 });
+exports["default"] = void 0;
 
-var _getPrototypeOf = require("babel-runtime/core-js/object/get-prototype-of");
+var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime/helpers/classCallCheck"));
 
-var _getPrototypeOf2 = _interopRequireDefault(_getPrototypeOf);
+var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
 
-var _classCallCheck2 = require("babel-runtime/helpers/classCallCheck");
+var _possibleConstructorReturn2 = _interopRequireDefault(require("@babel/runtime/helpers/possibleConstructorReturn"));
 
-var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
+var _getPrototypeOf2 = _interopRequireDefault(require("@babel/runtime/helpers/getPrototypeOf"));
 
-var _createClass2 = require("babel-runtime/helpers/createClass");
+var _inherits2 = _interopRequireDefault(require("@babel/runtime/helpers/inherits"));
 
-var _createClass3 = _interopRequireDefault(_createClass2);
+var _eventemitter = _interopRequireDefault(require("eventemitter3"));
 
-var _possibleConstructorReturn2 = require("babel-runtime/helpers/possibleConstructorReturn");
+var WebSocket =
+/*#__PURE__*/
+function (_EventEmitter) {
+  (0, _inherits2["default"])(WebSocket, _EventEmitter);
 
-var _possibleConstructorReturn3 = _interopRequireDefault(_possibleConstructorReturn2);
+  /** Instantiate a WebSocket class
+   * @constructor
+   * @param {String} address - url to a websocket server
+   * @param {(Object)} options - websocket options
+   * @param {(String|Array)} protocols - a list of protocols
+   * @return {WebSocket} - returns a WebSocket instance
+   */
+  function WebSocket(address, options, protocols) {
+    var _this;
 
-var _inherits2 = require("babel-runtime/helpers/inherits");
+    (0, _classCallCheck2["default"])(this, WebSocket);
+    _this = (0, _possibleConstructorReturn2["default"])(this, (0, _getPrototypeOf2["default"])(WebSocket).call(this));
+    _this.socket = new window.WebSocket(address, protocols);
 
-var _inherits3 = _interopRequireDefault(_inherits2);
+    _this.socket.onopen = function () {
+      return _this.emit("open");
+    };
 
-var _eventemitter = require("eventemitter3");
+    _this.socket.onmessage = function (event) {
+      return _this.emit("message", event.data);
+    };
 
-var _eventemitter2 = _interopRequireDefault(_eventemitter);
+    _this.socket.onerror = function (error) {
+      return _this.emit("error", error);
+    };
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+    _this.socket.onclose = function () {
+      return _this.emit("close");
+    };
 
-var WebSocket = function (_EventEmitter) {
-    (0, _inherits3.default)(WebSocket, _EventEmitter);
+    return _this;
+  }
+  /**
+   * Sends data through a websocket connection
+   * @method
+   * @param {(String|Object)} data - data to be sent via websocket
+   * @param {Object} options - ws options
+   * @param {Function} callback - a callback called once the data is sent
+   * @return {Undefined}
+   */
 
-    /** Instantiate a WebSocket class
-     * @constructor
-     * @param {String} address - url to a websocket server
-     * @param {(Object)} options - websocket options
-     * @param {(String|Array)} protocols - a list of protocols
-     * @return {WebSocket} - returns a WebSocket instance
-     */
-    function WebSocket(address, options, protocols) {
-        (0, _classCallCheck3.default)(this, WebSocket);
 
-        var _this = (0, _possibleConstructorReturn3.default)(this, (WebSocket.__proto__ || (0, _getPrototypeOf2.default)(WebSocket)).call(this));
+  (0, _createClass2["default"])(WebSocket, [{
+    key: "send",
+    value: function send(data, options, callback) {
+      callback = callback || options;
 
-        _this.socket = new window.WebSocket(address, protocols);
-
-        _this.socket.onopen = function () {
-            return _this.emit("open");
-        };
-        _this.socket.onmessage = function (event) {
-            return _this.emit("message", event.data);
-        };
-        _this.socket.onerror = function (error) {
-            return _this.emit("error", error);
-        };
-        _this.socket.onclose = function () {
-            return _this.emit("close");
-        };
-        return _this;
+      try {
+        this.socket.send(data);
+        callback();
+      } catch (error) {
+        callback(error);
+      }
     }
-
     /**
-     * Sends data through a websocket connection
+     * Closes an underlying socket
      * @method
-     * @param {(String|Object)} data - data to be sent via websocket
-     * @param {Object} options - ws options
-     * @param {Function} callback - a callback called once the data is sent
+     * @param {Number} code - status code explaining why the connection is being closed
+     * @param {String} reason - a description why the connection is closing
      * @return {Undefined}
+     * @throws {Error}
      */
 
+  }, {
+    key: "close",
+    value: function close(code, reason) {
+      this.socket.close(code, reason);
+    }
+  }]);
+  return WebSocket;
+}(_eventemitter["default"]);
 
-    (0, _createClass3.default)(WebSocket, [{
-        key: "send",
-        value: function send(data, options, callback) {
-            callback = callback || options;
-
-            try {
-                this.socket.send(data);
-                callback();
-            } catch (error) {
-                callback(error);
-            }
-        }
-
-        /**
-         * Closes an underlying socket
-         * @method
-         * @param {Number} code - status code explaining why the connection is being closed
-         * @param {String} reason - a description why the connection is closing
-         * @return {Undefined}
-         * @throws {Error}
-         */
-
-    }, {
-        key: "close",
-        value: function close(code, reason) {
-            this.socket.close(code, reason);
-        }
-    }]);
-    return WebSocket;
-}(_eventemitter2.default);
-
-exports.default = WebSocket;
-module.exports = exports["default"];
+exports["default"] = WebSocket;

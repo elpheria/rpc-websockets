@@ -1,18 +1,15 @@
 "use strict";
 
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.Client = undefined;
+exports.Client = void 0;
 
-var _websocket = require("./lib/client/websocket.browser");
+var _websocket = _interopRequireDefault(require("./lib/client/websocket.browser"));
 
-var _websocket2 = _interopRequireDefault(_websocket);
+var _client = _interopRequireDefault(require("./lib/client"));
 
-var _client = require("./lib/client");
-
-var _client2 = _interopRequireDefault(_client);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var Client = exports.Client = (0, _client2.default)(_websocket2.default);
+var Client = (0, _client["default"])(_websocket["default"]);
+exports.Client = Client;
