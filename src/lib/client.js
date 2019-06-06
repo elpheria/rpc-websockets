@@ -79,7 +79,6 @@ export default (WebSocket) => class Client extends EventEmitter
 
         rpcSocket.on("open", () =>
         {
-            console.log("ready")
             this._ready = true
             this.emit("open")
             this._currentReconnects = 0
@@ -150,7 +149,21 @@ export default (WebSocket) => class Client extends EventEmitter
      */
     close(code, data)
     {
-        this._rpcSocket.close(code, data)
+        if (this._rpcSocket)
+        {
+            const socket = this._rpcSocket.getSocket()
+            // If socket is connecting now - wait till connection establish and close it:
+            // (To prevent error "WebSocket was closed before the connection was established"):
+            if (socket.readyState === 0)
+            {
+                this.once("open", () => this.close(code, data))
+            }
+            // If socket is connected - close it. Otherwise do nothing:
+            else if (socket.readyState === 1)
+            {
+                this._rpcSocket.close(code, data)
+            }
+        }
     }
 
     /* ----------------------------------------

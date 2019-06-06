@@ -1953,7 +1953,6 @@ exports.default = function (WebSocket) {
                 });
 
                 rpcSocket.on("open", function () {
-                    console.log("ready");
                     _this2._ready = true;
                     _this2.emit("open");
                     _this2._currentReconnects = 0;
@@ -2039,7 +2038,22 @@ exports.default = function (WebSocket) {
         }, {
             key: "close",
             value: function close(code, data) {
-                this._rpcSocket.close(code, data);
+                var _this4 = this;
+
+                if (this._rpcSocket) {
+                    var socket = this._rpcSocket.getSocket();
+                    // If socket is connecting now - wait till connection establish and close it:
+                    // (To prevent error "WebSocket was closed before the connection was established"):
+                    if (socket.readyState === 0) {
+                        this.once("open", function () {
+                            return _this4.close(code, data);
+                        });
+                    }
+                    // If socket is connected - close it. Otherwise do nothing:
+                    else if (socket.readyState === 1) {
+                            this._rpcSocket.close(code, data);
+                        }
+                }
             }
 
             /* ----------------------------------------
