@@ -203,8 +203,7 @@ var Server = function (_EventEmitter) {
 
             return new _promise2.default(function (resolve, reject) {
                 try {
-                    _this3.wss.close();
-                    resolve();
+                    _this3.wss.close(resolve);
                 } catch (error) {
                     reject(error);
                 }
