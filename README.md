@@ -122,7 +122,7 @@ We offer professional support for **rpc-websockets** and beyond. We have many ye
 <a href="https://scratchbox.io" target="_blank"><img src="https://raw.githubusercontent.com/elpheria/rpc-websockets/master/assets/user-scratchbox.png" alt="Scratchbox" height=50px></a>&emsp;
 <a href="https://loomx.io" target="_blank"><img src="https://raw.githubusercontent.com/elpheria/rpc-websockets/master/assets/user-loom.png" alt="Loom Network" height=50px></a>&emsp;
 <a href="https://www.uniqcast.com" target="_blank"><img src="https://raw.githubusercontent.com/elpheria/rpc-websockets/master/assets/user-uniqcast.png" alt="uniqCast" height=50px></a>&emsp;
-<a href="https://parseclabs.org" target="_blank"><img src="https://raw.githubusercontent.com/elpheria/rpc-websockets/master/assets/user-parsec.png" alt="PARSEC Labs" height=50px></a>&emsp;
+<a href="https://leapdao.org" target="_blank"><img src="https://raw.githubusercontent.com/elpheria/rpc-websockets/master/assets/user-leapdao.png" alt="LeapDAO" height=50px></a>&emsp;
 <a href="https://klika-tech.com" target="_blank"><img src="https://raw.githubusercontent.com/elpheria/rpc-websockets/master/assets/user-klikatech.png" alt="Klika Tech, Inc." height=50px></a>&emsp;
 <a href="https://kodebox.io" target="_blank"><img src="https://raw.githubusercontent.com/elpheria/rpc-websockets/master/assets/user-kodebox.png" alt="Kodebox, Inc." height=50px></a>&emsp;
 
