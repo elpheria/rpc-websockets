@@ -126,6 +126,7 @@ We offer professional support for **rpc-websockets** and beyond. We have many ye
 <a href="https://klika-tech.com" target="_blank"><img src="https://raw.githubusercontent.com/elpheria/rpc-websockets/master/assets/user-klikatech.png" alt="Klika Tech, Inc." height=50px></a>&emsp;
 <a href="https://kodebox.io" target="_blank"><img src="https://raw.githubusercontent.com/elpheria/rpc-websockets/master/assets/user-kodebox.png" alt="Kodebox, Inc." height=50px></a>&emsp;
 <a href="https://hey.network" target="_blank"><img src="https://raw.githubusercontent.com/elpheria/rpc-websockets/master/assets/user-heynetwork.png" alt="Hey-Group S.A./N.V." height=50px></a>&emsp;
+<a href="https://www.hylo.com" target="_blank"><img src="https://raw.githubusercontent.com/elpheria/rpc-websockets/master/assets/user-hylo.png" alt="Hylo, Inc." height=50px></a>&emsp;
 
 ## Sponsors
 Become a sponsor and get your logo on project's README on GitHub with a link to your site. Feel free to [contact us](mailto:info@elpheria.com?subject=Sponsors) for the arrangement!
