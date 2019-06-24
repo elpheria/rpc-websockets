@@ -791,3 +791,8 @@ var JsonRPCSocket = function (_EventEmitter) {
 }(_eventemitter2.default);
 
 exports.default = JsonRPCSocket;
+
+
+JsonRPCSocket.TimeoutError = TimeoutError;
+JsonRPCSocket.RPCServerError = RPCServerError;
+JsonRPCSocket.RPC_ERRORS = RPC_ERRORS;

@@ -501,3 +501,7 @@ export default class JsonRPCSocket extends EventEmitter
         return this._socket.send(data, options, cb)
     }
 }
+
+JsonRPCSocket.TimeoutError = TimeoutError
+JsonRPCSocket.RPCServerError = RPCServerError
+JsonRPCSocket.RPC_ERRORS = RPC_ERRORS

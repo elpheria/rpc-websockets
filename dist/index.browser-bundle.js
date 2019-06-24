@@ -812,6 +812,11 @@ var JsonRPCSocket = function (_EventEmitter) {
 }(_eventemitter2.default);
 
 exports.default = JsonRPCSocket;
+
+
+JsonRPCSocket.TimeoutError = TimeoutError;
+JsonRPCSocket.RPCServerError = RPCServerError;
+JsonRPCSocket.RPC_ERRORS = RPC_ERRORS;
 }).call(this,require("buffer").Buffer)
 },{"babel-runtime/core-js/map":24,"babel-runtime/core-js/object/create":26,"babel-runtime/core-js/object/get-prototype-of":29,"babel-runtime/core-js/object/values":31,"babel-runtime/core-js/promise":32,"babel-runtime/helpers/asyncToGenerator":36,"babel-runtime/helpers/classCallCheck":37,"babel-runtime/helpers/createClass":38,"babel-runtime/helpers/extends":40,"babel-runtime/helpers/inherits":41,"babel-runtime/helpers/possibleConstructorReturn":42,"babel-runtime/helpers/typeof":44,"babel-runtime/regenerator":45,"buffer":47,"circular-json":48,"eventemitter3":181,"json-rpc-msg":185,"uuid/v1":192}],3:[function(require,module,exports){
 "use strict";
