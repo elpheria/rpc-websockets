@@ -25,7 +25,10 @@ export default class WebSocket extends EventEmitter
         this.socket.onopen = () => this.emit("open")
         this.socket.onmessage = (event) => this.emit("message", event.data)
         this.socket.onerror = (error) => this.emit("error", error)
-        this.socket.onclose = () => this.emit("close")
+        this.socket.onclose = (event) =>
+        {
+            this.emit("close", event.code, event.reason)
+        }
     }
 
     /**
