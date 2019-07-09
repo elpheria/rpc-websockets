@@ -54,8 +54,8 @@ function (_EventEmitter) {
       return _this.emit("error", error);
     };
 
-    _this.socket.onclose = function () {
-      return _this.emit("close");
+    _this.socket.onclose = function (event) {
+      _this.emit("close", event.code, event.reason);
     };
 
     return _this;
