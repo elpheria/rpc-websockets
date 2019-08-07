@@ -52,6 +52,28 @@ describe("Server", function()
         })
     })
 
+    it(".setAuth", function()
+    {
+        let exception = false
+
+        getInstance().then((server) =>
+        {
+            try
+            {
+                server.setAuth(function()
+                {
+                })
+            }
+
+            catch (error) { exception = true }
+
+            server.close().then(function()
+            {
+                exception.should.be.false
+            })
+        })
+    })
+
     it(".event", function()
     {
         let exception = false
@@ -236,6 +258,14 @@ describe("Server", function()
                 server = inst
                 host = server.wss.options.host
                 port = server.wss.options.port
+
+                inst.setAuth(function(data)
+                {
+                    if (data.username === "foo" && data.password === "bar")
+                        return true
+                    else
+                        return false
+                })
 
                 inst.register("sqrt", function(param)
                 {
@@ -1145,14 +1175,18 @@ describe("Server", function()
                 })
             })
 
-            it("should respond with ok if login successful", function(done)
+            it("should respond with true if login successful", function(done)
             {
                 connect(port, host).then(function(ws)
                 {
                     ws.send(JSON.stringify({
                         id: ++rpc_id,
                         jsonrpc: "2.0",
-                        method: "rpc.login"
+                        method: "rpc.login",
+                        params: {
+                            username: "foo",
+                            password: "bar"
+                        }
                     }))
 
                     ws.on("message", function(message)
@@ -1160,7 +1194,7 @@ describe("Server", function()
                         message = JSON.parse(message)
 
                         message.id.should.equal(rpc_id)
-                        message.result.should.equal("ok")
+                        message.result.should.equal(true)
 
                         rpc_id++
                         ws.close()

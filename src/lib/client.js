@@ -119,6 +119,17 @@ export default (WebSocket) => class Client extends EventEmitter
     }
 
     /**
+     * Logins with the other side of the connection.
+     * @method
+     * @param {Object} params - Login credentials object
+     * @return {Promise}
+     */
+    async login(params)
+    {
+        return await this.call("rpc.login", params)
+    }
+
+    /**
      * Fetches a list of client's methods registered on server.
      * @method
      * @return {Array}

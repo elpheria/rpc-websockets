@@ -136,6 +136,21 @@ function (_EventEmitter) {
       this.namespaces[ns].rpc_methods[name] = fn;
     }
     /**
+     * Sets an auth method.
+     * @method
+     * @param {Function} fn - an arbitrary auth method
+     * @param {String} ns - namespace identifier
+     * @throws {TypeError}
+     * @return {Undefined}
+     */
+
+  }, {
+    key: "setAuth",
+    value: function setAuth(fn) {
+      var ns = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "/";
+      this.register("rpc.login", fn, ns);
+    }
+    /**
      * Removes a namespace and closes all connections
      * @method
      * @param {String} ns - namespace identifier

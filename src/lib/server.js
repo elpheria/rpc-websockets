@@ -103,6 +103,19 @@ export default class Server extends EventEmitter
     }
 
     /**
+     * Sets an auth method.
+     * @method
+     * @param {Function} fn - an arbitrary auth method
+     * @param {String} ns - namespace identifier
+     * @throws {TypeError}
+     * @return {Undefined}
+     */
+    setAuth(fn, ns = "/")
+    {
+        this.register("rpc.login", fn, ns)
+    }
+
+    /**
      * Removes a namespace and closes all connections
      * @method
      * @param {String} ns - namespace identifier

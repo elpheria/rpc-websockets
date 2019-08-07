@@ -7,6 +7,7 @@ This is a JavaScript classes documentation which describes both client and serve
     * [Constructor](#new-websocketaddress-options---client)
     * [connect](#wsconnect)
     * [call](#wscallmethod-params-timeout-ws_options---promise)
+    * [login](#wsloginmethod-params---promise)
     * [listMethods](#wslistmethods---promise)
     * [notify](#wsnotifymethod-params)
     * [subscribe](#wssubscribeevent---promise)
@@ -79,6 +80,12 @@ Parameters:
   * `binary` {Boolean}: Specifies whether data should be sent as a binary or not. Default is autodetected.
   * `mask` {Boolean} Specifies whether data should be masked or not. Defaults to true when websocket is not a server client.
   * `fin` {Boolean} Specifies whether data is the last fragment of a message or not. Defaults to true.
+
+### ws.login(params) -> Promise
+
+Logins with the other side of the connection.
+
+Parameters are used for authentication with another side of the connection and are user-defined.
 
 ### ws.listMethods() -> Promise
 
