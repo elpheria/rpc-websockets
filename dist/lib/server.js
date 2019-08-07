@@ -74,6 +74,7 @@ function (_EventEmitter) {
      */
 
     _this.namespaces = {};
+    _this.authenticated = false;
     _this.wss = new _ws.Server(options);
 
     _this.wss.on("listening", function () {
@@ -119,13 +120,15 @@ function (_EventEmitter) {
    * @param {Function} fn - a callee function
    * @param {String} ns - namespace identifier
    * @throws {TypeError}
-   * @return {Undefined}
+   * @return {Object}
    */
 
 
   (0, _createClass2["default"])(Server, [{
     key: "register",
     value: function register(name, fn) {
+      var _this2 = this;
+
       var ns = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "/";
       (0, _assertArgs["default"])(arguments, {
         name: "string",
@@ -133,7 +136,18 @@ function (_EventEmitter) {
         "[ns]": "string"
       });
       if (!this.namespaces[ns]) this._generateNamespace(ns);
-      this.namespaces[ns].rpc_methods[name] = fn;
+      this.namespaces[ns].rpc_methods[name] = {
+        "fn": fn,
+        "protected": false
+      };
+      return {
+        "protected": function _protected() {
+          return _this2._makeProtected(name, ns);
+        },
+        "public": function _public() {
+          return _this2._makePublic(name, ns);
+        }
+      };
     }
     /**
      * Sets an auth method.
@@ -149,6 +163,34 @@ function (_EventEmitter) {
     value: function setAuth(fn) {
       var ns = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "/";
       this.register("rpc.login", fn, ns);
+    }
+    /**
+     * Marks an RPC method as protected.
+     * @method
+     * @param {String} name - method name
+     * @param {String} ns - namespace identifier
+     * @return {Undefined}
+     */
+
+  }, {
+    key: "_makeProtected",
+    value: function _makeProtected(name) {
+      var ns = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "/";
+      this.namespaces[ns].rpc_methods[name]["protected"] = true;
+    }
+    /**
+     * Marks an RPC method as public.
+     * @method
+     * @param {String} name - method name
+     * @param {String} ns - namespace identifier
+     * @return {Undefined}
+     */
+
+  }, {
+    key: "_makePublic",
+    value: function _makePublic(name) {
+      var ns = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "/";
+      this.namespaces[ns].rpc_methods[name]["protected"] = false;
     }
     /**
      * Removes a namespace and closes all connections
@@ -208,7 +250,7 @@ function (_EventEmitter) {
   }, {
     key: "event",
     value: function event(name) {
-      var _this2 = this;
+      var _this3 = this;
 
       var ns = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "/";
       (0, _assertArgs["default"])(arguments, {
@@ -233,10 +275,10 @@ function (_EventEmitter) {
         var _iteratorError2 = undefined;
 
         try {
-          for (var _iterator2 = _this2.namespaces[ns].events[name][Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+          for (var _iterator2 = _this3.namespaces[ns].events[name][Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
             var socket_id = _step2.value;
 
-            var socket = _this2.namespaces[ns].clients.get(socket_id);
+            var socket = _this3.namespaces[ns].clients.get(socket_id);
 
             if (!socket) continue;
             socket.send(_circularJson["default"].stringify({
@@ -404,11 +446,11 @@ function (_EventEmitter) {
   }, {
     key: "close",
     value: function close() {
-      var _this3 = this;
+      var _this4 = this;
 
       return new Promise(function (resolve, reject) {
         try {
-          _this3.wss.close();
+          _this4.wss.close();
 
           resolve();
         } catch (error) {
@@ -427,7 +469,7 @@ function (_EventEmitter) {
   }, {
     key: "_handleRPC",
     value: function _handleRPC(socket) {
-      var _this4 = this;
+      var _this5 = this;
 
       var ns = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "/";
       socket.on("message",
@@ -496,7 +538,7 @@ function (_EventEmitter) {
 
                   message = _step3.value;
                   _context.next = 22;
-                  return _this4._runMethod(message, socket._id, ns);
+                  return _this5._runMethod(message, socket._id, ns);
 
                 case 22:
                   _response = _context.sent;
@@ -563,7 +605,7 @@ function (_EventEmitter) {
 
                 case 46:
                   _context.next = 48;
-                  return _this4._runMethod(data, socket._id, ns);
+                  return _this5._runMethod(data, socket._id, ns);
 
                 case 48:
                   response = _context.sent;
@@ -932,30 +974,43 @@ function (_EventEmitter) {
                 });
 
               case 99:
-                response = null;
-                _context2.prev = 100;
-                _context2.next = 103;
-                return this.namespaces[ns].rpc_methods[message.method](message.params);
+                response = null; // reject request if method is protected and if client is not authenticated
 
-              case 103:
+                if (!(this.namespaces[ns].rpc_methods[message.method]["protected"] === true && this.authenticated === false)) {
+                  _context2.next = 102;
+                  break;
+                }
+
+                return _context2.abrupt("return", {
+                  jsonrpc: "2.0",
+                  error: utils.createError(-32605),
+                  id: message.id || null
+                });
+
+              case 102:
+                _context2.prev = 102;
+                _context2.next = 105;
+                return this.namespaces[ns].rpc_methods[message.method].fn(message.params);
+
+              case 105:
                 response = _context2.sent;
-                _context2.next = 113;
+                _context2.next = 115;
                 break;
 
-              case 106:
-                _context2.prev = 106;
-                _context2.t2 = _context2["catch"](100);
+              case 108:
+                _context2.prev = 108;
+                _context2.t2 = _context2["catch"](102);
 
                 if (message.id) {
-                  _context2.next = 110;
+                  _context2.next = 112;
                   break;
                 }
 
                 return _context2.abrupt("return");
 
-              case 110:
+              case 112:
                 if (!(_context2.t2 instanceof Error)) {
-                  _context2.next = 112;
+                  _context2.next = 114;
                   break;
                 }
 
@@ -969,34 +1024,35 @@ function (_EventEmitter) {
                   id: message.id
                 });
 
-              case 112:
+              case 114:
                 return _context2.abrupt("return", {
                   jsonrpc: "2.0",
                   error: _context2.t2,
                   id: message.id
                 });
 
-              case 113:
+              case 115:
                 if (message.id) {
-                  _context2.next = 115;
+                  _context2.next = 117;
                   break;
                 }
 
                 return _context2.abrupt("return");
 
-              case 115:
+              case 117:
+                if (message.method === "rpc.login" && response === true) this.authenticated = true;
                 return _context2.abrupt("return", {
                   jsonrpc: "2.0",
                   result: response,
                   id: message.id
                 });
 
-              case 116:
+              case 119:
               case "end":
                 return _context2.stop();
             }
           }
-        }, _callee2, this, [[19, 39, 43, 51], [44,, 46, 50], [61, 79, 83, 91], [84,, 86, 90], [100, 106]]);
+        }, _callee2, this, [[19, 39, 43, 51], [44,, 46, 50], [61, 79, 83, 91], [84,, 86, 90], [102, 108]]);
       }));
 
       function _runMethod(_x2, _x3) {
@@ -1016,12 +1072,15 @@ function (_EventEmitter) {
   }, {
     key: "_generateNamespace",
     value: function _generateNamespace(name) {
-      var _this5 = this;
+      var _this6 = this;
 
       this.namespaces[name] = {
         rpc_methods: {
-          "__listMethods": function __listMethods() {
-            return Object.keys(_this5.namespaces[name].rpc_methods);
+          "__listMethods": {
+            fn: function fn() {
+              return Object.keys(_this6.namespaces[name].rpc_methods);
+            },
+            "protected": false
           }
         },
         clients: new Map(),

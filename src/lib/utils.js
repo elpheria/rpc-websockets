@@ -7,6 +7,7 @@ const errors = new Map([
     [-32602, "Invalid params"],
     [-32603, "Internal error"],
     [-32604, "Params not found"],
+    [-32605, "Method forbidden"],
     [-32700, "Parse error"]
 ])
 
