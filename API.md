@@ -20,6 +20,7 @@ This is a JavaScript classes documentation which describes both client and serve
 * [Server](#server)
     * [Constructor](#new-websocketserveroptions---server)
     * [register](#serverregistermethod-handler-namespace)
+    * [setAuth](#serversetauthmethod-handler-namespace)
     * [event](#servereventname-namespace)
     * [emit](#serveremitname-params)
     * [eventList](#servereventlistnamespace---array)
@@ -177,6 +178,14 @@ Registers an RPC method.
 Parameters:
 * `method` {String}: RPC method name.
 * `handler` {Function}: RPC function that will be fired with a possible parameter object once the method is called.
+* `namespace` {String}: Namespace identifier. Defaults to ```/```.
+
+### server.setAuth(handler[, namespace])
+
+Sets a user-defined auth method. Must return boolean true on auth success and boolean false on auth failure.
+
+Parameters:
+* `handler` {Function}: An auth function that will be used when the client calls the `login` method. Must return boolean true on auth success and boolean false on auth failure.
 * `namespace` {String}: Namespace identifier. Defaults to ```/```.
 
 ### server.event(name[, namespace])
