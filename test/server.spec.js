@@ -1112,6 +1112,68 @@ describe("Server", function()
                 })
             })
         })
+
+        describe("# login", function()
+        {
+            it("should respond with -32604 if params not provided", function(done)
+            {
+                connect(port, host).then(function(ws)
+                {
+                    ws.send(JSON.stringify({
+                        id: ++rpc_id,
+                        jsonrpc: "2.0",
+                        method: "rpc.login"
+                    }))
+
+                    ws.on("message", function(message)
+                    {
+                        message = JSON.parse(message)
+
+                        message.id.should.equal(rpc_id)
+                        message.error.code.should.equal(-32604)
+                        message.error.message.should.equal("Params not found")
+
+                        rpc_id++
+                        ws.close()
+                        done()
+                    })
+
+                    ws.once("error", function(error)
+                    {
+                        done(error)
+                    })
+                })
+            })
+
+            it("should respond with ok if login successful", function(done)
+            {
+                connect(port, host).then(function(ws)
+                {
+                    ws.send(JSON.stringify({
+                        id: ++rpc_id,
+                        jsonrpc: "2.0",
+                        method: "rpc.login"
+                    }))
+
+                    ws.on("message", function(message)
+                    {
+                        message = JSON.parse(message)
+
+                        message.id.should.equal(rpc_id)
+                        message.result.should.equal("ok")
+
+                        rpc_id++
+                        ws.close()
+                        done()
+                    })
+
+                    ws.once("error", function(error)
+                    {
+                        done(error)
+                    })
+                })
+            })
+        })
     })
 })
 

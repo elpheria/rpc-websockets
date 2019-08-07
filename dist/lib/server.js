@@ -786,7 +786,7 @@ function (_EventEmitter) {
 
               case 54:
                 if (!(message.method === "rpc.off")) {
-                  _context2.next = 92;
+                  _context2.next = 94;
                   break;
                 }
 
@@ -887,9 +887,26 @@ function (_EventEmitter) {
                   id: message.id || null
                 });
 
-              case 92:
+              case 94:
+                if (!(message.method === "rpc.login")) {
+                  _context2.next = 97;
+                  break;
+                }
+
+                if (message.params) {
+                  _context2.next = 97;
+                  break;
+                }
+
+                return _context2.abrupt("return", {
+                  jsonrpc: "2.0",
+                  error: utils.createError(-32604),
+                  id: message.id || null
+                });
+
+              case 97:
                 if (this.namespaces[ns].rpc_methods[message.method]) {
-                  _context2.next = 94;
+                  _context2.next = 99;
                   break;
                 }
 
@@ -899,31 +916,31 @@ function (_EventEmitter) {
                   id: message.id || null
                 });
 
-              case 94:
+              case 99:
                 response = null;
-                _context2.prev = 95;
-                _context2.next = 98;
+                _context2.prev = 100;
+                _context2.next = 103;
                 return this.namespaces[ns].rpc_methods[message.method](message.params);
 
-              case 98:
+              case 103:
                 response = _context2.sent;
-                _context2.next = 108;
+                _context2.next = 113;
                 break;
 
-              case 101:
-                _context2.prev = 101;
-                _context2.t2 = _context2["catch"](95);
+              case 106:
+                _context2.prev = 106;
+                _context2.t2 = _context2["catch"](100);
 
                 if (message.id) {
-                  _context2.next = 105;
+                  _context2.next = 110;
                   break;
                 }
 
                 return _context2.abrupt("return");
 
-              case 105:
+              case 110:
                 if (!(_context2.t2 instanceof Error)) {
-                  _context2.next = 107;
+                  _context2.next = 112;
                   break;
                 }
 
@@ -937,34 +954,34 @@ function (_EventEmitter) {
                   id: message.id
                 });
 
-              case 107:
+              case 112:
                 return _context2.abrupt("return", {
                   jsonrpc: "2.0",
                   error: _context2.t2,
                   id: message.id
                 });
 
-              case 108:
+              case 113:
                 if (message.id) {
-                  _context2.next = 110;
+                  _context2.next = 115;
                   break;
                 }
 
                 return _context2.abrupt("return");
 
-              case 110:
+              case 115:
                 return _context2.abrupt("return", {
                   jsonrpc: "2.0",
                   result: response,
                   id: message.id
                 });
 
-              case 111:
+              case 116:
               case "end":
                 return _context2.stop();
             }
           }
-        }, _callee2, this, [[19, 39, 43, 51], [44,, 46, 50], [61, 79, 83, 91], [84,, 86, 90], [95, 101]]);
+        }, _callee2, this, [[19, 39, 43, 51], [44,, 46, 50], [61, 79, 83, 91], [84,, 86, 90], [100, 106]]);
       }));
 
       function _runMethod(_x2, _x3) {

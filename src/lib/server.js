@@ -541,6 +541,15 @@ export default class Server extends EventEmitter
                 id: message.id || null
             }
         }
+        else if (message.method === "rpc.login")
+        {
+            if (!message.params)
+                return {
+                    jsonrpc: "2.0",
+                    error: utils.createError(-32604),
+                    id: message.id || null
+                }
+        }
 
         if (!this.namespaces[ns].rpc_methods[message.method])
         {
