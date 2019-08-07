@@ -60,9 +60,7 @@ describe("Server", function()
         {
             try
             {
-                server.setAuth(function()
-                {
-                })
+                server.setAuth(function() {})
             }
 
             catch (error) { exception = true }
