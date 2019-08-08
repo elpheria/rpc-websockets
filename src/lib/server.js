@@ -101,8 +101,8 @@ export default class Server extends EventEmitter
         if (!this.namespaces[ns]) this._generateNamespace(ns)
 
         this.namespaces[ns].rpc_methods[name] = {
-            "fn": fn,
-            "protected": false
+            fn: fn,
+            protected: false
         }
 
         return {

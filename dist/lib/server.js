@@ -137,7 +137,7 @@ function (_EventEmitter) {
       });
       if (!this.namespaces[ns]) this._generateNamespace(ns);
       this.namespaces[ns].rpc_methods[name] = {
-        "fn": fn,
+        fn: fn,
         "protected": false
       };
       return {
