@@ -253,7 +253,7 @@ export default class Server extends EventEmitter
                 if (typeof fn !== "function")
                     throw new Error("handler must be a function")
 
-                self.register(fn_name, fn, name)
+                return self.register(fn_name, fn, name)
             },
 
             // self.event convenience method

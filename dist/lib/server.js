@@ -324,7 +324,7 @@ function (_EventEmitter) {
           if (arguments.length !== 2) throw new Error("must provide exactly two arguments");
           if (typeof fn_name !== "string") throw new Error("name must be a string");
           if (typeof fn !== "function") throw new Error("handler must be a function");
-          self.register(fn_name, fn, name);
+          return self.register(fn_name, fn, name);
         },
         // self.event convenience method
         event: function event(ev_name) {
