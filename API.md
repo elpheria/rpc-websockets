@@ -31,6 +31,9 @@ This is a JavaScript classes documentation which describes both client and serve
     * [event:listening](#event-listening)
     * [event:connection](#event-connection)
     * [event:error](#event-error-1)
+* [Method](#method)
+    * [protected](#methodprotectedmethod)
+    * [public](#methodpublicmethod)
 * [Namespaces](#namespaces)
     * [register](#namespaceregistermethod-handler)
     * [event](#namespaceeventname)
@@ -171,7 +174,7 @@ Parameters:
 
 Once the Server class is instantiated, you can use a `ws` library's instance via server.wss object.
 
-### server.register(method, handler[, namespace]) -> [Method](#method)
+### server.register(method, handler[, namespace]) -> Method
 
 Registers an RPC method and returns the Method object to manage method permissions.
 
