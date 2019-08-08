@@ -88,7 +88,7 @@ export default class Server extends EventEmitter
      * @param {Function} fn - a callee function
      * @param {String} ns - namespace identifier
      * @throws {TypeError}
-     * @return {Object} - returns the Method object
+     * @return {Object} - returns the RPCMethod object
      */
     register(name, fn, ns = "/")
     {

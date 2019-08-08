@@ -19,7 +19,7 @@ This is a JavaScript classes documentation which describes both client and serve
     * [event:notification](#event-notification)
 * [Server](#server)
     * [Constructor](#new-websocketserveroptions---server)
-    * [register](#serverregistermethod-handler-namespace)
+    * [register](#serverregistermethod-handler-namespace---rpcmethod)
     * [setAuth](#serversetauthmethod-handler-namespace)
     * [event](#servereventname-namespace)
     * [emit](#serveremitname-params)
@@ -31,9 +31,9 @@ This is a JavaScript classes documentation which describes both client and serve
     * [event:listening](#event-listening)
     * [event:connection](#event-connection)
     * [event:error](#event-error-1)
-* [Method](#method)
-    * [protected](#methodprotectedmethod)
-    * [public](#methodpublicmethod)
+* [RPCMethod](#rpcmethod)
+    * [protected](#rpcmethodprotectedmethod)
+    * [public](#rpcmethodpublicmethod)
 * [Namespaces](#namespaces)
     * [register](#namespaceregistermethod-handler)
     * [event](#namespaceeventname)
@@ -258,6 +258,18 @@ Emits when the client has connected.
 
 Emits when a server error is raised.
 
+## RPCMethod
+
+An object which is returned by .register. Includes functions that can modify method's permissions.
+
+### rpcmethod.protected()
+
+Marks an RPC method as protected. The method will only be reachable if the client has successfully authenticated with .login.
+
+### rpcmethod.public()
+
+Marks an RPC method as public. All clients, both authenticated and anonymous will be able to use the method. This is set by default on .register.
+
 ## Namespaces
 Namespace represents a pool of sockets connected under a given scope identified by a pathname (eg: ```/chat```). Basically borrows ideas from ```socket.io```.
 
@@ -292,15 +304,3 @@ A convenience method that lists all created events in this namespace.
 ### namespace.clients() -> Array
 
 Returns a list of client unique identifiers connected to this namespace.
-
-## Method
-
-An object which is returned by .register. Includes functions that can modify method's permissions.
-
-### method.protected()
-
-Marks an RPC method as protected. The method will only be reachable if the client has successfully authenticated with .login.
-
-### method.public()
-
-Marks an RPC method as public. All clients, both authenticated and anonymous will be able to use the method. This is set by default on .register.
