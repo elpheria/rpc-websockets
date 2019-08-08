@@ -174,7 +174,7 @@ Parameters:
 
 Once the Server class is instantiated, you can use a `ws` library's instance via server.wss object.
 
-### server.register(method, handler[, namespace]) -> Method
+### server.register(method, handler[, namespace]) -> RPCMethod
 
 Registers an RPC method and returns the Method object to manage method permissions.
 
