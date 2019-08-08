@@ -7,6 +7,7 @@ This is a JavaScript classes documentation which describes both client and serve
     * [Constructor](#new-websocketaddress-options---client)
     * [connect](#wsconnect)
     * [call](#wscallmethod-params-timeout-ws_options---promise)
+    * [login](#wsloginmethod-params---promise)
     * [listMethods](#wslistmethods---promise)
     * [notify](#wsnotifymethod-params)
     * [subscribe](#wssubscribeevent---promise)
@@ -18,7 +19,8 @@ This is a JavaScript classes documentation which describes both client and serve
     * [event:notification](#event-notification)
 * [Server](#server)
     * [Constructor](#new-websocketserveroptions---server)
-    * [register](#serverregistermethod-handler-namespace)
+    * [register](#serverregistermethod-handler-namespace---rpcmethod)
+    * [setAuth](#serversetauthmethod-handler-namespace)
     * [event](#servereventname-namespace)
     * [emit](#serveremitname-params)
     * [eventList](#servereventlistnamespace---array)
@@ -29,8 +31,11 @@ This is a JavaScript classes documentation which describes both client and serve
     * [event:listening](#event-listening)
     * [event:connection](#event-connection)
     * [event:error](#event-error-1)
+* [RPCMethod](#rpcmethod)
+    * [protected](#rpcmethodprotected)
+    * [public](#rpcmethodpublic)
 * [Namespaces](#namespaces)
-    * [register](#namespaceregistermethod-handler)
+    * [register](#namespaceregistermethod-handler---rpcmethod)
     * [event](#namespaceeventname)
     * [name](#get-namespacename---string)
     * [connected](#namespaceconnected---object)
@@ -79,6 +84,12 @@ Parameters:
   * `binary` {Boolean}: Specifies whether data should be sent as a binary or not. Default is autodetected.
   * `mask` {Boolean} Specifies whether data should be masked or not. Defaults to true when websocket is not a server client.
   * `fin` {Boolean} Specifies whether data is the last fragment of a message or not. Defaults to true.
+
+### ws.login(params) -> Promise
+
+Logins with the other side of the connection.
+
+Parameters are used for authentication with another side of the connection and are user-defined.
 
 ### ws.listMethods() -> Promise
 
@@ -163,13 +174,21 @@ Parameters:
 
 Once the Server class is instantiated, you can use a `ws` library's instance via server.wss object.
 
-### server.register(method, handler[, namespace])
+### server.register(method, handler[, namespace]) -> RPCMethod
 
-Registers an RPC method.
+Registers an RPC method and returns the RPCMethod object to manage method permissions.
 
 Parameters:
 * `method` {String}: RPC method name.
 * `handler` {Function}: RPC function that will be fired with a possible parameter object once the method is called.
+* `namespace` {String}: Namespace identifier. Defaults to ```/```.
+
+### server.setAuth(handler[, namespace])
+
+Sets a user-defined auth method. The handler function must return boolean true on auth success and boolean false on auth failure.
+
+Parameters:
+* `handler` {Function}: An auth function that will be used when the client calls the `login` method. Must return boolean true on auth success and boolean false on auth failure.
 * `namespace` {String}: Namespace identifier. Defaults to ```/```.
 
 ### server.event(name[, namespace])
@@ -239,10 +258,22 @@ Emits when the client has connected.
 
 Emits when a server error is raised.
 
+## RPCMethod
+
+An object which is returned by .register. Includes functions that can modify method's permissions.
+
+### rpcmethod.protected()
+
+Marks an RPC method as protected. The method will only be reachable if the client has successfully authenticated with .login.
+
+### rpcmethod.public()
+
+Marks an RPC method as public. All clients, both authenticated and anonymous will be able to use the method. This is set by default on .register.
+
 ## Namespaces
 Namespace represents a pool of sockets connected under a given scope identified by a pathname (eg: ```/chat```). Basically borrows ideas from ```socket.io```.
 
-### namespace.register(method, handler)
+### namespace.register(method, handler) -> RPCMethod
 
 A convenience method for server.register using this namespace.
 

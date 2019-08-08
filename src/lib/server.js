@@ -38,6 +38,7 @@ export default class Server extends EventEmitter
          * @param {Object} namespaces.events
          */
         this.namespaces = {}
+        this.authenticated = false
 
         this.wss = new WebSocketServer(options)
 
@@ -87,7 +88,7 @@ export default class Server extends EventEmitter
      * @param {Function} fn - a callee function
      * @param {String} ns - namespace identifier
      * @throws {TypeError}
-     * @return {Undefined}
+     * @return {Object} - returns the RPCMethod object
      */
     register(name, fn, ns = "/")
     {
@@ -99,7 +100,52 @@ export default class Server extends EventEmitter
 
         if (!this.namespaces[ns]) this._generateNamespace(ns)
 
-        this.namespaces[ns].rpc_methods[name] = fn
+        this.namespaces[ns].rpc_methods[name] = {
+            fn: fn,
+            protected: false
+        }
+
+        return {
+            protected: () => this._makeProtected(name, ns),
+            public: () => this._makePublic(name, ns)
+        }
+    }
+
+    /**
+     * Sets an auth method.
+     * @method
+     * @param {Function} fn - an arbitrary auth method
+     * @param {String} ns - namespace identifier
+     * @throws {TypeError}
+     * @return {Undefined}
+     */
+    setAuth(fn, ns = "/")
+    {
+        this.register("rpc.login", fn, ns)
+    }
+
+    /**
+     * Marks an RPC method as protected.
+     * @method
+     * @param {String} name - method name
+     * @param {String} ns - namespace identifier
+     * @return {Undefined}
+     */
+    _makeProtected(name, ns = "/")
+    {
+        this.namespaces[ns].rpc_methods[name].protected = true
+    }
+
+    /**
+     * Marks an RPC method as public.
+     * @method
+     * @param {String} name - method name
+     * @param {String} ns - namespace identifier
+     * @return {Undefined}
+     */
+    _makePublic(name, ns = "/")
+    {
+        this.namespaces[ns].rpc_methods[name].protected = false
     }
 
     /**
@@ -207,7 +253,7 @@ export default class Server extends EventEmitter
                 if (typeof fn !== "function")
                     throw new Error("handler must be a function")
 
-                self.register(fn_name, fn, name)
+                return self.register(fn_name, fn, name)
             },
 
             // self.event convenience method
@@ -541,6 +587,15 @@ export default class Server extends EventEmitter
                 id: message.id || null
             }
         }
+        else if (message.method === "rpc.login")
+        {
+            if (!message.params)
+                return {
+                    jsonrpc: "2.0",
+                    error: utils.createError(-32604),
+                    id: message.id || null
+                }
+        }
 
         if (!this.namespaces[ns].rpc_methods[message.method])
         {
@@ -553,7 +608,18 @@ export default class Server extends EventEmitter
 
         let response = null
 
-        try { response = await this.namespaces[ns].rpc_methods[message.method](message.params) }
+        // reject request if method is protected and if client is not authenticated
+        if (this.namespaces[ns].rpc_methods[message.method].protected === true &&
+            this.authenticated === false)
+        {
+            return {
+                jsonrpc: "2.0",
+                error: utils.createError(-32605),
+                id: message.id || null
+            }
+        }
+
+        try { response = await this.namespaces[ns].rpc_methods[message.method].fn(message.params) }
 
         catch (error)
         {
@@ -582,6 +648,10 @@ export default class Server extends EventEmitter
         if (!message.id)
             return
 
+        // if login middleware returned true, set connection as authenticated
+        if (message.method === "rpc.login" && response === true)
+            this.authenticated = true
+
         return {
             jsonrpc: "2.0",
             result: response,
@@ -600,7 +670,10 @@ export default class Server extends EventEmitter
     {
         this.namespaces[name] = {
             rpc_methods: {
-                "__listMethods": () => Object.keys(this.namespaces[name].rpc_methods)
+                "__listMethods": {
+                    fn: () => Object.keys(this.namespaces[name].rpc_methods),
+                    protected: false
+                }
             },
             clients: new Map(),
             events: {}

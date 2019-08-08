@@ -153,23 +153,24 @@ var _default = function _default(WebSocket) {
           });
         }
         /**
-         * Fetches a list of client's methods registered on server.
+         * Logins with the other side of the connection.
          * @method
-         * @return {Array}
+         * @param {Object} params - Login credentials object
+         * @return {Promise}
          */
 
       }, {
-        key: "listMethods",
+        key: "login",
         value: function () {
-          var _listMethods = (0, _asyncToGenerator2["default"])(
+          var _login = (0, _asyncToGenerator2["default"])(
           /*#__PURE__*/
-          _regenerator["default"].mark(function _callee() {
+          _regenerator["default"].mark(function _callee(params) {
             return _regenerator["default"].wrap(function _callee$(_context) {
               while (1) {
                 switch (_context.prev = _context.next) {
                   case 0:
                     _context.next = 2;
-                    return this.call("__listMethods");
+                    return this.call("rpc.login", params);
 
                   case 2:
                     return _context.abrupt("return", _context.sent);
@@ -180,6 +181,42 @@ var _default = function _default(WebSocket) {
                 }
               }
             }, _callee, this);
+          }));
+
+          function login(_x) {
+            return _login.apply(this, arguments);
+          }
+
+          return login;
+        }()
+        /**
+         * Fetches a list of client's methods registered on server.
+         * @method
+         * @return {Array}
+         */
+
+      }, {
+        key: "listMethods",
+        value: function () {
+          var _listMethods = (0, _asyncToGenerator2["default"])(
+          /*#__PURE__*/
+          _regenerator["default"].mark(function _callee2() {
+            return _regenerator["default"].wrap(function _callee2$(_context2) {
+              while (1) {
+                switch (_context2.prev = _context2.next) {
+                  case 0:
+                    _context2.next = 2;
+                    return this.call("__listMethods");
+
+                  case 2:
+                    return _context2.abrupt("return", _context2.sent);
+
+                  case 3:
+                  case "end":
+                    return _context2.stop();
+                }
+              }
+            }, _callee2, this);
           }));
 
           function listMethods() {
@@ -232,42 +269,42 @@ var _default = function _default(WebSocket) {
         value: function () {
           var _subscribe = (0, _asyncToGenerator2["default"])(
           /*#__PURE__*/
-          _regenerator["default"].mark(function _callee2(event) {
+          _regenerator["default"].mark(function _callee3(event) {
             var result,
-                _args2 = arguments;
-            return _regenerator["default"].wrap(function _callee2$(_context2) {
+                _args3 = arguments;
+            return _regenerator["default"].wrap(function _callee3$(_context3) {
               while (1) {
-                switch (_context2.prev = _context2.next) {
+                switch (_context3.prev = _context3.next) {
                   case 0:
-                    (0, _assertArgs["default"])(_args2, {
+                    (0, _assertArgs["default"])(_args3, {
                       event: ["string", Array]
                     });
                     if (typeof event === "string") event = [event];
-                    _context2.next = 4;
+                    _context3.next = 4;
                     return this.call("rpc.on", event);
 
                   case 4:
-                    result = _context2.sent;
+                    result = _context3.sent;
 
                     if (!(typeof event === "string" && result[event] !== "ok")) {
-                      _context2.next = 7;
+                      _context3.next = 7;
                       break;
                     }
 
                     throw new Error("Failed subscribing to an event '" + event + "' with: " + result[event]);
 
                   case 7:
-                    return _context2.abrupt("return", result);
+                    return _context3.abrupt("return", result);
 
                   case 8:
                   case "end":
-                    return _context2.stop();
+                    return _context3.stop();
                 }
               }
-            }, _callee2, this);
+            }, _callee3, this);
           }));
 
-          function subscribe(_x) {
+          function subscribe(_x2) {
             return _subscribe.apply(this, arguments);
           }
 
@@ -286,42 +323,42 @@ var _default = function _default(WebSocket) {
         value: function () {
           var _unsubscribe = (0, _asyncToGenerator2["default"])(
           /*#__PURE__*/
-          _regenerator["default"].mark(function _callee3(event) {
+          _regenerator["default"].mark(function _callee4(event) {
             var result,
-                _args3 = arguments;
-            return _regenerator["default"].wrap(function _callee3$(_context3) {
+                _args4 = arguments;
+            return _regenerator["default"].wrap(function _callee4$(_context4) {
               while (1) {
-                switch (_context3.prev = _context3.next) {
+                switch (_context4.prev = _context4.next) {
                   case 0:
-                    (0, _assertArgs["default"])(_args3, {
+                    (0, _assertArgs["default"])(_args4, {
                       event: ["string", Array]
                     });
                     if (typeof event === "string") event = [event];
-                    _context3.next = 4;
+                    _context4.next = 4;
                     return this.call("rpc.off", event);
 
                   case 4:
-                    result = _context3.sent;
+                    result = _context4.sent;
 
                     if (!(typeof event === "string" && result[event] !== "ok")) {
-                      _context3.next = 7;
+                      _context4.next = 7;
                       break;
                     }
 
                     throw new Error("Failed unsubscribing from an event with: " + result);
 
                   case 7:
-                    return _context3.abrupt("return", result);
+                    return _context4.abrupt("return", result);
 
                   case 8:
                   case "end":
-                    return _context3.stop();
+                    return _context4.stop();
                 }
               }
-            }, _callee3, this);
+            }, _callee4, this);
           }));
 
-          function unsubscribe(_x2) {
+          function unsubscribe(_x3) {
             return _unsubscribe.apply(this, arguments);
           }
 

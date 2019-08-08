@@ -51,6 +51,11 @@ server.register('sum', function(params) {
   return params[0] + params[1]
 })
 
+// ...and maybe a protected one also
+server.register('account', function() {
+  return ['confi1', 'confi2']
+}).protected()
+
 // create an event
 server.event('feedUpdated')
 
@@ -84,6 +89,13 @@ ws.on('open', function() {
 
   // unsubscribe from an event
   ws.unsubscribe('feedUpdated')
+
+  // login your client to be able to use protected methods
+  ws.login({'username': 'confi1', 'password':'foobar'}).then(function() {
+    ws.call('account'),then(function(result) {
+      require('assert').equal(result, ['confi1', 'confi2'])
+    })
+  })
 
   // close a websocket connection
   ws.close()

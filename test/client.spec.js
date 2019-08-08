@@ -39,6 +39,11 @@ describe("Client", function()
                     return true
                 })
 
+                server.register("cryptic", function()
+                {
+                    return "boohoo"
+                }).protected()
+
                 server.register("hang", function()
                 {
                     return new Promise(function(resolve, reject)
@@ -57,6 +62,14 @@ describe("Client", function()
                     }
 
                     return new Obj()
+                })
+
+                server.setAuth(function(data)
+                {
+                    if (data.username === "foo" && data.password === "bar")
+                        return true
+                    else
+                        return false
                 })
 
                 server.event("newsUpdate")
@@ -241,6 +254,100 @@ describe("Client", function()
                         expect(error.message).to.equal("reply timeout")
                         done()
                     })
+            })
+        })
+
+        it("should call a protected RPC method and receive an error", function(done)
+        {
+            const client = new WebSocket("ws://" + host + ":" + port)
+
+            client.on("open", function()
+            {
+                client.call("cryptic").then(function(response)
+                {
+                    done(new Error("should not be authorized to run this method"))
+                    client.close()
+                }, function(error)
+                {
+                    expect(error.code).to.exist
+                    expect(error.message).to.exist
+                    expect(error.code).to.equal(-32605)
+                    expect(error.message).to.equal("Method forbidden")
+                    done()
+                })
+            })
+
+            client.on("error", (error) => console.log(error))
+        })
+
+        it("should call a protected RPC method and receive a response", function(done)
+        {
+            const client = new WebSocket("ws://" + host + ":" + port)
+
+            client.on("open", function()
+            {
+                client.login({
+                    username: "foo",
+                    password: "bar"
+                }).then(function()
+                {
+                    client.call("cryptic").then(function(response)
+                    {
+                        response.should.equal("boohoo")
+                        done()
+                        client.close()
+                    }, function(error)
+                    {
+                        done(error)
+                    })
+                })
+            })
+
+            client.on("error", (error) => console.log(error))
+        })
+    })
+
+    describe(".login", function()
+    {
+        it("should return false if wrong credentials were provided", function(done)
+        {
+            const client = new WebSocket("ws://" + host + ":" + port)
+
+            client.on("open", function()
+            {
+                client.login({
+                    username: "fooz",
+                    password: "barz"
+                }).then(function(response)
+                {
+                    response.should.equal(false)
+                    done()
+                    client.close()
+                }, function(error)
+                {
+                    done(error)
+                })
+            })
+        })
+
+        it("should return true if correct credentials were provided", function(done)
+        {
+            const client = new WebSocket("ws://" + host + ":" + port)
+
+            client.on("open", function()
+            {
+                client.login({
+                    username: "foo",
+                    password: "bar"
+                }).then(function(response)
+                {
+                    response.should.equal(true)
+                    done()
+                    client.close()
+                }, function(error)
+                {
+                    done(error)
+                })
             })
         })
     })

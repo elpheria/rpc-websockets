@@ -52,6 +52,66 @@ describe("Server", function()
         })
     })
 
+    it(".register.protected", function()
+    {
+        let exception = false
+
+        getInstance().then((server) =>
+        {
+            try
+            {
+                server.register("foo", function() {}).protected()
+            }
+
+            catch (error) { exception = true }
+
+            server.close().then(function()
+            {
+                exception.should.be.false
+            })
+        })
+    })
+
+    it(".register.public", function()
+    {
+        let exception = false
+
+        getInstance().then((server) =>
+        {
+            try
+            {
+                server.register("foo", function() {}).public()
+            }
+
+            catch (error) { exception = true }
+
+            server.close().then(function()
+            {
+                exception.should.be.false
+            })
+        })
+    })
+
+    it(".setAuth", function()
+    {
+        let exception = false
+
+        getInstance().then((server) =>
+        {
+            try
+            {
+                server.setAuth(function() {})
+            }
+
+            catch (error) { exception = true }
+
+            server.close().then(function()
+            {
+                exception.should.be.false
+            })
+        })
+    })
+
     it(".event", function()
     {
         let exception = false
@@ -237,10 +297,23 @@ describe("Server", function()
                 host = server.wss.options.host
                 port = server.wss.options.port
 
+                inst.setAuth(function(data)
+                {
+                    if (data.username === "foo" && data.password === "bar")
+                        return true
+                    else
+                        return false
+                })
+
                 inst.register("sqrt", function(param)
                 {
                     return Math.sqrt(param)
                 })
+
+                inst.register("sqrt_protected", function(param)
+                {
+                    return Math.sqrt(param)
+                }).protected()
 
                 inst.register("sum", function(params)
                 {
@@ -1103,6 +1176,176 @@ describe("Server", function()
                         rpc_id++
                         ws.close()
                         done()
+                    })
+
+                    ws.once("error", function(error)
+                    {
+                        done(error)
+                    })
+                })
+            })
+        })
+
+        describe("# login", function()
+        {
+            it("should respond with -32604 if params not provided", function(done)
+            {
+                connect(port, host).then(function(ws)
+                {
+                    ws.send(JSON.stringify({
+                        id: ++rpc_id,
+                        jsonrpc: "2.0",
+                        method: "rpc.login"
+                    }))
+
+                    ws.on("message", function(message)
+                    {
+                        message = JSON.parse(message)
+
+                        message.id.should.equal(rpc_id)
+                        message.error.code.should.equal(-32604)
+                        message.error.message.should.equal("Params not found")
+
+                        rpc_id++
+                        ws.close()
+                        done()
+                    })
+
+                    ws.once("error", function(error)
+                    {
+                        done(error)
+                    })
+                })
+            })
+
+            it("should respond with false if login failed", function(done)
+            {
+                connect(port, host).then(function(ws)
+                {
+                    ws.send(JSON.stringify({
+                        id: ++rpc_id,
+                        jsonrpc: "2.0",
+                        method: "rpc.login",
+                        params: {
+                            username: "foo",
+                            password: "bar2"
+                        }
+                    }))
+
+                    ws.on("message", function(message)
+                    {
+                        message = JSON.parse(message)
+
+                        message.id.should.equal(rpc_id)
+                        message.result.should.equal(false)
+
+                        rpc_id++
+                        ws.close()
+                        done()
+                    })
+
+                    ws.once("error", function(error)
+                    {
+                        done(error)
+                    })
+                })
+            })
+
+            it("should respond with -32605 when called without being authorized", function(done)
+            {
+                connect(port, host).then((ws) =>
+                {
+                    ws.send(JSON.stringify({
+                        id: rpc_id,
+                        jsonrpc: "2.0",
+                        method: "sqrt_protected",
+                        params: [4]
+                    }))
+
+                    ws.once("message", function(message)
+                    {
+                        message = JSON.parse(message)
+
+                        message.id.should.equal(rpc_id)
+                        message.error.code.should.equal(-32605)
+                        message.error.message.should.equal("Method forbidden")
+
+                        rpc_id++
+                        ws.close()
+                        done()
+                    })
+
+                    ws.once("error", function(error)
+                    {
+                        done(error)
+                    })
+                })
+            })
+
+            it("should respond with true if login successful", function(done)
+            {
+                connect(port, host).then((ws) =>
+                {
+                    ws.send(JSON.stringify({
+                        id: ++rpc_id,
+                        jsonrpc: "2.0",
+                        method: "rpc.login",
+                        params: {
+                            username: "foo",
+                            password: "bar"
+                        }
+                    }))
+
+                    ws.on("message", function(message)
+                    {
+                        message = JSON.parse(message)
+
+                        message.id.should.equal(rpc_id)
+                        message.result.should.equal(true)
+
+                        rpc_id++
+                        ws.close()
+                        done()
+                    })
+
+                    ws.once("error", function(error)
+                    {
+                        done(error)
+                    })
+                })
+            })
+
+            it("should return a valid response if authorized", function(done)
+            {
+                connect(port, host).then((ws) =>
+                {
+                    ws.send(JSON.stringify({
+                        id: ++rpc_id,
+                        jsonrpc: "2.0",
+                        method: "rpc.login",
+                        params: {
+                            username: "foo",
+                            password: "bar"
+                        }
+                    }))
+
+                    ws.once("message", function(message)
+                    {
+                        ws.send(JSON.stringify({
+                            id: ++rpc_id,
+                            jsonrpc: "2.0",
+                            method: "sqrt_protected",
+                            params: [4]
+                        }))
+
+                        ws.once("message", function(message)
+                        {
+                            message = JSON.parse(message)
+
+                            rpc_id++
+                            ws.close()
+                            done()
+                        })
                     })
 
                     ws.once("error", function(error)
