@@ -1040,6 +1040,7 @@ function (_EventEmitter) {
                 return _context2.abrupt("return");
 
               case 117:
+                // if login middleware returned true, set connection as authenticated
                 if (message.method === "rpc.login" && response === true) this.authenticated = true;
                 return _context2.abrupt("return", {
                   jsonrpc: "2.0",

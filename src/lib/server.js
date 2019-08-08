@@ -648,6 +648,7 @@ export default class Server extends EventEmitter
         if (!message.id)
             return
 
+        // if login middleware returned true, set connection as authenticated
         if (message.method === "rpc.login" && response === true)
             this.authenticated = true
 
