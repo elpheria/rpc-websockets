@@ -35,7 +35,7 @@ This is a JavaScript classes documentation which describes both client and serve
     * [protected](#rpcmethodprotected)
     * [public](#rpcmethodpublic)
 * [Namespaces](#namespaces)
-    * [register](#namespaceregistermethod-handler)
+    * [register](#namespaceregistermethod-handler---rpcmethod)
     * [event](#namespaceeventname)
     * [name](#get-namespacename---string)
     * [connected](#namespaceconnected---object)
@@ -273,7 +273,7 @@ Marks an RPC method as public. All clients, both authenticated and anonymous wil
 ## Namespaces
 Namespace represents a pool of sockets connected under a given scope identified by a pathname (eg: ```/chat```). Basically borrows ideas from ```socket.io```.
 
-### namespace.register(method, handler)
+### namespace.register(method, handler) -> RPCMethod
 
 A convenience method for server.register using this namespace.
 
