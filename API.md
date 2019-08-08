@@ -171,9 +171,9 @@ Parameters:
 
 Once the Server class is instantiated, you can use a `ws` library's instance via server.wss object.
 
-### server.register(method, handler[, namespace])
+### server.register(method, handler[, namespace]) -> [Method](#method)
 
-Registers an RPC method.
+Registers an RPC method and returns the Method object to manage method permissions.
 
 Parameters:
 * `method` {String}: RPC method name.
@@ -182,7 +182,7 @@ Parameters:
 
 ### server.setAuth(handler[, namespace])
 
-Sets a user-defined auth method. Must return boolean true on auth success and boolean false on auth failure.
+Sets a user-defined auth method. The handler function must return boolean true on auth success and boolean false on auth failure.
 
 Parameters:
 * `handler` {Function}: An auth function that will be used when the client calls the `login` method. Must return boolean true on auth success and boolean false on auth failure.
@@ -289,3 +289,15 @@ A convenience method that lists all created events in this namespace.
 ### namespace.clients() -> Array
 
 Returns a list of client unique identifiers connected to this namespace.
+
+## Method
+
+An object which is returned by .register. Includes functions that can modify method's permissions.
+
+### method.protected()
+
+Marks an RPC method as protected. The method will only be reachable if the client has successfully authenticated with .login.
+
+### method.public()
+
+Marks an RPC method as public. All clients, both authenticated and anonymous will be able to use the method. This is set by default on .register.

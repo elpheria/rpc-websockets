@@ -120,7 +120,7 @@ function (_EventEmitter) {
    * @param {Function} fn - a callee function
    * @param {String} ns - namespace identifier
    * @throws {TypeError}
-   * @return {Object}
+   * @return {Object} - returns the Method object
    */
 
 
