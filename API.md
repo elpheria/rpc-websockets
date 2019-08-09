@@ -7,7 +7,7 @@ This is a JavaScript classes documentation which describes both client and serve
     * [Constructor](#new-websocketaddress-options---client)
     * [connect](#wsconnect)
     * [call](#wscallmethod-params-timeout-ws_options---promise)
-    * [login](#wsloginmethod-params---promise)
+    * [login](#wslogin-params---promise)
     * [listMethods](#wslistmethods---promise)
     * [notify](#wsnotifymethod-params)
     * [subscribe](#wssubscribeevent---promise)
