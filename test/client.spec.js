@@ -320,6 +320,30 @@ describe("Client", function()
                 done()
             })
         })
+
+        it("should make a registered method protected", function(done)
+        {
+            const client = new WebSocket("ws://" + host + ":" + port)
+
+            client.on("open", function()
+            {
+                client.register("divide", function() {}).protected()
+                client.close()
+                done()
+            })
+        })
+
+        it("should make a registered method public", function(done)
+        {
+            const client = new WebSocket("ws://" + host + ":" + port)
+
+            client.on("open", function()
+            {
+                client.register("divide", function() {}).public()
+                client.close()
+                done()
+            })
+        })
     })
 
     describe(".login", function()

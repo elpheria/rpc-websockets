@@ -31,6 +31,7 @@ export default (WebSocket) => class Client extends EventEmitter
     {
         super()
 
+        this.rpc_methods = {}
         this.queue = {}
         this.rpc_id = 0
 
@@ -59,6 +60,33 @@ export default (WebSocket) => class Client extends EventEmitter
             return
 
         this._connect(this.address, this.options)
+    }
+
+    /**
+     * Registers an RPC method.
+     * @method
+     * @param {String} name - method name
+     * @param {Function} fn - a callee function
+     * @throws {TypeError}
+     * @return {Object} - returns the RPCMethod object
+     */
+    register(name, fn)
+    {
+        assertArgs(arguments, {
+            name: "string",
+            fn: "function",
+            "[ns]": "string"
+        })
+
+        this.rpc_methods[name] = {
+            fn: fn,
+            protected: false
+        }
+
+        return {
+            protected: () => this._makeProtected(name),
+            public: () => this._makePublic(name)
+        }
     }
 
     /**
@@ -318,5 +346,27 @@ export default (WebSocket) => class Client extends EventEmitter
                     this.max_reconnects === 0))
                 setTimeout(() => this._connect(address, options), this.reconnect_interval)
         })
+    }
+
+    /**
+     * Marks an RPC method as protected.
+     * @method
+     * @param {String} name - method name
+     * @return {Undefined}
+     */
+    _makeProtected(name)
+    {
+        this.rpc_methods[name].protected = true
+    }
+
+    /**
+     * Marks an RPC method as public.
+     * @method
+     * @param {String} name - method name
+     * @return {Undefined}
+     */
+    _makePublic(name)
+    {
+        this.rpc_methods[name].protected = false
     }
 }
