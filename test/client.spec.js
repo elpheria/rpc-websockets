@@ -307,6 +307,21 @@ describe("Client", function()
         })
     })
 
+    describe(".register", function()
+    {
+        it("should register a new method", function(done)
+        {
+            const client = new WebSocket("ws://" + host + ":" + port)
+
+            client.on("open", function()
+            {
+                client.register("divide", function() {})
+                client.close()
+                done()
+            })
+        })
+    })
+
     describe(".login", function()
     {
         it("should return false if wrong credentials were provided", function(done)
