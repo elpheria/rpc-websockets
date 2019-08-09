@@ -71,6 +71,21 @@ Parameters:
 
 Connects to a previously defined server if not connected already. Should only be used in case `autoconnect` was disabled.
 
+### ws.register(method, handler) -> RPCMethod
+
+Registers an RPC method and returns the RPCMethod object to manage method permissions.
+
+Parameters:
+* `method` {String}: RPC method name.
+* `handler` {Function}: RPC function that will be fired with a possible parameter object once the method is called.
+
+### ws.setAuth(handler)
+
+Sets a user-defined auth method. The handler function must return boolean true on auth success and boolean false on auth failure.
+
+Parameters:
+* `handler` {Function}: An auth function that will be used when the client calls the `login` method. Must return boolean true on auth success and boolean false on auth failure.
+
 ### ws.call(method[, params[, timeout[, ws_options]]]) -> Promise
 
 Calls a registered RPC method on server. Resolves once the response is ready. Throws if an RPC error was received.
