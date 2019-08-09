@@ -90,6 +90,18 @@ export default (WebSocket) => class Client extends EventEmitter
     }
 
     /**
+     * Sets an auth method.
+     * @method
+     * @param {Function} fn - an arbitrary auth method
+     * @throws {TypeError}
+     * @return {Undefined}
+     */
+    setAuth(fn)
+    {
+        this.register("rpc.login", fn)
+    }
+
+    /**
      * Calls a registered RPC method on server.
      * @method
      * @param {String} method - RPC method name

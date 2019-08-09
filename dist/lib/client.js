@@ -66,6 +66,7 @@ var _default = function _default(WebSocket) {
         var generate_request_id = arguments.length > 2 ? arguments[2] : undefined;
         (0, _classCallCheck2["default"])(this, Client);
         _this = (0, _possibleConstructorReturn2["default"])(this, (0, _getPrototypeOf2["default"])(Client).call(this));
+        _this.rpc_methods = {};
         _this.queue = {};
         _this.rpc_id = 0;
         _this.address = address;
@@ -99,6 +100,51 @@ var _default = function _default(WebSocket) {
           this._connect(this.address, this.options);
         }
         /**
+         * Registers an RPC method.
+         * @method
+         * @param {String} name - method name
+         * @param {Function} fn - a callee function
+         * @throws {TypeError}
+         * @return {Object} - returns the RPCMethod object
+         */
+
+      }, {
+        key: "register",
+        value: function register(name, fn) {
+          var _this2 = this;
+
+          (0, _assertArgs["default"])(arguments, {
+            name: "string",
+            fn: "function",
+            "[ns]": "string"
+          });
+          this.rpc_methods[name] = {
+            fn: fn,
+            "protected": false
+          };
+          return {
+            "protected": function _protected() {
+              return _this2._makeProtected(name);
+            },
+            "public": function _public() {
+              return _this2._makePublic(name);
+            }
+          };
+        }
+        /**
+         * Sets an auth method.
+         * @method
+         * @param {Function} fn - an arbitrary auth method
+         * @throws {TypeError}
+         * @return {Undefined}
+         */
+
+      }, {
+        key: "setAuth",
+        value: function setAuth(fn) {
+          this.register("rpc.login", fn);
+        }
+        /**
          * Calls a registered RPC method on server.
          * @method
          * @param {String} method - RPC method name
@@ -111,7 +157,7 @@ var _default = function _default(WebSocket) {
       }, {
         key: "call",
         value: function call(method, params, timeout, ws_opts) {
-          var _this2 = this;
+          var _this3 = this;
 
           (0, _assertArgs["default"])(arguments, {
             "method": "string",
@@ -126,9 +172,9 @@ var _default = function _default(WebSocket) {
           }
 
           return new Promise(function (resolve, reject) {
-            if (!_this2.ready) return reject(new Error("socket not ready"));
+            if (!_this3.ready) return reject(new Error("socket not ready"));
 
-            var rpc_id = _this2.generate_request_id(method, params);
+            var rpc_id = _this3.generate_request_id(method, params);
 
             var message = {
               jsonrpc: "2.0",
@@ -137,15 +183,15 @@ var _default = function _default(WebSocket) {
               id: rpc_id
             };
 
-            _this2.socket.send(JSON.stringify(message), ws_opts, function (error) {
+            _this3.socket.send(JSON.stringify(message), ws_opts, function (error) {
               if (error) return reject(error);
-              _this2.queue[rpc_id] = {
+              _this3.queue[rpc_id] = {
                 promise: [resolve, reject]
               };
 
               if (timeout) {
-                _this2.queue[rpc_id].timeout = setTimeout(function () {
-                  _this2.queue[rpc_id] = null;
+                _this3.queue[rpc_id].timeout = setTimeout(function () {
+                  _this3.queue[rpc_id] = null;
                   reject(new Error("reply timeout"));
                 }, timeout);
               }
@@ -236,21 +282,21 @@ var _default = function _default(WebSocket) {
       }, {
         key: "notify",
         value: function notify(method, params) {
-          var _this3 = this;
+          var _this4 = this;
 
           (0, _assertArgs["default"])(arguments, {
             "method": "string",
             "[params]": ["object", Array]
           });
           return new Promise(function (resolve, reject) {
-            if (!_this3.ready) return reject(new Error("socket not ready"));
+            if (!_this4.ready) return reject(new Error("socket not ready"));
             var message = {
               jsonrpc: "2.0",
               method: method,
               params: params || null
             };
 
-            _this3.socket.send(JSON.stringify(message), function (error) {
+            _this4.socket.send(JSON.stringify(message), function (error) {
               if (error) return reject(error);
               resolve();
             });
@@ -389,15 +435,15 @@ var _default = function _default(WebSocket) {
       }, {
         key: "_connect",
         value: function _connect(address, options) {
-          var _this4 = this;
+          var _this5 = this;
 
           this.socket = new WebSocket(address, options);
           this.socket.on("open", function () {
-            _this4.ready = true;
+            _this5.ready = true;
 
-            _this4.emit("open");
+            _this5.emit("open");
 
-            _this4.current_reconnects = 0;
+            _this5.current_reconnects = 0;
           });
           this.socket.on("message", function (message) {
             if (message instanceof ArrayBuffer) message = Buffer.from(message).toString();
@@ -409,37 +455,61 @@ var _default = function _default(WebSocket) {
             } // check if any listeners are attached and forward event
 
 
-            if (message.notification && _this4.listeners(message.notification).length) {
-              if (!Object.keys(message.params).length) return _this4.emit(message.notification);
+            if (message.notification && _this5.listeners(message.notification).length) {
+              if (!Object.keys(message.params).length) return _this5.emit(message.notification);
               var args = [message.notification];
               if (message.params.constructor === Object) args.push(message.params);else // using for-loop instead of unshift/spread because performance is better
                 for (var i = 0; i < message.params.length; i++) {
                   args.push(message.params[i]);
                 }
-              return _this4.emit.apply(_this4, args);
+              return _this5.emit.apply(_this5, args);
             }
 
-            if (!_this4.queue[message.id]) {
+            if (!_this5.queue[message.id]) {
               // general JSON RPC 2.0 events
-              if (message.method && message.params) return _this4.emit(message.method, message.params);else return;
+              if (message.method && message.params) return _this5.emit(message.method, message.params);else return;
             }
 
-            if (_this4.queue[message.id].timeout) clearTimeout(_this4.queue[message.id].timeout);
-            if (message.error) _this4.queue[message.id].promise[1](message.error);else _this4.queue[message.id].promise[0](message.result);
-            _this4.queue[message.id] = null;
+            if (_this5.queue[message.id].timeout) clearTimeout(_this5.queue[message.id].timeout);
+            if (message.error) _this5.queue[message.id].promise[1](message.error);else _this5.queue[message.id].promise[0](message.result);
+            _this5.queue[message.id] = null;
           });
           this.socket.on("error", function (error) {
-            return _this4.emit("error", error);
+            return _this5.emit("error", error);
           });
           this.socket.on("close", function (code, message) {
-            if (_this4.ready) _this4.emit("close", code, message);
-            _this4.ready = false;
+            if (_this5.ready) _this5.emit("close", code, message);
+            _this5.ready = false;
             if (code === 1000) return;
-            _this4.current_reconnects++;
-            if (_this4.reconnect && (_this4.max_reconnects > _this4.current_reconnects || _this4.max_reconnects === 0)) setTimeout(function () {
-              return _this4._connect(address, options);
-            }, _this4.reconnect_interval);
+            _this5.current_reconnects++;
+            if (_this5.reconnect && (_this5.max_reconnects > _this5.current_reconnects || _this5.max_reconnects === 0)) setTimeout(function () {
+              return _this5._connect(address, options);
+            }, _this5.reconnect_interval);
           });
+        }
+        /**
+         * Marks an RPC method as protected.
+         * @method
+         * @param {String} name - method name
+         * @return {Undefined}
+         */
+
+      }, {
+        key: "_makeProtected",
+        value: function _makeProtected(name) {
+          this.rpc_methods[name]["protected"] = true;
+        }
+        /**
+         * Marks an RPC method as public.
+         * @method
+         * @param {String} name - method name
+         * @return {Undefined}
+         */
+
+      }, {
+        key: "_makePublic",
+        value: function _makePublic(name) {
+          this.rpc_methods[name]["protected"] = false;
         }
       }]);
       return Client;
