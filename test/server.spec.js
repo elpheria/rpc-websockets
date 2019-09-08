@@ -3,1126 +3,40 @@
 
 "use strict"
 
-const should = require("chai").should()
+require("chai").use(require("chai-spies"))
+
 const expect = require("chai").expect
+const spy = require("chai").spy
 const WebSocket = require("ws")
+const _WebSocketServer = require("../dist").Server
+const JsonRPCSocket = require("../dist/lib/JsonRpcSocket").default
+const Namespace = require("../dist/lib/Namespace").default
 
-const WebSocketServer = require("../dist").Server
-const SERVER_HOST = "localhost"
-const SERVER_PORT = 0 // random free port
-let rpc_id = 1
+const serverInstances = []
+const clientInstances = []
 
-describe("Server", function()
+/**
+ * Instantiate a new server (used to collect all created instances of server and destroy at the end
+ * of each test)
+ * @returns {WebSocketServer}
+ */
+function WebSocketServer(...args)
 {
-    it("should return a new instance", function(done)
-    {
-        getInstance().then((server) =>
-        {
-            server.should.be.an.instanceOf(WebSocketServer)
-
-            server.close().then(done)
-        })
-    })
-
-    it("should forward throw an error from 'ws' if no params object is passed", function()
-    {
-        let exception = false
-
-        try { new WebSocketServer() }
-
-        catch (error) { exception = true }
-
-        exception.should.be.ok
-    })
-
-    it(".register", function()
-    {
-        let exception = false
-
-        getInstance().then((server) =>
-        {
-            try { server.register("foo", function() {}) }
-
-            catch (error) { exception = true }
-
-            server.close().then(function()
-            {
-                exception.should.be.false
-            })
-        })
-    })
-
-    it(".event", function()
-    {
-        let exception = false
-
-        getInstance().then((server) =>
-        {
-            try { server.event("foo") }
-
-            catch (error) { exception = true }
-
-            server.close().then(function()
-            {
-                exception.should.be.false
-            })
-        })
-    })
-
-    it(".eventList", function()
-    {
-        let exception = false
-
-        getInstance().then((server) =>
-        {
-            server.event("newMail")
-
-            try { expect(server.eventList()).to.be.an("array").and.to.include("newMail") }
-
-            catch (error) { exception = true }
-
-            server.close().then(function()
-            {
-                exception.should.be.false
-            })
-        })
-    })
-
-    it(".emit", function()
-    {
-        let exception = false
-
-        getInstance().then((server) =>
-        {
-            server.event("foo")
-
-            try { server.emit("foo") }
-
-            catch (error) { exception = true }
-
-            server.close().then(function()
-            {
-                exception.should.be.false
-            })
-        })
-    })
-
-    it(".namespace", function()
-    {
-        getInstance().then((server) =>
-        {
-            const ns = server.of("/chatroom")
-
-            ns.should.be.an("object")
-            expect(ns.emit).to.be.a("function")
-            expect(ns.name).to.be.a("string")
-            expect(ns.connected).to.be.a("function")
-            expect(ns.clients).to.be.a("function")
-        })
-    })
-
-    it(".namespaceMethod", function(done)
-    {
-        getInstance(Math.floor(Math.random() * (65536 - 40001) + 40000)).then((server) =>
-        {
-            server.register("sendMsg", () => "Message received", "/chatroom")
-
-            connect(
-                server.wss.options.port,
-                server.wss.options.host,
-                "/chatroom")
-                .then((ws) =>
-                {
-                    ws.send(JSON.stringify({
-                        id: rpc_id,
-                        jsonrpc: "2.0",
-                        method: "sendMsg",
-                        params: ["Hello, everyone!"]
-                    }))
-
-                    ws.once("message", function(message)
-                    {
-                        message = JSON.parse(message)
-
-                        message.id.should.equal(rpc_id)
-                        message.result.should.equal("Message received")
-
-                        ws.close()
-                        done()
-                    })
-
-                    ws.once("error", function(error)
-                    {
-                        done(error)
-                    })
-                })
-                .catch((error) => done(error))
-        })
-    })
-
-    it(".namespaceList", function()
-    {
-        getInstance().then((server) =>
-        {
-            const ns = server.of("/chat1")
-
-            ns.event("alert1")
-            expect(ns.eventList).to.have.lengthOf(1)
-
-            server.event("alert2", "/chat2")
-            expect(ns.eventList).to.have.lengthOf(1)
-
-            expect(server.eventList()).to.have.lengthOf(0)
-        })
-    })
-
-    it(".closeNamespace", function(done)
-    {
-        getInstance().then((server) =>
-        {
-            const ns = server.of("/chat1")
-
-            ns.event("alert1")
-            expect(ns.eventList).to.have.lengthOf(1)
-
-            server.event("alert2", "/chat2")
-            expect(ns.eventList).to.have.lengthOf(1)
-
-            server.closeNamespace("/chat1")
-            expect(server.hasNamespace("/chat1")).to.be.false
-            done()
-        })
-    })
-
-    it(".createError", function()
-    {
-        let exception = false
-
-        getInstance().then((server) =>
-        {
-            try { server.createError(-32050, "Error", "Error details") }
-
-            catch (error) { exception = true }
-
-            server.close().then(function()
-            {
-                exception.should.be.false
-            })
-        })
-    })
-
-    it(".close", function(done)
-    {
-        getInstance().then((server) =>
-        {
-            server.close().then(done, function(error)
-            {
-                done(error)
-            })
-        })
-    })
-
-    describe("WebSocket API", function()
-    {
-        let server = null
-        let host = null
-        let port = null
-
-        // create server and register testing methods
-        before(function(done)
-        {
-            getInstance(Math.floor(Math.random() * (65536 - 40001) + 40000)).then((inst) =>
-            {
-                server = inst
-                host = server.wss.options.host
-                port = server.wss.options.port
-
-                inst.register("sqrt", function(param)
-                {
-                    return Math.sqrt(param)
-                })
-
-                inst.register("sum", function(params)
-                {
-                    let sum = 0
-
-                    for (const nr of params)
-                    {
-                        sum += nr
-                    }
-
-                    return sum
-                })
-
-                inst.register("subtract", function(params)
-                {
-                    if (Array.isArray(params))
-                        return params[0] - params[1]
-
-                    if (typeof (params) === "object")
-                        return params.minuend - params.subtrahend
-                })
-
-                inst.register("greet", function(name)
-                {
-                    return "Hello, " + name + "!"
-                })
-
-                inst.register("update", function()
-                {
-                    return
-                })
-
-                inst.register("throwsSrvError", function()
-                {
-                    throw inst.createError(-32050, "Server error", "Server error details")
-                })
-
-                inst.register("throwsJsError", function()
-                {
-                    throw new Error("Server error details")
-                })
-
-                inst.register("circular", function()
-                {
-                    const Obj = function()
-                    {
-                        this.one = "one"
-                        this.two = "two"
-                        this.ref = this
-                    }
-
-                    return new Obj()
-                })
-
-                inst.event("newMail")
-                inst.event("updatedNews")
-                inst.event("circularUpdate")
-
-                done()
-            })
-        })
-
-        // close server
-        after(function(done)
-        {
-            server.close().then(done, function(error)
-            {
-                done(error)
-            })
-        })
-
-        describe("# connection", function()
-        {
-            it("should connect client with a custom socket id", function(done)
-            {
-                connect(port, host, "/custom", "?socket_id=foo").then((ws) =>
-                {
-                    expect(server.of("/custom").connected().foo).not.to.be.undefined
-                    done()
-                })
-            })
-        })
-
-        describe("# single rpc request", function()
-        {
-            it("should return a valid response using single parameter", function(done)
-            {
-                connect(port, host).then((ws) =>
-                {
-                    ws.send(JSON.stringify({
-                        id: rpc_id,
-                        jsonrpc: "2.0",
-                        method: "sqrt",
-                        params: [4]
-                    }))
-
-                    ws.once("message", function(message)
-                    {
-                        message = JSON.parse(message)
-
-                        message.id.should.equal(rpc_id)
-                        message.result.should.equal(2)
-
-                        rpc_id++
-                        ws.close()
-                        done()
-                    })
-
-                    ws.once("error", function(error)
-                    {
-                        done(error)
-                    })
-                })
-            })
-
-            it("should return a valid response using positional parameters", function(done)
-            {
-                connect(port, host).then(function(ws)
-                {
-                    ws.send(JSON.stringify({
-                        id: rpc_id,
-                        jsonrpc: "2.0",
-                        method: "subtract",
-                        params: [42, 23]
-                    }))
-
-                    ws.on("message", function(message)
-                    {
-                        message = JSON.parse(message)
-
-                        message.id.should.equal(rpc_id)
-                        message.result.should.equal(19)
-
-                        rpc_id++
-                        ws.close()
-                        done()
-                    })
-
-                    ws.once("error", function(error)
-                    {
-                        done(error)
-                    })
-                })
-            })
-
-            it("should return a valid response using named parameters", function(done)
-            {
-                connect(port, host).then(function(ws)
-                {
-                    ws.send(JSON.stringify({
-                        id: rpc_id,
-                        jsonrpc: "2.0",
-                        method: "subtract",
-                        params:
-                        {
-                            subtrahend: 23,
-                            minuend: 42
-                        }
-                    }))
-
-                    ws.on("message", function(message)
-                    {
-                        message = JSON.parse(message)
-
-                        message.id.should.equal(rpc_id)
-                        message.result.should.equal(19)
-
-                        rpc_id++
-                        ws.close()
-                        done()
-                    })
-
-                    ws.once("error", function(error)
-                    {
-                        done(error)
-                    })
-                })
-            })
-
-            it("should return a valid response with circular object references", function(done)
-            {
-                connect(port, host).then(function(ws)
-                {
-                    ws.send(JSON.stringify({
-                        id: rpc_id,
-                        jsonrpc: "2.0",
-                        method: "circular"
-                    }))
-
-                    ws.on("message", function(message)
-                    {
-                        message = JSON.parse(message)
-
-                        message.id.should.equal(rpc_id)
-                        message.result.should.deep.equal({
-                            one: "one",
-                            two: "two",
-                            ref: "~result"
-                        })
-
-                        rpc_id++
-                        ws.close()
-                        done()
-                    })
-
-                    ws.once("error", function(error)
-                    {
-                        done(error)
-                    })
-                })
-            })
-
-            it("should respond with -32601 when calling a missing method", function(done)
-            {
-                connect(port, host).then(function(ws)
-                {
-                    ws.send(JSON.stringify({
-                        id: rpc_id,
-                        jsonrpc: "2.0",
-                        method: "power",
-                        params: [4]
-                    }))
-
-                    ws.on("message", function(message)
-                    {
-                        message = JSON.parse(message)
-
-                        message.id.should.equal(rpc_id)
-                        message.error.code.should.equal(-32601)
-                        message.error.message.should.equal("Method not found")
-
-                        rpc_id++
-                        ws.close()
-                        done()
-                    })
-
-                    ws.once("error", function(error)
-                    {
-                        done(error)
-                    })
-                })
-            })
-
-            it("should respond with -32700 when called with invalid JSON", function(done)
-            {
-                connect(port, host).then(function(ws)
-                {
-                    const data = "{\"jsonrpc\": \"2.0\", \"foo}"
-                    ws.send(data)
-
-                    ws.on("message", function(message)
-                    {
-                        message = JSON.parse(message)
-                        message.error.code.should.equal(-32700)
-                        message.error.message.should.equal("Parse error")
-
-                        rpc_id++
-                        ws.close()
-                        done()
-                    })
-
-                    ws.once("error", function(error)
-                    {
-                        done(error)
-                    })
-                })
-            })
-
-            it("should respond with -32600 when called with invalid method name in JSON-RPC 2.0 Request object", function(done)
-            {
-                connect(port, host).then(function(ws)
-                {
-                    ws.send(JSON.stringify({
-                        id: rpc_id,
-                        jsonrpc: "2.0",
-                        method: 1,
-                        params: "foo"
-                    }))
-
-                    ws.on("message", function(message)
-                    {
-                        message = JSON.parse(message)
-
-                        message.id.should.equal(rpc_id)
-                        message.error.code.should.equal(-32600)
-                        message.error.message.should.equal("Invalid Request")
-
-                        rpc_id++
-                        ws.close()
-                        done()
-                    })
-
-                    ws.once("error", function(error)
-                    {
-                        done(error)
-                    })
-                })
-            })
-
-            it("should respond with -32600 when called with invalid params type in JSON-RPC 2.0 Request object", function(done)
-            {
-                connect(port, host).then(function(ws)
-                {
-                    ws.send(JSON.stringify({
-                        id: rpc_id,
-                        jsonrpc: "2.0",
-                        method: "foo",
-                        params: "foo"
-                    }))
-
-                    ws.on("message", function(message)
-                    {
-                        message = JSON.parse(message)
-
-                        message.id.should.equal(rpc_id)
-                        message.error.code.should.equal(-32600)
-                        message.error.message.should.equal("Invalid Request")
-
-                        rpc_id++
-                        ws.close()
-                        done()
-                    })
-
-                    ws.once("error", function(error)
-                    {
-                        done(error)
-                    })
-                })
-            })
-
-            it("should return a valid error if callback threw with .error", function(done)
-            {
-                connect(port, host).then(function(ws)
-                {
-                    ws.send(JSON.stringify({
-                        id: rpc_id,
-                        jsonrpc: "2.0",
-                        method: "throwsSrvError"
-                    }))
-
-                    ws.on("message", function(message)
-                    {
-                        message = JSON.parse(message)
-
-                        message.id.should.equal(rpc_id)
-                        message.error.code.should.equal(-32050)
-                        message.error.message.should.equal("Server error")
-                        message.error.data.should.equal("Server error details")
-
-                        ws.close()
-                        done()
-                    })
-
-                    ws.once("error", function(error)
-                    {
-                        done(error)
-                    })
-                })
-            })
-
-            it("should return a valid error if callback threw with JavaScript's Error", function(done)
-            {
-                connect(port, host).then(function(ws)
-                {
-                    ws.send(JSON.stringify({
-                        id: rpc_id,
-                        jsonrpc: "2.0",
-                        method: "throwsJsError"
-                    }))
-
-                    ws.on("message", function(message)
-                    {
-                        message = JSON.parse(message)
-
-                        message.id.should.equal(rpc_id)
-                        message.error.code.should.equal(-32000)
-                        message.error.message.should.equal("Internal server error")
-                        message.error.data.should.equal("Server error details")
-
-                        ws.close()
-                        done()
-                    })
-
-                    ws.once("error", function(error)
-                    {
-                        done(error)
-                    })
-                })
-            })
-        })
-
-        describe("# batch rpc request", function()
-        {
-            it("should return a valid response", function(done)
-            {
-                connect(port, host).then(function(ws)
-                {
-                    ws.send(JSON.stringify([
-                        {
-                            id: rpc_id,
-                            jsonrpc: "2.0",
-                            method: "greet",
-                            params: ["Charles"]
-                        },
-                        {
-                            id: ++rpc_id,
-                            jsonrpc: "2.0",
-                            method: "sum",
-                            params: [1, 2, 4]
-                        },
-                        {
-                            id: ++rpc_id,
-                            jsonrpc: "2.0",
-                            method: "subtract",
-                            params: [50, 29]
-                        }]))
-
-                    ws.on("message", function(message)
-                    {
-                        message = JSON.parse(message)
-
-                        expect(message).to.deep.equal([
-                            {
-                                jsonrpc: "2.0",
-                                result: "Hello, Charles!",
-                                id: 9
-                            },
-                            {
-                                jsonrpc: "2.0",
-                                result: 7,
-                                id: 10
-                            },
-                            {
-                                jsonrpc: "2.0",
-                                result: 21,
-                                id: 11
-                            }])
-
-                        rpc_id++
-                        ws.close()
-                        done()
-                    })
-
-                    ws.once("error", function(error)
-                    {
-                        done(error)
-                    })
-                })
-            })
-
-            it("should respond with -32700 when called with invalid JSON", function(done)
-            {
-                connect(port, host).then(function(ws)
-                {
-                    const data =
-                        "[{\"jsonrpc\": \"2.0\", \"method\": \"sum\", \"params\": [1,2,4], \"id\": \"1\"}, " +
-                        "{\"jsonrpc\": \"2.0\", \"method\""
-
-                    ws.send(data)
-
-                    ws.on("message", function(message)
-                    {
-                        message = JSON.parse(message)
-                        message.error.code.should.equal(-32700)
-                        message.error.message.should.equal("Parse error")
-
-                        rpc_id++
-                        ws.close()
-                        done()
-                    })
-
-                    ws.once("error", function(error)
-                    {
-                        done(error)
-                    })
-                })
-            })
-
-            it("should respond with -32600 when called with an empty array", function(done)
-            {
-                connect(port, host).then(function(ws)
-                {
-                    ws.send("[]")
-
-                    ws.on("message", function(message)
-                    {
-                        message = JSON.parse(message)
-                        message.error.code.should.equal(-32600)
-                        message.error.message.should.equal("Invalid Request")
-
-                        rpc_id++
-                        ws.close()
-                        done()
-                    })
-
-                    ws.once("error", function(error)
-                    {
-                        done(error)
-                    })
-                })
-            })
-
-            it("should respond with -32600 when called with invalid non-empty array", function(done)
-            {
-                connect(port, host).then(function(ws)
-                {
-                    ws.send("[1]")
-
-                    ws.on("message", function(message)
-                    {
-                        message = JSON.parse(message)
-                        message.should.be.an("array")
-                        message[0].error.code.should.equal(-32600)
-                        message[0].error.message.should.equal("Invalid Request")
-
-                        rpc_id++
-                        ws.close()
-                        done()
-                    })
-
-                    ws.once("error", function(error)
-                    {
-                        done(error)
-                    })
-                })
-            })
-
-            it("should respond with -32600 when called with invalid data", function(done)
-            {
-                connect(port, host).then(function(ws)
-                {
-                    ws.send("[1,2,3]")
-
-                    ws.on("message", function(message)
-                    {
-                        message = JSON.parse(message)
-                        message.should.be.an("array")
-                        message[0].error.code.should.equal(-32600)
-                        message[0].error.message.should.equal("Invalid Request")
-
-                        rpc_id++
-                        ws.close()
-                        done()
-                    })
-
-                    ws.once("error", function(error)
-                    {
-                        done(error)
-                    })
-                })
-            })
-
-            it("should receive all notifications", function(done)
-            {
-                connect(port, host).then(function(ws)
-                {
-                    ws.send(JSON.stringify([
-                        {
-                            jsonrpc: "2.0",
-                            method: "greet",
-                            params: "Charles"
-                        },
-                        {
-                            jsonrpc: "2.0",
-                            method: "sum",
-                            params: [1, 2, 4]
-                        },
-                        {
-                            jsonrpc: "2.0",
-                            method: "subtract",
-                            params: [50, 29]
-                        }]), done)
-
-                    ws.once("error", function(error)
-                    {
-                        done(error)
-                    })
-                })
-            })
-        })
-
-        describe("# notification", function()
-        {
-            it("should receive a notification", function(done)
-            {
-                connect(port, host).then(function(ws)
-                {
-                    ws.send(JSON.stringify({
-                        jsonrpc: "2.0",
-                        method: "update"
-                    }), function()
-                    {
-                        ws.close()
-                        done()
-                    })
-
-                    ws.once("error", function(error)
-                    {
-                        done(error)
-                    })
-                }).catch(function(error)
-                {
-                    console.log("UNHANDLED", error)
-                })
-            })
-        })
-
-        describe("# event", function()
-        {
-            it("should respond with -32000 if event name not provided", function(done)
-            {
-                connect(port, host).then(function(ws)
-                {
-                    ws.send(JSON.stringify({
-                        id: ++rpc_id,
-                        jsonrpc: "2.0",
-                        method: "rpc.on"
-                    }))
-
-                    ws.on("message", function(message)
-                    {
-                        message = JSON.parse(message)
-                        message.error.code.should.equal(-32000)
-                        message.error.message.should.equal("Internal server error")
-
-                        rpc_id++
-                        ws.close()
-                        done()
-                    })
-
-                    ws.once("error", function(error)
-                    {
-                        done(error)
-                    })
-                })
-            })
-
-            it("should subscribe a user to an event", function(done)
-            {
-                connect(port, host).then(function(ws)
-                {
-                    ws.send(JSON.stringify({
-                        id: ++rpc_id,
-                        jsonrpc: "2.0",
-                        method: "rpc.on",
-                        params: ["newMail"]
-                    }))
-
-                    ws.on("message", function(message)
-                    {
-                        message = JSON.parse(message)
-
-                        message.id.should.equal(rpc_id)
-                        message.result.newMail.should.equal("ok")
-
-                        rpc_id++
-                        ws.close()
-                        done()
-                    })
-
-                    ws.once("error", function(error)
-                    {
-                        done(error)
-                    })
-                })
-            })
-
-            it("should emit an event with no values to subscribed clients", function(done)
-            {
-                connect(port, host).then(function(ws)
-                {
-                    ws.send(JSON.stringify({
-                        id: ++rpc_id,
-                        jsonrpc: "2.0",
-                        method: "rpc.on",
-                        params: ["newMail"]
-                    }))
-
-                    ws.on("message", function(message)
-                    {
-                        try { message = JSON.parse(message) }
-
-                        catch (error) { done(error) }
-
-                        // This part handles successfull subscription:
-                        if (message.id === rpc_id && message.result.newMail === "ok")
-                            return server.sendNotification("newMail")
-
-                        // This part handles incoming notification:
-                        expect(message.id).to.not.exist
-                        expect(message.method).to.be.equal("newMail")
-                        ws.close()
-                        return done()
-                    })
-
-                    ws.once("error", function(error)
-                    {
-                        done(error)
-                    })
-                })
-            })
-
-            it("should emit an event with single value to subscribed clients", function(done)
-            {
-                connect(port, host).then(function(ws)
-                {
-                    ws.send(JSON.stringify({
-                        id: ++rpc_id,
-                        jsonrpc: "2.0",
-                        method: "rpc.on",
-                        params: ["updatedNews"]
-                    }))
-
-                    ws.on("message", function(message)
-                    {
-                        try { message = JSON.parse(message) }
-
-                        catch (error) { done(error) }
-
-                        // This part handles successfull subscription:
-                        if (message.id === rpc_id && message.result.updatedNews === "ok")
-                            return server.sendNotification("updatedNews", ["fox"])
-
-                        // This part handles incoming notification:
-                        expect(message.id).to.not.exist
-                        expect(message.method).to.be.equal("updatedNews")
-                        expect(message.params).to.be.deep.equal(["fox"])
-                        ws.close()
-                        return done()
-                    })
-
-                    ws.once("error", function(error)
-                    {
-                        done(error)
-                    })
-                })
-            })
-
-            it("should emit an event with multiple values to subscribed clients", function(done)
-            {
-                connect(port, host).then(function(ws)
-                {
-                    ws.send(JSON.stringify({
-                        id: ++rpc_id,
-                        jsonrpc: "2.0",
-                        method: "rpc.on",
-                        params: ["updatedNews"]
-                    }))
-
-                    ws.on("message", function(message)
-                    {
-                        try { message = JSON.parse(message) }
-
-                        catch (error) { done(error) }
-
-                        // This part handles successfull subscription:
-                        if (message.id === rpc_id && message.result.updatedNews === "ok")
-                            return server.sendNotification("updatedNews", ["fox", "mtv", "eurosport"])
-
-                        // This part handles incoming notification:
-                        expect(message.id).to.not.exist
-                        expect(message.method).to.be.equal("updatedNews")
-                        expect(message.params).to.be.deep.equal(["fox", "mtv", "eurosport"])
-                        ws.close()
-                        return done()
-                    })
-
-                    ws.once("error", function(error)
-                    {
-                        done(error)
-                    })
-                })
-            })
-
-            it("should emit an event with circular objects to subscribed clients", function(done)
-            {
-                connect(port, host).then(function(ws)
-                {
-                    ws.send(JSON.stringify({
-                        id: ++rpc_id,
-                        jsonrpc: "2.0",
-                        method: "rpc.on",
-                        params: ["circularUpdate"]
-                    }))
-
-                    ws.on("message", function(message)
-                    {
-                        try { message = JSON.parse(message) }
-                        catch (error) { done(error) }
-
-                        // This part handles successfull subscription:
-                        if (message.id === rpc_id && message.result.circularUpdate === "ok")
-                        {
-                            const Obj = function()
-                            {
-                                this.one = "one"
-                                this.two = "two"
-                                this.ref = this
-                            }
-                            return server.sendNotification("circularUpdate", [new Obj()])
-                        }
-
-                        // This part handles incoming notification:
-                        expect(message.id).to.not.exist
-                        expect(message.method).to.be.equal("circularUpdate")
-                        expect(message.params).to.be.deep.equal([{
-                            one: "one",
-                            two: "two",
-                            ref: "~params~0"
-                        }])
-                        ws.close()
-                        return done()
-                    })
-
-                    ws.once("error", function(error)
-                    {
-                        done(error)
-                    })
-                })
-            })
-
-            it("should unsubscribe a user from an event", function(done)
-            {
-                connect(port, host).then(function(ws)
-                {
-                    ws.send(JSON.stringify({
-                        id: ++rpc_id,
-                        jsonrpc: "2.0",
-                        method: "rpc.on",
-                        params: ["newMail"]
-                    }))
-
-                    let subscribed = false
-
-                    ws.on("message", function(message)
-                    {
-                        message = JSON.parse(message)
-
-                        if (message.result.newMail === "ok" && subscribed === false)
-                        {
-                            subscribed = true
-
-                            return ws.send(JSON.stringify({
-                                id: ++rpc_id,
-                                jsonrpc: "2.0",
-                                method: "rpc.off",
-                                params: ["newMail"]
-                            }))
-                        }
-
-                        message.id.should.equal(rpc_id)
-                        message.result.newMail.should.equal("ok")
-
-                        rpc_id++
-                        ws.close()
-                        done()
-                    })
-
-                    ws.once("error", function(error)
-                    {
-                        done(error)
-                    })
-                })
-            })
-        })
-    })
-})
+    const server = new _WebSocketServer(...args)
+    serverInstances.push(server)
+    return server
+}
 
 /**
  * Returns a new WebSocketServer instance.
- * @param {Number} port - port number
- * @param {String} host - hostname
+ * @param {array} args - arguments to pass to WebSocketServer constructor
  * @return {WebSocketServer}
  */
-function getInstance(port, host)
+function runWebSocketServer(...args)
 {
     return new Promise((resolve, reject) =>
     {
-        const wss = new WebSocketServer({
-            host: host || SERVER_HOST,
-            port: port || SERVER_PORT
-        })
+        const wss = new WebSocketServer(...args)
 
         wss.on("listening", () => resolve(wss))
     })
@@ -1130,34 +44,723 @@ function getInstance(port, host)
 
 /**
  * Connects to an RPC server.
- * @param {Number} port - port number
- * @param {String} host - hostname
+ * @param {WebSocketServer} server - server to connect to
  * @param {String} path - uri path
- * @param {String} query - uri query
+ * @param {String} id - ID of connection
+ * @param {string} idParam - name of parameter to pass ID of connection
  * @return {Promise}
  */
-function connect(port, host, path, query)
+function connectTo({server, path, id, idParam = "socket_id"})
 {
+    const HOST = server.wss.address().address.replace("::", "localhost")
+    const PORT = server.wss.address().port
+    const query = id ? `?${idParam}=${id}` : ""
     return new Promise((resolve, reject) =>
     {
-        const client = new WebSocket("ws://" + (host || SERVER_HOST) +
-            ":" + (port || SERVER_PORT) + (path || "/") + (query || ""))
-
+        const client = new WebSocket(`ws://${HOST}:${PORT}${path || "/"}${query || ""}`)
+        clientInstances.push(client)
         client.on("open", () => resolve(client))
         client.on("error", (error) => reject(error))
     })
 }
 
 /**
- * Disconnects from an RPC server.
- * @param {Object} client - Client instance
- * @return {Promise}
+ * Helper that checks whether some event properly propagates from one class to another
+ * (check that it fires on both classes with same name and same arguments)
+ * @param {string} event - event to check
+ * @param {any} propagatesFrom - source of event
+ * @param {any} propagatesTo - destination object to propagate
+ * @param {function} done - success/error handler
+ * @returns {void}
  */
-function disconnect(client)
+function checkEventPropagation({event, propagatesFrom, propagatesTo, done})
 {
-    return new Promise(function(resolve, reject)
+    let argsInFrom
+    let argsInTo
+    const compareArgs = () =>
     {
-        client.close()
-        resolve()
+        if (argsInFrom && argsInTo)
+        {
+            try
+            {
+                expect(argsInTo).to.be.deep.equal(argsInFrom)
+                done()
+            }
+            catch (e)
+            {
+                done(e)
+            }
+        }
+    }
+    propagatesFrom.on(event, (...args) =>
+    {
+        argsInFrom = args
+        compareArgs()
+    })
+    propagatesTo.on(event, (...args) =>
+    {
+        argsInTo = args
+        compareArgs()
     })
 }
+
+describe("Server", () =>
+{
+    afterEach(async () =>
+    {
+        await Promise.all(
+            serverInstances.map((server) => server.close())
+        )
+        await Promise.all(
+            clientInstances.map((client) => client.close())
+        )
+    })
+
+    describe(".constructor()", () =>
+    {
+        it("Allows to not pass any parameters at all", () =>
+        {
+            expect(() => new WebSocketServer()).to.not.throw()
+        })
+
+        it("Starts on random free port if no \"port\" parameter specified", () =>
+        {
+            const server = new WebSocketServer()
+            expect(server.options.port).to.be.equal(0)
+        })
+
+        it("Throws an error if \"strict_notifications\" parameter is not boolean value", () =>
+        {
+            const invalidValues = [
+                -1, 0, 1, 2.56, -Infinity, Infinity,
+                "", " ", "abc",
+                null,
+                [], ["some"], {}, {prop: "some"}
+            ]
+
+            for (const invalidValue of invalidValues)
+            {
+                expect(() =>
+                {
+                    new WebSocketServer({
+                        strict_notifications: invalidValue
+                    })
+                }).to.throw(TypeError, `"strict_notifications" should be boolean, "${invalidValue === null ? "null" : typeof invalidValue}" given`)
+            }
+        })
+
+        it("\"strict_notifications\" parameter is boolean \"true\" by default", () =>
+        {
+            const server = new WebSocketServer()
+            expect(server.options.strict_notifications).to.be.equal(true)
+        })
+
+        it("Throws an error if \"idParam\" is not a string", () =>
+        {
+            const invalidValues = [
+                -1, 0, 1, 2.56, -Infinity, Infinity,
+                true, false,
+                null,
+                [], ["some"], {}, {prop: "some"}
+            ]
+
+            for (const invalidValue of invalidValues)
+            {
+                expect(() =>
+                {
+                    new WebSocketServer({
+                        idParam: invalidValue
+                    })
+                }).to.throw(TypeError, `"idParam" should be a string, "${invalidValue === null ? "null" : typeof invalidValue}" given`)
+            }
+        })
+
+        it("Throws an error if \"idParam\" is an empty string", () =>
+        {
+            const invalidValues = ["", " ", "   "]
+
+            for (const invalidValue of invalidValues)
+            {
+                expect(() =>
+                {
+                    new WebSocketServer({
+                        idParam: invalidValue
+                    })
+                }).to.throw(TypeError, "\"idParam\" can not be empty string")
+            }
+        })
+
+        it("automatically trim leading and trailing spaces around \"idParam\" property", () =>
+        {
+            const idParam = "  test  "
+            const trimmedIdParam = "test"
+            const server = new WebSocketServer({idParam})
+            expect(server.options.idParam).to.be.equal(trimmedIdParam)
+        })
+
+        it("\"idParam\" parameter is \"socket_id\" by default", () =>
+        {
+            const server = new WebSocketServer()
+            expect(server.options.idParam).to.be.equal("socket_id")
+        })
+
+        it("Should return a new Server instance", () =>
+        {
+            const server = new WebSocketServer()
+            expect(server).to.be.an.instanceOf(_WebSocketServer)
+        })
+    })
+
+    describe(".wss", () =>
+    {
+        it("contains instance of websocket server from \"ws\" library", () =>
+        {
+            const server = new WebSocketServer()
+            expect(server.wss).to.be.an.instanceOf(WebSocket.Server)
+        })
+    })
+
+    describe(".close()", () =>
+    {
+        it("Closes the server", async () =>
+        {
+            const server = await runWebSocketServer()
+            await server.close()
+            expect(server.wss.address()).to.be.equal(null)
+        })
+
+        it("Returns a promise, which resolves once server is closed", async () =>
+        {
+            const server = await runWebSocketServer()
+            const output = server.close()
+            expect(output).to.be.instanceOf(Promise)
+        })
+    })
+
+    describe(".getRPCSocket()", () =>
+    {
+        it("Expects socket ID passed as first argument", async () =>
+        {
+            const server = await runWebSocketServer()
+            const clientId = "my_client"
+            await connectTo({server, id: clientId})
+            return expect(server.getRPCSocket(clientId)).to.exist
+        })
+
+        it("Throws an error if no socket ID passed", async () =>
+        {
+            const server = await runWebSocketServer()
+            const invalidIds = [
+                null, undefined, ""
+            ]
+            for (const invalidId of invalidIds)
+            {
+                expect(() => server.getRPCSocket(invalidId)).to.throw(TypeError, "No socket ID passed")
+            }
+        })
+
+        it("Throws an error if passed socket ID is not a string", async () =>
+        {
+            const server = await runWebSocketServer()
+            const invalidIds = [
+                -Infinity, -12, -3.18, 0, 1, 2.14, Infinity,
+                true, false,
+                [], [1], {}, {a: 2}
+            ]
+            for (const invalidId of invalidIds)
+            {
+                expect(() => server.getRPCSocket(invalidId)).to.throw(TypeError, `Expected Socket ID as number, ${typeof invalidId} passed`)
+            }
+        })
+
+        it("Returns JsonRPCSocket instance if socket with given ID connected", async () =>
+        {
+            const server = await runWebSocketServer()
+            const clientId = "getRPCSocket_positive_test"
+            await connectTo({server, id: clientId})
+            return expect(server.getRPCSocket(clientId)).to.be.instanceOf(JsonRPCSocket)
+        })
+
+        it("Returns null if socket with given ID is not connected", async () =>
+        {
+            const server = await runWebSocketServer()
+            return expect(server.getRPCSocket("non-existing client")).to.equal(null)
+        })
+    })
+
+    describe(".createNamespace()", () =>
+    {
+        it("Expects namespace name to be passed as first argument", async () =>
+        {
+            const server = await runWebSocketServer()
+            const namespaceName = "some_name_of_namespace"
+            expect(() => server.createNamespace(namespaceName)).to.not.throw()
+            expect(server.hasNamespace(namespaceName)).to.exist
+        })
+
+        it("Throws an error if no namespace name is passed", async () =>
+        {
+            const server = await runWebSocketServer()
+            const invalidNames = [
+                null, undefined, "", "   "
+            ]
+            for (const invalidName of invalidNames)
+            {
+                expect(() => server.createNamespace(invalidName)).to.throw(TypeError, "No namespace name is passed")
+            }
+        })
+
+        it("Throws an error if passed name is not a string", async () =>
+        {
+            const server = await runWebSocketServer()
+            const invalidNames = [
+                -Infinity, -12, -3.18, 0, 1, 2.14, Infinity,
+                true, false,
+                [], [1], {}, {a: 2}
+            ]
+            for (const invalidName of invalidNames)
+            {
+                expect(() => server.createNamespace(invalidName)).to.throw(TypeError, `Name of namespace should be a string, ${typeof invalidName} passed`)
+            }
+        })
+
+        it("Throws an error if namespace with given name already exists", async () =>
+        {
+            const server = await runWebSocketServer()
+            const namespaceName = "some_name_of_namespace"
+            server.createNamespace(namespaceName)
+            return expect(() => server.createNamespace(namespaceName))
+                .to
+                .throw(
+                    Error,
+                    `Failed to create namespace: Namespace with name ${namespaceName} already exists`
+                )
+        })
+
+        it("Returns created namespace instance", async () =>
+        {
+            const server = await runWebSocketServer()
+            return expect(server.createNamespace("my_namespace")).to.be.instanceOf(Namespace)
+        })
+    })
+
+    describe(".hasNamespace()", () =>
+    {
+        it("Expects namespace name to be passed as first argument", async () =>
+        {
+            const server = await runWebSocketServer()
+            const namespaceName = "some_name_of_namespace"
+            server.createNamespace(namespaceName)
+            expect(server.hasNamespace(namespaceName)).to.be.equal(true)
+        })
+
+        it("Throws an error if no namespace name is passed", async () =>
+        {
+            const server = await runWebSocketServer()
+            const invalidNames = [
+                null, undefined, "", "   "
+            ]
+            for (const invalidName of invalidNames)
+            {
+                expect(() => server.hasNamespace(invalidName)).to.throw(TypeError, "No namespace name is passed")
+            }
+        })
+
+        it("Throws an error if passed name is not a string", async () =>
+        {
+            const server = await runWebSocketServer()
+            const invalidNames = [
+                -Infinity, -12, -3.18, 0, 1, 2.14, Infinity,
+                true, false,
+                [], [1], {}, {a: 2}
+            ]
+            for (const invalidName of invalidNames)
+            {
+                expect(() => server.hasNamespace(invalidName)).to.throw(TypeError, `Name of namespace should be a string, ${typeof invalidName} passed`)
+            }
+        })
+
+        it("Returns boolean \"true\" if namespace with given name exists", async () =>
+        {
+            const server = await runWebSocketServer()
+            const namespaceName = "new_namespace"
+            server.createNamespace(namespaceName)
+            return expect(server.hasNamespace(namespaceName)).to.be.equal(true)
+        })
+
+        it("Returns boolean \"false\" if namespace with given name not exists", async () =>
+        {
+            const server = await runWebSocketServer()
+            return expect(server.hasNamespace("non-existing namespace")).to.be.equal(false)
+        })
+    })
+
+    describe(".getNamespace()", () =>
+    {
+        it("Expects namespace name to be passed as first argument", async () =>
+        {
+            const server = await runWebSocketServer()
+            const namespaceName = "some_name_of_namespace"
+            server.createNamespace(namespaceName)
+            expect(server.getNamespace(namespaceName)).to.exist
+        })
+
+        it("Throws an error if no namespace name is passed", async () =>
+        {
+            const server = await runWebSocketServer()
+            const invalidNames = [
+                null, undefined, "", "   "
+            ]
+            for (const invalidName of invalidNames)
+            {
+                expect(() => server.getNamespace(invalidName)).to.throw(TypeError, "No namespace name is passed")
+            }
+        })
+
+        it("Throws an error if passed name is not a string", async () =>
+        {
+            const server = await runWebSocketServer()
+            const invalidNames = [
+                -Infinity, -12, -3.18, 0, 1, 2.14, Infinity,
+                true, false,
+                [], [1], {}, {a: 2}
+            ]
+            for (const invalidName of invalidNames)
+            {
+                expect(() => server.getNamespace(invalidName)).to.throw(TypeError, `Name of namespace should be a string, ${typeof invalidName} passed`)
+            }
+        })
+
+        it("Returns Namespace instance if namespace with given name exists", async () =>
+        {
+            const server = await runWebSocketServer()
+            const namespaceName = "new_namespace"
+            server.createNamespace(namespaceName)
+            return expect(server.getNamespace(namespaceName)).to.be.instanceOf(Namespace)
+        })
+
+        it("Returns null if namespace with given name not exists", async () =>
+        {
+            const server = await runWebSocketServer()
+            return expect(server.getNamespace("non-existing namespace")).to.be.equal(null)
+        })
+    })
+
+    describe(".getOrCreateNamespace()", () =>
+    {
+        it("Expects namespace name to be passed as first argument", async () =>
+        {
+            const server = await runWebSocketServer()
+            const namespaceName = "some_name_of_namespace"
+            server.createNamespace(namespaceName)
+            expect(() => server.getOrCreateNamespace(namespaceName)).to.not.throw
+        })
+
+        it("Throws an error if no namespace name is passed", async () =>
+        {
+            const server = await runWebSocketServer()
+            const invalidNames = [
+                null, undefined, "", "   "
+            ]
+            for (const invalidName of invalidNames)
+            {
+                expect(() => server.getOrCreateNamespace(invalidName)).to.throw(TypeError, "No namespace name is passed")
+            }
+        })
+
+        it("Throws an error if passed name is not a string", async () =>
+        {
+            const server = await runWebSocketServer()
+            const invalidNames = [
+                -Infinity, -12, -3.18, 0, 1, 2.14, Infinity,
+                true, false,
+                [], [1], {}, {a: 2}
+            ]
+            for (const invalidName of invalidNames)
+            {
+                expect(() => server.getOrCreateNamespace(invalidName)).to.throw(TypeError, `Name of namespace should be a string, ${typeof invalidName} passed`)
+            }
+        })
+
+        it("Returns new Namespace instance if namespace with given name not exists", async () =>
+        {
+            const server = await runWebSocketServer()
+            return expect(server.getOrCreateNamespace("newNS")).to.be.instanceOf(Namespace)
+        })
+
+        it("Returns existing Namespace instance if namespace with given name exists", async () =>
+        {
+            const server = await runWebSocketServer()
+            const namespaceName = "myNS"
+            const namespaceInstance = server.createNamespace(namespaceName)
+            return expect(server.getOrCreateNamespace(namespaceName))
+                .to.be.equal(namespaceInstance)
+        })
+    })
+
+    describe(".closeNamespace()", () =>
+    {
+        it("Expects namespace name to be passed as first argument", async () =>
+        {
+            const server = await runWebSocketServer()
+            const namespaceName = "some_name_of_namespace"
+            server.createNamespace(namespaceName)
+            expect(() => server.closeNamespace(namespaceName)).to.not.throw
+        })
+
+        it("Throws an error if no namespace name is passed", async () =>
+        {
+            const server = await runWebSocketServer()
+            const invalidNames = [
+                null, undefined, "", "   "
+            ]
+            for (const invalidName of invalidNames)
+            {
+                expect(() => server.closeNamespace(invalidName)).to.throw(TypeError, "No namespace name is passed")
+            }
+        })
+
+        it("Throws an error if passed name is not a string", async () =>
+        {
+            const server = await runWebSocketServer()
+            const invalidNames = [
+                -Infinity, -12, -3.18, 0, 1, 2.14, Infinity,
+                true, false,
+                [], [1], {}, {a: 2}
+            ]
+            for (const invalidName of invalidNames)
+            {
+                expect(() => server.closeNamespace(invalidName)).to.throw(TypeError, `Name of namespace should be a string, ${typeof invalidName} passed`)
+            }
+        })
+
+        it("Does nothing if namespace with given name not exists", async () =>
+        {
+            const server = await runWebSocketServer()
+            return expect(server.closeNamespace("non-existing namespace")).to.not.throw
+        })
+
+        it("Closes all connections that belongs to given namespace and removes it", async () =>
+        {
+            const server = await runWebSocketServer()
+            const namespaceName = "myNS"
+            const ns = server.createNamespace(namespaceName)
+            spy.on(ns, "close")
+            server.closeNamespace(namespaceName)
+            expect(ns.close).to.have.been.called()
+            expect(server.getNamespace(namespaceName)).to.be.equal(null)
+        })
+    })
+
+    describe(".of()", () =>
+    {
+        it("Is an alias for \"getOrCreateNamespace\" method", async () =>
+        {
+            const server = await runWebSocketServer()
+            spy.on(server, "getOrCreateNamespace")
+            server.of("some_namespace")
+            expect(server.getOrCreateNamespace).to.have.been.called()
+        })
+    })
+
+    describe("Events", () =>
+    {
+        describe("Propagates the following events from \"ws\" library server:", () =>
+        {
+            it("\"listening\"", (done) =>
+            {
+                const server = new WebSocketServer()
+                checkEventPropagation({
+                    event: "listening",
+                    propagatesFrom: server.wss,
+                    propagatesTo: server,
+                    done
+                })
+            })
+
+            it("\"connection\"", async () =>
+            {
+                const server = await runWebSocketServer()
+                return new Promise((resolve, reject) =>
+                {
+                    checkEventPropagation({
+                        event: "connection",
+                        propagatesFrom: server.wss,
+                        propagatesTo: server,
+                        done: (e) => {e ? reject(e) : resolve()}
+                    })
+                    connectTo({server})
+                })
+            }).timeout(5000)
+
+            it("\"error\"", async () =>
+            {
+                const server1 = await runWebSocketServer()
+                const server2 = new WebSocketServer({port: server1.wss.address().port})
+                return new Promise((resolve, reject) =>
+                {
+                    checkEventPropagation({
+                        event: "error",
+                        propagatesFrom: server2.wss,
+                        propagatesTo: server2,
+                        done: (e) => {e ? reject(e) : resolve()}
+                    })
+                })
+            }).timeout(5000)
+        })
+
+        describe("\"RPCConnection\"", () =>
+        {
+            it("Emitted on rpc client connected", async () =>
+            {
+                const server = await runWebSocketServer()
+                return new Promise((resolve) =>
+                {
+                    server.on("RPCConnection", resolve)
+                    connectTo({server})
+                })
+            })
+
+            it("Connected JsonRPCSocket instance passed in first argument", async () =>
+            {
+                const server = await runWebSocketServer()
+                return new Promise((resolve) =>
+                {
+                    server.on("RPCConnection", (socketInstance) =>
+                    {
+                        resolve(
+                            expect(socketInstance).to.be.an.instanceOf(JsonRPCSocket)
+                        )
+                    })
+                    connectTo({server})
+                })
+            })
+
+            it("Request object passed in second argument", async () =>
+            {
+                const server = await runWebSocketServer()
+                let expectedRequest = null
+                server.on("connection", (socket, request) =>
+                {
+                    expectedRequest = request
+                })
+                return new Promise((resolve) =>
+                {
+                    server.on("RPCConnection", (socket, request) =>
+                    {
+                        resolve(
+                            expect(request).to.equal(expectedRequest)
+                        )
+                    })
+                    connectTo({server})
+                })
+            })
+        })
+    })
+
+    describe("behaviors", () =>
+    {
+        it("Starts listening to connections immediately", (done) =>
+        {
+            const server = new WebSocketServer()
+            server.on("listening", () => done())
+        })
+
+        describe("connection ID handling", () =>
+        {
+            it("Set ID of connection according to id passed in query", async () =>
+            {
+                const server = await runWebSocketServer()
+                const connectionId = "abc"
+                return new Promise((resolve) =>
+                {
+                    server.on("RPCConnection", (socket) =>
+                    {
+                        resolve(
+                            expect(socket.getId()).to.equal(connectionId)
+                        )
+                    })
+                    connectTo({server, id: connectionId})
+                })
+            })
+
+            it("Set random ID if no ID passed in query", async () =>
+            {
+                const server = await runWebSocketServer()
+                return new Promise((resolve) =>
+                {
+                    server.on("RPCConnection", (socket) =>
+                    {
+                        resolve(
+                            expect(socket.getId()).to.exist
+                        )
+                    })
+                    connectTo({server})
+                })
+            })
+
+            it("Searches ID in query according to property specified in config", async () =>
+            {
+                const ID_PARAM = "my_custom_ID_prop"
+                const server = await runWebSocketServer({
+                    idParam: ID_PARAM
+                })
+                const connectionId = "my_id"
+                return new Promise((resolve) =>
+                {
+                    server.on("RPCConnection", (socket) =>
+                    {
+                        resolve(
+                            expect(socket.getId()).to.equal(connectionId)
+                        )
+                    })
+                    connectTo({server, id: connectionId, idParam: ID_PARAM})
+                })
+            })
+
+            it("Uses \"socket_id\" as ID property by default", async () =>
+            {
+                const server = await runWebSocketServer()
+                const connectionId = "my_id"
+                return new Promise((resolve) =>
+                {
+                    server.on("RPCConnection", (socket) =>
+                    {
+                        resolve(
+                            expect(socket.getId()).to.equal(connectionId)
+                        )
+                    })
+                    connectTo({server, id: connectionId, idParam: "socket_id"})
+                })
+            })
+        })
+
+        it("Creates a namespace with name that equals to path of connection and bind connection to this namespace", async () =>
+        {
+            const server = await runWebSocketServer()
+            const paths = ["/", "/somePath", "/anotherPath"]
+            const clientId = "123"
+            for (const path of paths)
+            {
+                await connectTo({server, path, id: clientId})
+                expect(server.hasNamespace(path)).to.equal(true)
+                expect(server.getNamespace(path).hasClient(clientId)).to.equal(true)
+            }
+        })
+
+        it("Removes closed websocket from list of connected", async () =>
+        {
+            const server = await runWebSocketServer()
+            const connectionId = "abc"
+            const client = await connectTo({server, id: connectionId})
+            await new Promise((resolve) =>
+            {
+                client.once("close", resolve)
+                client.close()
+            })
+            // wait a little, without that will not work:
+            await new Promise((resolve) => setTimeout(resolve, 50))
+            return expect(server.getRPCSocket(connectionId)).to.not.exist
+        })
+    })
+})

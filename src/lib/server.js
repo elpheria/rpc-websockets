@@ -11,16 +11,47 @@ import uuid from "uuid"
 import url from "url"
 import assertArgs from "assert-args"
 import JsonRPCSocket, {RPCServerError, TimeoutError} from "./JsonRpcSocket"
-import Namespace from "./Namespace"
+import Namespace, {assertNamespaceName} from "./Namespace"
+import {getType} from "./helpers"
 
 export default class Server extends EventEmitter
 {
     static RPCResponseTimeoutError = TimeoutError
     static RPCServerError = RPCServerError
 
-    constructor(options)
+    constructor(options = {})
     {
         super()
+
+        if (
+            options.strict_notifications !== undefined &&
+            typeof options.strict_notifications !== "boolean"
+        )
+        {
+            const argType = getType(options.strict_notifications)
+            throw new TypeError(
+                `"strict_notifications" should be boolean, "${argType}" given`
+            )
+        }
+
+        if (
+            options.idParam !== undefined &&
+            typeof options.idParam !== "string"
+        )
+        {
+            throw new TypeError(
+                `"idParam" should be a string, "${getType(options.idParam)}" given`
+            )
+        }
+
+        if (typeof options.idParam === "string")
+        {
+            options.idParam = options.idParam.trim()
+            if (options.idParam === "")
+            {
+                throw new TypeError("\"idParam\" can not be empty string")
+            }
+        }
 
         /**
          * Options of the server
@@ -28,6 +59,7 @@ export default class Server extends EventEmitter
          * @type {object}
          */
         this.options = Object.assign({
+            port: 0,
             strict_notifications: true,
             idParam: "socket_id"
         }, options)
@@ -131,12 +163,20 @@ export default class Server extends EventEmitter
     /**
      * Returns socket with given ID
      * @method
-     * @param {string|number} id - socket id
-     * @returns {RPCSocket}
+     * @param {string} id - socket id
+     * @returns {JsonRPCSocket|null}
      */
     getRPCSocket(id)
     {
-        return this._sockets.get(id)
+        if (id === null || id === undefined || id === "")
+        {
+            throw new TypeError("No socket ID passed")
+        }
+        if (typeof id !== "string")
+        {
+            throw new TypeError(`Expected Socket ID as number, ${getType(id)} passed`)
+        }
+        return this._sockets.get(id) || null
     }
 
     /* ----------------------------------------
@@ -153,6 +193,13 @@ export default class Server extends EventEmitter
      */
     createNamespace(name)
     {
+        if (this.hasNamespace(name))
+        {
+            throw new Error(
+                `Failed to create namespace: Namespace with name ${name} already exists`
+            )
+        }
+
         const ns = new Namespace(name, {
             strict_notifications: this.options.strict_notifications
         })
@@ -191,6 +238,7 @@ export default class Server extends EventEmitter
      */
     hasNamespace(name)
     {
+        assertNamespaceName(name)
         return this._namespaces.has(name)
     }
 
@@ -198,11 +246,12 @@ export default class Server extends EventEmitter
      * Returns namespace with given name
      * @method
      * @param {string} name - uuid of namespace
-     * @returns {Namespace|undefined}
+     * @returns {Namespace|null}
      */
     getNamespace(name)
     {
-        return this._namespaces.get(name)
+        assertNamespaceName(name)
+        return this._namespaces.get(name) || null
     }
 
     /**

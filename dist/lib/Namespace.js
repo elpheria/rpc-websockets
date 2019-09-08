@@ -68,6 +68,8 @@ var _inherits2 = require("babel-runtime/helpers/inherits");
 
 var _inherits3 = _interopRequireDefault(_inherits2);
 
+exports.assertNamespaceName = assertNamespaceName;
+
 var _JsonRpcSocket = require("./JsonRpcSocket");
 
 var _JsonRpcSocket2 = _interopRequireDefault(_JsonRpcSocket);
@@ -76,7 +78,27 @@ var _eventemitter = require("eventemitter3");
 
 var _eventemitter2 = _interopRequireDefault(_eventemitter);
 
+var _helpers = require("./helpers");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/**
+ * Function that validates namespace name
+ * @param {string} name - name to validate
+ * @throws TypeError if name is not valid
+ * @returns {void1}
+ */
+function assertNamespaceName(name) {
+    if (name === null || name === undefined || typeof name === "string" && name.trim().length === 0) {
+        throw new TypeError("No namespace name is passed");
+    }
+    if (typeof name !== "string") throw new TypeError("Name of namespace should be a string, " + (0, _helpers.getType)(name) + " passed");
+}
+
+/**
+ * Namespace class
+ * @class
+ */
 
 var Namespace = function (_EventEmitter) {
     (0, _inherits3.default)(Namespace, _EventEmitter);
@@ -86,7 +108,8 @@ var Namespace = function (_EventEmitter) {
 
         var _this = (0, _possibleConstructorReturn3.default)(this, (Namespace.__proto__ || (0, _getPrototypeOf2.default)(Namespace)).call(this));
 
-        if (typeof name !== "string" || name.trim().length === 0) throw new Error("Name of namespace is not a string or empty");
+        assertNamespaceName(name);
+
         _this.name = name;
         _this.options = (0, _assign2.default)({
             // Whether to send notifications to all connected sockets (false) or to only
@@ -281,7 +304,8 @@ var Namespace = function (_EventEmitter) {
         }
     }, {
         key: "hasClient",
-        value: function hasClient(socket) {
+        value: function hasClient(socketOrId) {
+            var socket = typeof socketOrId === "string" ? this.getClient(socketOrId) : socketOrId;
             return this._clients.has(socket);
         }
     }, {
@@ -992,4 +1016,3 @@ var Namespace = function (_EventEmitter) {
 }(_eventemitter2.default);
 
 exports.default = Namespace;
-module.exports = exports["default"];

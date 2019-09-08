@@ -1,13 +1,39 @@
 import JsonRPCSocket, {RPC_ERRORS} from "./JsonRpcSocket"
 import EventEmitter from "eventemitter3"
+import {getType} from "./helpers"
 
+/**
+ * Function that validates namespace name
+ * @param {string} name - name to validate
+ * @throws TypeError if name is not valid
+ * @returns {void1}
+ */
+export function assertNamespaceName(name)
+{
+    if (
+        name === null ||
+        name === undefined ||
+        (typeof name === "string" && name.trim().length === 0)
+    )
+    {
+        throw new TypeError("No namespace name is passed")
+    }
+    if (typeof name !== "string")
+        throw new TypeError(`Name of namespace should be a string, ${getType(name)} passed`)
+}
+
+/**
+ * Namespace class
+ * @class
+ */
 export default class Namespace extends EventEmitter
 {
     constructor(name, options)
     {
         super()
-        if (typeof name !== "string" || name.trim().length === 0)
-            throw new Error("Name of namespace is not a string or empty")
+
+        assertNamespaceName(name)
+
         this.name = name
         this.options = Object.assign({
             // Whether to send notifications to all connected sockets (false) or to only
@@ -151,8 +177,11 @@ export default class Namespace extends EventEmitter
         this._notificationToSubscribers.forEach((subscribers) => subscribers.delete(socket))
     }
 
-    hasClient(socket)
+    hasClient(socketOrId)
     {
+        const socket = typeof socketOrId === "string"
+            ? this.getClient(socketOrId)
+            : socketOrId
         return this._clients.has(socket)
     }
 

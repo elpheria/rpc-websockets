@@ -87,22 +87,42 @@ var _Namespace = require("./Namespace");
 
 var _Namespace2 = _interopRequireDefault(_Namespace);
 
+var _helpers = require("./helpers");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var Server = function (_EventEmitter) {
     (0, _inherits3.default)(Server, _EventEmitter);
 
-    function Server(options) {
+    function Server() {
+        var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
         (0, _classCallCheck3.default)(this, Server);
+
+        var _this = (0, _possibleConstructorReturn3.default)(this, (Server.__proto__ || (0, _getPrototypeOf2.default)(Server)).call(this));
+
+        if (options.strict_notifications !== undefined && typeof options.strict_notifications !== "boolean") {
+            var argType = (0, _helpers.getType)(options.strict_notifications);
+            throw new TypeError("\"strict_notifications\" should be boolean, \"" + argType + "\" given");
+        }
+
+        if (options.idParam !== undefined && typeof options.idParam !== "string") {
+            throw new TypeError("\"idParam\" should be a string, \"" + (0, _helpers.getType)(options.idParam) + "\" given");
+        }
+
+        if (typeof options.idParam === "string") {
+            options.idParam = options.idParam.trim();
+            if (options.idParam === "") {
+                throw new TypeError("\"idParam\" can not be empty string");
+            }
+        }
 
         /**
          * Options of the server
          *
          * @type {object}
          */
-        var _this = (0, _possibleConstructorReturn3.default)(this, (Server.__proto__ || (0, _getPrototypeOf2.default)(Server)).call(this));
-
         _this.options = (0, _assign2.default)({
+            port: 0,
             strict_notifications: true,
             idParam: "socket_id"
         }, options);
@@ -219,14 +239,20 @@ var Server = function (_EventEmitter) {
         /**
          * Returns socket with given ID
          * @method
-         * @param {string|number} id - socket id
-         * @returns {RPCSocket}
+         * @param {string} id - socket id
+         * @returns {JsonRPCSocket|null}
          */
 
     }, {
         key: "getRPCSocket",
         value: function getRPCSocket(id) {
-            return this._sockets.get(id);
+            if (id === null || id === undefined || id === "") {
+                throw new TypeError("No socket ID passed");
+            }
+            if (typeof id !== "string") {
+                throw new TypeError("Expected Socket ID as number, " + (0, _helpers.getType)(id) + " passed");
+            }
+            return this._sockets.get(id) || null;
         }
 
         /* ----------------------------------------
@@ -246,6 +272,10 @@ var Server = function (_EventEmitter) {
         key: "createNamespace",
         value: function createNamespace(name) {
             var _this4 = this;
+
+            if (this.hasNamespace(name)) {
+                throw new Error("Failed to create namespace: Namespace with name " + name + " already exists");
+            }
 
             var ns = new _Namespace2.default(name, {
                 strict_notifications: this.options.strict_notifications
@@ -275,6 +305,7 @@ var Server = function (_EventEmitter) {
     }, {
         key: "hasNamespace",
         value: function hasNamespace(name) {
+            (0, _Namespace.assertNamespaceName)(name);
             return this._namespaces.has(name);
         }
 
@@ -282,13 +313,14 @@ var Server = function (_EventEmitter) {
          * Returns namespace with given name
          * @method
          * @param {string} name - uuid of namespace
-         * @returns {Namespace|undefined}
+         * @returns {Namespace|null}
          */
 
     }, {
         key: "getNamespace",
         value: function getNamespace(name) {
-            return this._namespaces.get(name);
+            (0, _Namespace.assertNamespaceName)(name);
+            return this._namespaces.get(name) || null;
         }
 
         /**

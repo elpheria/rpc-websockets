@@ -34,6 +34,7 @@
     "babel-preset-env": "^1.7.0",
     "browserify": "^16.2.3",
     "chai": "^4.2.0",
+    "chai-spies": "^1.0.0",
     "coveralls": "^3.0.2",
     "eslint": "^5.12.1",
     "istanbul": "^0.4.5",
