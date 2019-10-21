@@ -1,5 +1,4 @@
 /* eslint no-unused-vars: "off" */
-/* eslint max-len: "off" */
 
 "use strict"
 
