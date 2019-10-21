@@ -1196,7 +1196,11 @@ var Namespace = function (_EventEmitter) {
             if (!Array.isArray(names)) names = [names];
 
             names.forEach(function (name) {
-                if (typeof name !== "string" || name.trim().length === 0) throw new Error("Notification name should be non-empty string, " + (typeof name === "undefined" ? "undefined" : (0, _typeof3.default)(name)) + " passed");
+                if (typeof name !== "string") throw new TypeError("Notification name should be a string, " + (0, _helpers.getType)(name) + " passed");
+
+                if (name.trim().length === 0) {
+                    throw new Error("Given notification name is empty");
+                }
 
                 if (!isInternal && name.startsWith("rpc.")) throw new Error("Notifications with prefix \"rpc.\" is for internal usage only" + "use methods \"registerInternalNotification\" and" + "\"unregisterInternalNotification\" to register such notification names");
                 if (isInternal && !name.startsWith("rpc.")) name = "rpc." + name;

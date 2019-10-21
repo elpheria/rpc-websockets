@@ -230,10 +230,15 @@ export default class Namespace extends EventEmitter
 
         names.forEach((name) =>
         {
-            if (typeof name !== "string" || name.trim().length === 0)
-                throw new Error(
-                    `Notification name should be non-empty string, ${typeof name} passed`
+            if (typeof name !== "string")
+                throw new TypeError(
+                    `Notification name should be a string, ${getType(name)} passed`
                 )
+
+            if (name.trim().length === 0)
+            {
+                throw new Error("Given notification name is empty")
+            }
 
             if (!isInternal && name.startsWith("rpc."))
                 throw new Error(
