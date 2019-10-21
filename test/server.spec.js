@@ -11,6 +11,7 @@ const WebSocket = require("ws")
 const _WebSocketServer = require("../dist").Server
 const JsonRPCSocket = require("../dist/lib/JsonRpcSocket").default
 const Namespace = require("../dist/lib/Namespace").default
+const INVALID_VALUES = require("./_invalidValues")
 
 const serverInstances = []
 const clientInstances = []
@@ -131,12 +132,7 @@ describe("Server", () =>
 
         it("Throws an error if \"strict_notifications\" parameter is not boolean value", () =>
         {
-            const invalidValues = [
-                -1, 0, 1, 2.56, -Infinity, Infinity,
-                "", " ", "abc",
-                null,
-                [], ["some"], {}, {prop: "some"}
-            ]
+            const invalidValues = INVALID_VALUES.BOOLEAN.concat([null])
 
             for (const invalidValue of invalidValues)
             {
@@ -157,12 +153,7 @@ describe("Server", () =>
 
         it("Throws an error if \"idParam\" is not a string", () =>
         {
-            const invalidValues = [
-                -1, 0, 1, 2.56, -Infinity, Infinity,
-                true, false,
-                null,
-                [], ["some"], {}, {prop: "some"}
-            ]
+            const invalidValues = INVALID_VALUES.STRING.concat([null])
 
             for (const invalidValue of invalidValues)
             {
@@ -177,7 +168,7 @@ describe("Server", () =>
 
         it("Throws an error if \"idParam\" is an empty string", () =>
         {
-            const invalidValues = ["", " ", "   "]
+            const invalidValues = INVALID_VALUES.STRING__FILLED
 
             for (const invalidValue of invalidValues)
             {
@@ -251,7 +242,7 @@ describe("Server", () =>
         {
             const server = await runWebSocketServer()
             const invalidIds = [
-                null, undefined, ""
+                null, undefined, ...INVALID_VALUES.STRING__NON_EMPTY
             ]
             for (const invalidId of invalidIds)
             {
@@ -262,11 +253,7 @@ describe("Server", () =>
         it("Throws an error if passed socket ID is not a string", async () =>
         {
             const server = await runWebSocketServer()
-            const invalidIds = [
-                -Infinity, -12, -3.18, 0, 1, 2.14, Infinity,
-                true, false,
-                [], [1], {}, {a: 2}
-            ]
+            const invalidIds = INVALID_VALUES.STRING
             for (const invalidId of invalidIds)
             {
                 expect(() => server.getRPCSocket(invalidId)).to.throw(TypeError, `Expected Socket ID as number, ${typeof invalidId} passed`)
@@ -302,7 +289,7 @@ describe("Server", () =>
         {
             const server = await runWebSocketServer()
             const invalidNames = [
-                null, undefined, "", "   "
+                null, undefined, ...INVALID_VALUES.STRING__FILLED
             ]
             for (const invalidName of invalidNames)
             {
@@ -313,11 +300,7 @@ describe("Server", () =>
         it("Throws an error if passed name is not a string", async () =>
         {
             const server = await runWebSocketServer()
-            const invalidNames = [
-                -Infinity, -12, -3.18, 0, 1, 2.14, Infinity,
-                true, false,
-                [], [1], {}, {a: 2}
-            ]
+            const invalidNames = INVALID_VALUES.STRING
             for (const invalidName of invalidNames)
             {
                 expect(() => server.createNamespace(invalidName)).to.throw(TypeError, `Name of namespace should be a string, ${typeof invalidName} passed`)
@@ -358,7 +341,7 @@ describe("Server", () =>
         {
             const server = await runWebSocketServer()
             const invalidNames = [
-                null, undefined, "", "   "
+                null, undefined, ...INVALID_VALUES.STRING__FILLED
             ]
             for (const invalidName of invalidNames)
             {
@@ -369,11 +352,7 @@ describe("Server", () =>
         it("Throws an error if passed name is not a string", async () =>
         {
             const server = await runWebSocketServer()
-            const invalidNames = [
-                -Infinity, -12, -3.18, 0, 1, 2.14, Infinity,
-                true, false,
-                [], [1], {}, {a: 2}
-            ]
+            const invalidNames = INVALID_VALUES.STRING
             for (const invalidName of invalidNames)
             {
                 expect(() => server.hasNamespace(invalidName)).to.throw(TypeError, `Name of namespace should be a string, ${typeof invalidName} passed`)
@@ -409,7 +388,7 @@ describe("Server", () =>
         {
             const server = await runWebSocketServer()
             const invalidNames = [
-                null, undefined, "", "   "
+                null, undefined, ...INVALID_VALUES.STRING__FILLED
             ]
             for (const invalidName of invalidNames)
             {
@@ -420,11 +399,7 @@ describe("Server", () =>
         it("Throws an error if passed name is not a string", async () =>
         {
             const server = await runWebSocketServer()
-            const invalidNames = [
-                -Infinity, -12, -3.18, 0, 1, 2.14, Infinity,
-                true, false,
-                [], [1], {}, {a: 2}
-            ]
+            const invalidNames = INVALID_VALUES.STRING
             for (const invalidName of invalidNames)
             {
                 expect(() => server.getNamespace(invalidName)).to.throw(TypeError, `Name of namespace should be a string, ${typeof invalidName} passed`)
@@ -460,7 +435,7 @@ describe("Server", () =>
         {
             const server = await runWebSocketServer()
             const invalidNames = [
-                null, undefined, "", "   "
+                null, undefined, ...INVALID_VALUES.STRING__FILLED
             ]
             for (const invalidName of invalidNames)
             {
@@ -471,11 +446,7 @@ describe("Server", () =>
         it("Throws an error if passed name is not a string", async () =>
         {
             const server = await runWebSocketServer()
-            const invalidNames = [
-                -Infinity, -12, -3.18, 0, 1, 2.14, Infinity,
-                true, false,
-                [], [1], {}, {a: 2}
-            ]
+            const invalidNames = INVALID_VALUES.STRING
             for (const invalidName of invalidNames)
             {
                 expect(() => server.getOrCreateNamespace(invalidName)).to.throw(TypeError, `Name of namespace should be a string, ${typeof invalidName} passed`)
@@ -512,7 +483,7 @@ describe("Server", () =>
         {
             const server = await runWebSocketServer()
             const invalidNames = [
-                null, undefined, "", "   "
+                null, undefined, ...INVALID_VALUES.STRING__FILLED
             ]
             for (const invalidName of invalidNames)
             {
@@ -523,11 +494,7 @@ describe("Server", () =>
         it("Throws an error if passed name is not a string", async () =>
         {
             const server = await runWebSocketServer()
-            const invalidNames = [
-                -Infinity, -12, -3.18, 0, 1, 2.14, Infinity,
-                true, false,
-                [], [1], {}, {a: 2}
-            ]
+            const invalidNames = INVALID_VALUES.STRING
             for (const invalidName of invalidNames)
             {
                 expect(() => server.closeNamespace(invalidName)).to.throw(TypeError, `Name of namespace should be a string, ${typeof invalidName} passed`)
