@@ -21,13 +21,13 @@ var _entries = require("babel-runtime/core-js/object/entries");
 
 var _entries2 = _interopRequireDefault(_entries);
 
-var _defineProperty2 = require("babel-runtime/helpers/defineProperty");
-
-var _defineProperty3 = _interopRequireDefault(_defineProperty2);
-
 var _typeof2 = require("babel-runtime/helpers/typeof");
 
 var _typeof3 = _interopRequireDefault(_typeof2);
+
+var _defineProperty2 = require("babel-runtime/helpers/defineProperty");
+
+var _defineProperty3 = _interopRequireDefault(_defineProperty2);
 
 var _promise = require("babel-runtime/core-js/promise");
 
@@ -392,9 +392,9 @@ var Server = function (_EventEmitter) {
         value: function _changeSubscriptionStatus(action, isInternal, subscriptions, handler) {
             var _this5 = this;
 
-            if (subscriptions && (typeof subscriptions === "undefined" ? "undefined" : (0, _typeof3.default)(subscriptions)) !== "object") subscriptions = (0, _defineProperty3.default)({}, subscriptions, handler);
+            if (typeof subscriptions === "string") subscriptions = (0, _defineProperty3.default)({}, subscriptions, handler);
 
-            if (!subscriptions || (typeof subscriptions === "undefined" ? "undefined" : (0, _typeof3.default)(subscriptions)) !== "object" || Array.isArray(subscriptions)) throw new Error("Subsciptions is not a mapping of names to handlers");
+            if (!subscriptions || (typeof subscriptions === "undefined" ? "undefined" : (0, _typeof3.default)(subscriptions)) !== "object" || Array.isArray(subscriptions)) throw new TypeError("Subsciptions is not a mapping of names to handlers");
 
             var eventPrefix = isInternal ? "rpc:internal:notification" : "rpc:notification";
             (0, _entries2.default)(subscriptions).forEach(function (_ref) {
@@ -402,8 +402,8 @@ var Server = function (_EventEmitter) {
                     n = _ref2[0],
                     h = _ref2[1];
 
-                if (typeof n !== "string" || n.trim().length === 0) throw new Error("Notification name should be non-empty string, " + (typeof n === "undefined" ? "undefined" : (0, _typeof3.default)(n)) + " passed");
-                if (typeof h !== "function") throw new Error("Notification handler is not defined, or have incorrect type");
+                if (n.trim().length === 0) throw new Error("Notification name should be non-empty string");
+                if (typeof h !== "function") throw new TypeError("Expected function as notification handler, got " + (0, _helpers.getType)(h));
                 if (!isInternal && n.startsWith("rpc.")) throw new Error("Notification with 'rpc.' prefix is for internal use only. " + "To subscribe/unsubsrcibe to such notification use methods " + "\"subscribeInternal\"/\"ubsubscribeInternal\"");
 
                 // Add "rpc." prefix for internal requests if omitted:

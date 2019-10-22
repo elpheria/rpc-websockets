@@ -83,7 +83,7 @@ describe("Server", () =>
     testCommonMethods({runWebSocketServer})
     testSocketMethods({runWebSocketServer, connectTo})
     testNamespacesMethods({runWebSocketServer})
-    testNotificationsMethods({runWebSocketServer})
+    testNotificationsMethods({runWebSocketServer, connectTo})
     testEvents({WebSocketServer, runWebSocketServer, connectTo})
     testBehavoirs({WebSocketServer, runWebSocketServer, connectTo})
 })

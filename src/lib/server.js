@@ -314,19 +314,19 @@ export default class Server extends EventEmitter
      */
     _changeSubscriptionStatus(action, isInternal, subscriptions, handler)
     {
-        if (subscriptions && typeof subscriptions !== "object")
+        if (typeof subscriptions === "string")
             subscriptions = {[subscriptions]: handler}
 
         if (!subscriptions || typeof subscriptions !== "object" || Array.isArray(subscriptions))
-            throw new Error("Subsciptions is not a mapping of names to handlers")
+            throw new TypeError("Subsciptions is not a mapping of names to handlers")
 
         const eventPrefix = isInternal ? "rpc:internal:notification" : "rpc:notification"
         Object.entries(subscriptions).forEach(([n, h]) =>
         {
-            if (typeof n !== "string" || n.trim().length === 0)
-                throw new Error(`Notification name should be non-empty string, ${typeof n} passed`)
+            if (n.trim().length === 0)
+                throw new Error("Notification name should be non-empty string")
             if (typeof h !== "function")
-                throw new Error("Notification handler is not defined, or have incorrect type")
+                throw new TypeError(`Expected function as notification handler, got ${getType(h)}`)
             if (!isInternal && n.startsWith("rpc."))
                 throw new Error(
                     "Notification with 'rpc.' prefix is for internal use only. " +

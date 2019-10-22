@@ -951,7 +951,19 @@ var Namespace = function (_EventEmitter) {
 
         assertNamespaceName(name);
 
-        _this.name = name;
+        _this._name = name;
+        /**
+         * Old namespace API allows to get name by property "name", that's why it is here:
+         * @deprecated
+         */
+        Object.defineProperty(_this, "name", {
+            get: function get() {
+                return this.getName();
+            },
+            set: function set(name) {
+                this._name = name;
+            }
+        });
         _this.options = (0, _assign2.default)({
             // Whether to send notifications to all connected sockets (false) or to only
             // subscribed sockets (true)
@@ -1018,6 +1030,17 @@ var Namespace = function (_EventEmitter) {
             }
 
             this.destruct();
+        }
+
+        /**
+         * Returns name of namespace
+         * @returns {*}
+         */
+
+    }, {
+        key: "getName",
+        value: function getName() {
+            return this._name;
         }
 
         /**

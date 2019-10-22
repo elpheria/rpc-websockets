@@ -61,7 +61,22 @@ export default class Namespace extends EventEmitter
 
         assertNamespaceName(name)
 
-        this.name = name
+        this._name = name
+        /**
+         * Old namespace API allows to get name by property "name", that's why it is here:
+         * // TODO: remove it
+         * @deprecated
+         */
+        Object.defineProperty(this, "name", {
+            get()
+            {
+                return this.getName()
+            },
+            set(name)
+            {
+                this._name = name
+            }
+        })
         this.options = Object.assign({
             // Whether to send notifications to all connected sockets (false) or to only
             // subscribed sockets (true)
@@ -99,6 +114,15 @@ export default class Namespace extends EventEmitter
         for (const socket of this.getClients())
             socket.close()
         this.destruct()
+    }
+
+    /**
+     * Returns name of namespace
+     * @returns {*}
+     */
+    getName()
+    {
+        return this._name
     }
 
     /**

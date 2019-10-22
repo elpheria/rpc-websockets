@@ -35,6 +35,14 @@ const BOOLEAN = [
     [], ["some"], {}, {prop: "some"}
 ]
 
+const FUNCTION = [
+    NaN,
+    -Infinity, -12, -3.18, 0, 1, 2.14, Infinity,
+    "", " ", "abc",
+    true, false,
+    [], ["some"], {}, {prop: "some"}
+]
+
 module.exports = {
     NUMBER,
     NUMBER__INTEGER,
@@ -42,5 +50,6 @@ module.exports = {
     STRING,
     STRING__NON_EMPTY,
     STRING__FILLED,
-    BOOLEAN
+    BOOLEAN,
+    FUNCTION
 }
