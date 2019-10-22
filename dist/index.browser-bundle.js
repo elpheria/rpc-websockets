@@ -890,6 +890,7 @@ var _inherits2 = require("babel-runtime/helpers/inherits");
 var _inherits3 = _interopRequireDefault(_inherits2);
 
 exports.assertNamespaceName = assertNamespaceName;
+exports.assertNotificationName = assertNotificationName;
 
 var _JsonRpcSocket = require("./JsonRpcSocket");
 
@@ -907,13 +908,32 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * Function that validates namespace name
  * @param {string} name - name to validate
  * @throws TypeError if name is not valid
- * @returns {void1}
+ * @returns {void}
  */
 function assertNamespaceName(name) {
     if (name === null || name === undefined || typeof name === "string" && name.trim().length === 0) {
         throw new TypeError("No namespace name is passed");
     }
     if (typeof name !== "string") throw new TypeError("Name of namespace should be a string, " + (0, _helpers.getType)(name) + " passed");
+}
+
+/**
+ * Function that validates notification name
+ * @param {string} name - name to validate
+ * @param {boolean} isInternal - is notification internal or not
+ * @throws TypeError if name is not valid
+ * @returns {void}
+ */
+function assertNotificationName(name) {
+    var isInternal = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+
+    if (typeof name !== "string") throw new TypeError("Notification name should be a string, " + (0, _helpers.getType)(name) + " passed");
+
+    if (name.trim().length === 0) {
+        throw new Error("Given notification name is empty");
+    }
+
+    if (!isInternal && name.startsWith("rpc.")) throw new Error("Notifications with prefix \"rpc.\" is for internal usage only" + "use methods \"registerInternalNotification\" and" + "\"unregisterInternalNotification\" to register such notification names");
 }
 
 /**
@@ -1067,7 +1087,7 @@ var Namespace = function (_EventEmitter) {
                 }, _callee, this, [[5, 11]]);
             }));
 
-            function _handleRequest(_x, _x2, _x3) {
+            function _handleRequest(_x2, _x3, _x4) {
                 return _ref.apply(this, arguments);
             }
 
@@ -1196,13 +1216,8 @@ var Namespace = function (_EventEmitter) {
             if (!Array.isArray(names)) names = [names];
 
             names.forEach(function (name) {
-                if (typeof name !== "string") throw new TypeError("Notification name should be a string, " + (0, _helpers.getType)(name) + " passed");
+                assertNotificationName(name, isInternal);
 
-                if (name.trim().length === 0) {
-                    throw new Error("Given notification name is empty");
-                }
-
-                if (!isInternal && name.startsWith("rpc.")) throw new Error("Notifications with prefix \"rpc.\" is for internal usage only" + "use methods \"registerInternalNotification\" and" + "\"unregisterInternalNotification\" to register such notification names");
                 if (isInternal && !name.startsWith("rpc.")) name = "rpc." + name;
 
                 if (shouldBeAdded) {

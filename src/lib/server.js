@@ -11,7 +11,7 @@ import uuid from "uuid"
 import url from "url"
 import assertArgs from "assert-args"
 import JsonRPCSocket, {RPCServerError, TimeoutError} from "./JsonRpcSocket"
-import Namespace, {assertNamespaceName} from "./Namespace"
+import Namespace, {assertNamespaceName, assertNotificationName} from "./Namespace"
 import {getType} from "./helpers"
 
 export default class Server extends EventEmitter
@@ -367,6 +367,12 @@ export default class Server extends EventEmitter
      */
     unregisterNotification(names, ns = "/")
     {
+        if (!Array.isArray(names))
+        {
+            names = [names]
+        }
+        names.forEach(assertNotificationName)
+
         if (this.hasNamespace(ns))
             this.getNamespace(ns).unregisterNotification(names)
     }

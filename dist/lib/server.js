@@ -446,6 +446,11 @@ var Server = function (_EventEmitter) {
         value: function unregisterNotification(names) {
             var ns = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "/";
 
+            if (!Array.isArray(names)) {
+                names = [names];
+            }
+            names.forEach(_Namespace.assertNotificationName);
+
             if (this.hasNamespace(ns)) this.getNamespace(ns).unregisterNotification(names);
         }
 
