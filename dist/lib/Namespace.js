@@ -133,6 +133,7 @@ var Namespace = function (_EventEmitter) {
         _this._name = name;
         /**
          * Old namespace API allows to get name by property "name", that's why it is here:
+         * // TODO: remove it
          * @deprecated
          */
         Object.defineProperty(_this, "name", {
