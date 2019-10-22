@@ -136,5 +136,40 @@ module.exports = ({WebSocketServer, runWebSocketServer, connectTo}) =>
                 })
             })
         })
+
+        describe("notification events", () =>
+        {
+            describe("\"rpc:notification\"", () =>
+            {
+                it("Fires when new notification is received by any of the contained namespaces")
+                it("Passes notification object in first argument of callback")
+                it("Passes socket object in second argument of callback")
+                it("Passes namespace object in third argument of callback")
+            })
+
+            describe("\"rpc:notification:{notificationName}\"", () =>
+            {
+                it("Fires when new notification with {notificationName} is received by any of the contained namespaces")
+                it("Passes parameters of notification in first argument of callback")
+                it("Passes socket object in second argument of callback")
+                it("Passes namespace object in third argument of callback")
+            })
+
+            describe("\"rpc:internal:notification\"", () =>
+            {
+                it("Fires when new internal notification is received by any of the contained namespaces")
+                it("Passes notification object in first argument of callback")
+                it("Passes socket object in second argument of callback")
+                it("Passes namespace object in third argument of callback")
+            })
+
+            describe("\"rpc:internal:notification:{notificationName}\"", () =>
+            {
+                it("Fires when new internal notification with {notificationName} is received by any of the contained namespaces")
+                it("Passes parameters of notification in first argument of callback")
+                it("Passes socket object in second argument of callback")
+                it("Passes namespace object in third argument of callback")
+            })
+        })
     })
 }
