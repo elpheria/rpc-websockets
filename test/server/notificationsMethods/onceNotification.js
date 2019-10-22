@@ -73,8 +73,8 @@ module.exports = ({runWebSocketServer, connectTo}) =>
             const invalidValues = INVALID_VALUES.STRING__FILLED
             for (const invalidValue of invalidValues)
             {
-                expect(() => server.onceNotification(invalidValue, () => {})).to.throw(Error, "Notification name should be non-empty string")
-                expect(() => server.onceNotification({[invalidValue]: () => {}})).to.throw(Error, "Notification name should be non-empty string")
+                expect(() => server.onceNotification(invalidValue, () => {})).to.throw(Error, "Given notification name is empty")
+                expect(() => server.onceNotification({[invalidValue]: () => {}})).to.throw(Error, "Given notification name is empty")
             }
         })
 
@@ -82,9 +82,7 @@ module.exports = ({runWebSocketServer, connectTo}) =>
         {
             const server = await runWebSocketServer()
             const invalidValues = ["rpc.notification", "rpc."]
-            const ERROR_TEXT = "Notification with 'rpc.' prefix is for internal use only. " +
-                "To subscribe/unsubsrcibe to such notification use methods " +
-                "\"subscribeInternal\"/\"ubsubscribeInternal\""
+            const ERROR_TEXT = "Notifications with prefix \"rpc.\" is for internal usage only"
             for (const invalidValue of invalidValues)
             {
                 expect(() => server.onceNotification(invalidValue, () => {})).to.throw(Error, ERROR_TEXT)

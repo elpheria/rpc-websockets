@@ -42,11 +42,7 @@ export function assertNotificationName(name, isInternal = false)
     }
 
     if (!isInternal && name.startsWith("rpc."))
-        throw new Error(
-            "Notifications with prefix \"rpc.\" is for internal usage only" +
-            "use methods \"registerInternalNotification\" and" +
-            "\"unregisterInternalNotification\" to register such notification names"
-        )
+        throw new Error("Notifications with prefix \"rpc.\" is for internal usage only")
 }
 
 /**

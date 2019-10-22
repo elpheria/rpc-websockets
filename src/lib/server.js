@@ -323,16 +323,10 @@ export default class Server extends EventEmitter
         const eventPrefix = isInternal ? "rpc:internal:notification" : "rpc:notification"
         Object.entries(subscriptions).forEach(([n, h]) =>
         {
-            if (n.trim().length === 0)
-                throw new Error("Notification name should be non-empty string")
+            assertNotificationName(n, isInternal)
+
             if (typeof h !== "function")
                 throw new TypeError(`Expected function as notification handler, got ${getType(h)}`)
-            if (!isInternal && n.startsWith("rpc."))
-                throw new Error(
-                    "Notification with 'rpc.' prefix is for internal use only. " +
-                    "To subscribe/unsubsrcibe to such notification use methods " +
-                    "\"subscribeInternal\"/\"ubsubscribeInternal\""
-                )
 
             // Add "rpc." prefix for internal requests if omitted:
             if (isInternal && !n.startsWith("rpc."))

@@ -81,9 +81,7 @@ module.exports = ({runWebSocketServer}) =>
             for (const invalidName of invalidNames)
             {
                 expect(() => server.registerNotification(invalidName)).to.throw(Error,
-                    "Notifications with prefix \"rpc.\" is for internal usage only" +
-                    "use methods \"registerInternalNotification\" and" +
-                    "\"unregisterInternalNotification\" to register such notification names"
+                    "Notifications with prefix \"rpc.\" is for internal usage only"
                 )
             }
         })

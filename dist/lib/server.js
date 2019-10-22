@@ -402,9 +402,9 @@ var Server = function (_EventEmitter) {
                     n = _ref2[0],
                     h = _ref2[1];
 
-                if (n.trim().length === 0) throw new Error("Notification name should be non-empty string");
+                (0, _Namespace.assertNotificationName)(n, isInternal);
+
                 if (typeof h !== "function") throw new TypeError("Expected function as notification handler, got " + (0, _helpers.getType)(h));
-                if (!isInternal && n.startsWith("rpc.")) throw new Error("Notification with 'rpc.' prefix is for internal use only. " + "To subscribe/unsubsrcibe to such notification use methods " + "\"subscribeInternal\"/\"ubsubscribeInternal\"");
 
                 // Add "rpc." prefix for internal requests if omitted:
                 if (isInternal && !n.startsWith("rpc.")) n = "rpc." + n;

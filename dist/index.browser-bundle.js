@@ -933,7 +933,7 @@ function assertNotificationName(name) {
         throw new Error("Given notification name is empty");
     }
 
-    if (!isInternal && name.startsWith("rpc.")) throw new Error("Notifications with prefix \"rpc.\" is for internal usage only" + "use methods \"registerInternalNotification\" and" + "\"unregisterInternalNotification\" to register such notification names");
+    if (!isInternal && name.startsWith("rpc.")) throw new Error("Notifications with prefix \"rpc.\" is for internal usage only");
 }
 
 /**
