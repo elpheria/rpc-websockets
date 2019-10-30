@@ -1,14 +1,9 @@
-const testRegisterNotification = require("./registerNotification")
-const testUnregisterNotification = require("./unregisterNotification")
-const testGetRegisteredNotifications = require("./getRegisteredNotifications")
-const testOnNotification = require("./onNotification")
-const testOnceNotification = require("./onceNotification")
-
 module.exports = ({runWebSocketServer, connectTo}) =>
 {
-    testRegisterNotification({runWebSocketServer})
-    testUnregisterNotification({runWebSocketServer})
-    testGetRegisteredNotifications({runWebSocketServer})
-    testOnNotification(({runWebSocketServer, connectTo}))
-    testOnceNotification(({runWebSocketServer, connectTo}))
+    require("./registerNotification")({runWebSocketServer})
+    require("./unregisterNotification")({runWebSocketServer})
+    require("./getRegisteredNotifications")({runWebSocketServer})
+    require("./onNotification")({runWebSocketServer, connectTo})
+    require("./onceNotification")({runWebSocketServer, connectTo})
+    require("./offNotification")({runWebSocketServer, connectTo})
 }

@@ -52,14 +52,14 @@ function runWebSocketServer(...args)
  * @param {string} idParam - name of parameter to pass ID of connection
  * @return {Promise}
  */
-function connectTo({server, path, id, idParam = "socket_id"})
+function connectTo({server, path = "/", id, idParam = "socket_id"})
 {
     const HOST = server.wss.address().address.replace("::", "localhost")
     const PORT = server.wss.address().port
     const query = id ? `?${idParam}=${id}` : ""
     return new Promise((resolve, reject) =>
     {
-        const client = new WebSocket(`ws://${HOST}:${PORT}${path || "/"}${query || ""}`)
+        const client = new WebSocket(`ws://${HOST}:${PORT}${path}${query}`)
         clientInstances.push(client)
         client.on("open", () => resolve(client))
         client.on("error", (error) => reject(error))
