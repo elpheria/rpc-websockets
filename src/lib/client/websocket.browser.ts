@@ -4,19 +4,22 @@
  */
 
 "use strict"
-
+import NodeWebSocket from "ws"
 import EventEmitter from "eventemitter3"
+import { BrowserWebSocketType, IWSClientAdditionalOptions, NodeWebSocketType } from "./client.types"
 
-export default class WebSocket extends EventEmitter
+export default class WebSocketBrowserImpl extends EventEmitter
 {
+    socket: BrowserWebSocketType
+
     /** Instantiate a WebSocket class
      * @constructor
      * @param {String} address - url to a websocket server
      * @param {(Object)} options - websocket options
      * @param {(String|Array)} protocols - a list of protocols
-     * @return {WebSocket} - returns a WebSocket instance
+     * @return {WebSocketBrowserImpl} - returns a WebSocket instance
      */
-    constructor(address, options, protocols)
+    constructor(address: string, options: IWSClientAdditionalOptions & NodeWebSocket.ClientOptions, protocols?: string | string[])
     {
         super()
 
@@ -39,16 +42,16 @@ export default class WebSocket extends EventEmitter
      * @param {Function} callback - a callback called once the data is sent
      * @return {Undefined}
      */
-    send(data, options, callback)
+    send(data: Parameters<BrowserWebSocketType['send']>[0], optionsOrCallback: (error?: Error) => void | Parameters<NodeWebSocketType['send']>[1], callback?: () => void)
     {
-        callback = callback || options
+        const cb = callback || optionsOrCallback;
 
         try
         {
             this.socket.send(data)
-            callback()
+            cb()
         }
-        catch (error) { callback(error) }
+        catch (error) { cb(error) }
     }
 
     /**
@@ -59,7 +62,7 @@ export default class WebSocket extends EventEmitter
      * @return {Undefined}
      * @throws {Error}
      */
-    close(code, reason)
+    close(code?: number, reason?: string)
     {
         this.socket.close(code, reason)
     }
