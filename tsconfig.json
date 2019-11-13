@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "outDir": "./build-ts",
+        "declaration": true,
+        "allowUnreachableCode": false,
+        "noImplicitAny": true,
+        "target": "es6",
+        "moduleResolution": "node",
+        "allowSyntheticDefaultImports": true
+    },
+    "include": [
+        "./src/**/*"
+    ]
+}

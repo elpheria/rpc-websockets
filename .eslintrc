@@ -5,9 +5,10 @@
         "browser": true,
         "mocha": true
     },
-    "parser": "babel-eslint",
-    "extends": "eslint:recommended",
+    "parser": "@typescript-eslint/parser",
+    "extends": ["plugin:@typescript-eslint/recommended"],
     "parserOptions": {
+        "ecmaVersion": 2015,
         "sourceType": "module"
     },
     "rules": {
