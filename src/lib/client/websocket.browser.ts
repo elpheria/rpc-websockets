@@ -4,9 +4,8 @@
  */
 
 "use strict"
-import NodeWebSocket from "ws"
 import EventEmitter from "eventemitter3"
-import { BrowserWebSocketType, IWSClientAdditionalOptions, NodeWebSocketType } from "./client.types"
+import { BrowserWebSocketType, NodeWebSocketType } from "./client.types"
 
 export default class WebSocketBrowserImpl extends EventEmitter
 {
@@ -19,7 +18,7 @@ export default class WebSocketBrowserImpl extends EventEmitter
      * @param {(String|Array)} protocols - a list of protocols
      * @return {WebSocketBrowserImpl} - returns a WebSocket instance
      */
-    constructor(address: string, options: IWSClientAdditionalOptions & NodeWebSocket.ClientOptions, protocols?: string | string[])
+    constructor(address: string, options: {}, protocols?: string | string[])
     {
         super()
 
@@ -42,7 +41,11 @@ export default class WebSocketBrowserImpl extends EventEmitter
      * @param {Function} callback - a callback called once the data is sent
      * @return {Undefined}
      */
-    send(data: Parameters<BrowserWebSocketType['send']>[0], optionsOrCallback: (error?: Error) => void | Parameters<NodeWebSocketType['send']>[1], callback?: () => void)
+    send(
+        data: Parameters<BrowserWebSocketType['send']>[0],
+        optionsOrCallback: (error?: Error) => void | Parameters<NodeWebSocketType['send']>[1],
+        callback?: () => void
+    )
     {
         const cb = callback || optionsOrCallback;
 
@@ -65,5 +68,9 @@ export default class WebSocketBrowserImpl extends EventEmitter
     close(code?: number, reason?: string)
     {
         this.socket.close(code, reason)
+    }
+
+    addEventListener<K extends keyof WebSocketEventMap>(type: K, listener: (ev: WebSocketEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void {
+        this.socket.addEventListener(type, listener, options);
     }
 }

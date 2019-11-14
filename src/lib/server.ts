@@ -42,19 +42,15 @@ interface IWebSocketWithId extends NodeWebSocket {
     _id: string;
 }
 
-interface IConnectedClients {
-    [x: string]: IWebSocketWithId;
-}
-
 interface IRPCResult {
     [x: string]: string;
 }
 
 export default class Server extends EventEmitter
 {
-    namespaces: INamespace;
-    authenticated: boolean;
-    wss: InstanceType<typeof WebSocketServer>;
+    private namespaces: INamespace;
+    private authenticated: boolean;
+    private wss: InstanceType<typeof WebSocketServer>;
 
     /**
      * Instantiate a Server class.
@@ -355,13 +351,12 @@ export default class Server extends EventEmitter
              */
             connected()
             {
-                const clients: IConnectedClients = {}
                 const socket_ids = [ ...self.namespaces[name].clients.keys() ]
 
-                for (var i = 0, id; id = socket_ids[i]; ++i)
-                    clients[id] = self.namespaces[name].clients.get(id)
-
-                return clients
+                return socket_ids.reduce((acc, curr) => ({
+                    ...acc,
+                    [curr]: self.namespaces[name].clients.get(curr)
+                }), {});
             },
 
             /**
@@ -444,7 +439,7 @@ export default class Server extends EventEmitter
      * @param {String} ns - namespaces identifier
      * @return {Undefined}
      */
-    _handleRPC(socket: IWebSocketWithId, ns = "/")
+    private _handleRPC(socket: IWebSocketWithId, ns = "/")
     {
         socket.on("message", async(data) =>
         {
@@ -515,7 +510,7 @@ export default class Server extends EventEmitter
      * @param {String} ns - namespaces identifier
      * @return {Object|undefined}
      */
-    async _runMethod(message: any, socket_id: string, ns: string = "/")
+    private async _runMethod(message: any, socket_id: string, ns: string = "/")
     {
         if (typeof message !== "object")
             return {
@@ -709,7 +704,7 @@ export default class Server extends EventEmitter
      * @param {String} name - namespaces identifier
      * @return {undefined}
      */
-    _generateNamespace(name: string)
+    private _generateNamespace(name: string)
     {
         this.namespaces[name] = {
             rpc_methods: {

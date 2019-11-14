@@ -18,11 +18,11 @@ interface IQueueElement {
     timeout?: ReturnType<typeof setTimeout>;
 }
 
-interface IQueue {
+export interface IQueue {
     [x: number]: IQueueElement;
 }
 
-interface IWSRequestParams {
+export interface IWSRequestParams {
     [x: string]: any;
     [x: number]: any;
 }
