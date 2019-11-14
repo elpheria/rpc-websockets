@@ -4,7 +4,7 @@
         "declaration": true,
         "allowUnreachableCode": false,
         "noImplicitAny": true,
-        "target": "es6",
+        "target": "es2017",
         "moduleResolution": "node",
         "allowSyntheticDefaultImports": true
     },
