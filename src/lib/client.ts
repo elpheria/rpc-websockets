@@ -7,10 +7,11 @@
 "use strict"
 
 import NodeWebSocket from 'ws';
+// @ts-ignore
 import assertArgs from "assert-args"
 import EventEmitter from "eventemitter3"
 import flatted from "flatted"
-import { ICommonWebSocket, IWSClientAdditionalOptions, NodeWebSocketType } from "./client/client.types";
+import { ICommonWebSocket, IWSClientAdditionalOptions, NodeWebSocketType, ICommonWebSocketConstructible } from "./client/client.types";
 
 interface IQueueElement {
     promise: [Parameters<ConstructorParameters<typeof Promise>[0]>[0], Parameters<ConstructorParameters<typeof Promise>[0]>[1]],
@@ -26,7 +27,7 @@ interface IWSRequestParams {
     [x: number]: any;
 }
 
-export default (WebSocket: ICommonWebSocket) => class Client extends EventEmitter
+export default (WebSocket: ICommonWebSocketConstructible) => class Client extends EventEmitter
 {
     address: string;
     rpc_id: number;

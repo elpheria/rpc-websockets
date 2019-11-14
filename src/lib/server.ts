@@ -5,6 +5,7 @@
 
 "use strict"
 
+// @ts-ignore
 import assertArgs from "assert-args"
 import EventEmitter from "eventemitter3"
 import NodeWebSocket, { Server as WebSocketServer } from "ws"
@@ -43,6 +44,10 @@ interface IWebSocketWithId extends NodeWebSocket {
 
 interface IConnectedClients {
     [x: string]: IWebSocketWithId;
+}
+
+interface IRPCResult {
+    [x: string]: string;
 }
 
 export default class Server extends EventEmitter
@@ -452,7 +457,9 @@ export default class Server extends EventEmitter
                 data = Buffer.from(data).toString()
             }
 
-            try { data = JSON.parse(data as string) }
+            let parsedData: any;
+
+            try { parsedData = JSON.parse(data as string) }
 
             catch (error)
             {
@@ -464,9 +471,9 @@ export default class Server extends EventEmitter
                 }), msg_options)
             }
 
-            if (Array.isArray(data))
+            if (Array.isArray(parsedData))
             {
-                if (!data.length)
+                if (!parsedData.length)
                     return socket.send(JSON.stringify({
                         jsonrpc: "2.0",
                         error: utils.createError(-32600, "Invalid array"),
@@ -475,7 +482,7 @@ export default class Server extends EventEmitter
 
                 const responses = []
 
-                for (const message of data)
+                for (const message of parsedData)
                 {
                     const response = await this._runMethod(message, socket._id, ns)
 
@@ -491,7 +498,7 @@ export default class Server extends EventEmitter
                 return socket.send(flatted.stringify(responses), msg_options)
             }
 
-            const response = await this._runMethod(data, socket._id, ns)
+            const response = await this._runMethod(parsedData, socket._id, ns)
 
             if (!response)
                 return
@@ -508,7 +515,7 @@ export default class Server extends EventEmitter
      * @param {String} ns - namespaces identifier
      * @return {Object|undefined}
      */
-    async _runMethod(message: string | Buffer | ArrayBuffer, socket_id: string, ns: string = "/")
+    async _runMethod(message: any, socket_id: string, ns: string = "/")
     {
         if (typeof message !== "object")
             return {
@@ -554,7 +561,7 @@ export default class Server extends EventEmitter
                     id: message.id || null
                 }
 
-            const results = {}
+            const results: IRPCMethodParams = {}
 
             const event_names = Object.keys(this.namespaces[ns].events)
 
@@ -595,7 +602,7 @@ export default class Server extends EventEmitter
                     id: message.id || null
                 }
 
-            const results = {}
+            const results: IRPCResult = {}
 
             for (const name of message.params)
             {
