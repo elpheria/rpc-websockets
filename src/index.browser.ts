@@ -1,9 +1,9 @@
 "use strict"
 
 import WebSocketBrowserImpl from "./lib/client/websocket.browser"
-import clientFactory from "./lib/client"
+import CommonClient from "./lib/client"
 
-export class Client extends clientFactory {
+export class Client extends CommonClient {
     constructor(
         address = "ws://localhost:8080",
         {

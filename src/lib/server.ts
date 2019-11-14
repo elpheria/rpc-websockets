@@ -50,7 +50,7 @@ export default class Server extends EventEmitter
 {
     private namespaces: INamespace;
     private authenticated: boolean;
-    private wss: InstanceType<typeof WebSocketServer>;
+    wss: InstanceType<typeof WebSocketServer>;
 
     /**
      * Instantiate a Server class.
@@ -461,8 +461,7 @@ export default class Server extends EventEmitter
                 return socket.send(JSON.stringify({
                     jsonrpc: "2.0",
                     error: utils.createError(-32700, error.toString()),
-                    // NEXT LINE IS A BUG, data IS EITHER AN ARRAYBUFFER, BUFFER OR STRING, NOT AN OBJECT, IT'S NOT PARSED IF THE ERROR IS CAUGHT
-                    // id: data.id || null
+                    id: null
                 }), msg_options)
             }
 
