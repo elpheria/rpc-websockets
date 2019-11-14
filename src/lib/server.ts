@@ -88,7 +88,7 @@ export default class Server extends EventEmitter
             const ns = u.pathname
 
             if (u.query.socket_id)
-                socket._id = u.query.id as string;
+                socket._id = u.query.socket_id as string;
             else
                 socket._id = uuid.v1()
 
