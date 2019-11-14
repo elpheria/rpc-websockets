@@ -21,8 +21,8 @@
     "@types/ws": "^6.0.3",
     "assert-args": "^1.2.1",
     "babel-runtime": "^6.26.0",
+    "circular-json": "^0.5.9",
     "eventemitter3": "^3.1.2",
-    "flatted": "^2.0.1",
     "uuid": "^3.3.2",
     "ws": "^5.2.2"
   },
