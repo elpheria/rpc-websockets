@@ -11,7 +11,7 @@ import EventEmitter from "eventemitter3"
 import NodeWebSocket, { Server as WebSocketServer } from "ws"
 import uuid from "uuid"
 import url from "url"
-import flatted from "flatted"
+import CircularJSON from "circular-json"
 
 import * as utils from "./utils"
 
@@ -167,7 +167,7 @@ export default class Server extends EventEmitter
      * @param {String} ns - namespace identifier
      * @return {Undefined}
      */
-    _makeProtected(name: string, ns: string = "/")
+    private _makeProtected(name: string, ns: string = "/")
     {
         this.namespaces[ns].rpc_methods[name].protected = true
     }
@@ -179,7 +179,7 @@ export default class Server extends EventEmitter
      * @param {String} ns - namespace identifier
      * @return {Undefined}
      */
-    _makePublic(name: string, ns: string = "/")
+    private _makePublic(name: string, ns: string = "/")
     {
         this.namespaces[ns].rpc_methods[name].protected = false
     }
@@ -251,7 +251,7 @@ export default class Server extends EventEmitter
                 if (!socket)
                     continue
 
-                socket.send(flatted.stringify({
+                socket.send(CircularJSON.stringify({
                     notification: name,
                     params: params || null
                 }))
@@ -324,7 +324,7 @@ export default class Server extends EventEmitter
 
                 for (var i = 0, id; id = socket_ids[i]; ++i)
                 {
-                    self.namespaces[name].clients.get(id).send(flatted.stringify({
+                    self.namespaces[name].clients.get(id).send(CircularJSON.stringify({
                         notification: event,
                         params: params || []
                     }))
@@ -489,7 +489,7 @@ export default class Server extends EventEmitter
                 if (!responses.length)
                     return
 
-                return socket.send(flatted.stringify(responses), msg_options)
+                return socket.send(CircularJSON.stringify(responses), msg_options)
             }
 
             const response = await this._runMethod(parsedData, socket._id, ns)
@@ -497,7 +497,7 @@ export default class Server extends EventEmitter
             if (!response)
                 return
 
-            return socket.send(flatted.stringify(response), msg_options)
+            return socket.send(CircularJSON.stringify(response), msg_options)
         })
     }
 

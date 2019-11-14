@@ -10,7 +10,7 @@ import NodeWebSocket from 'ws';
 // @ts-ignore
 import assertArgs from "assert-args"
 import EventEmitter from "eventemitter3"
-import flatted from "flatted"
+import CircularJSON from "circular-json"
 import { ICommonWebSocket, IWSClientAdditionalOptions, NodeWebSocketType, ICommonWebSocketConstructible } from "./client/client.types";
 
 interface IQueueElement {
@@ -294,7 +294,7 @@ export default class CommonClient extends EventEmitter
             if (message instanceof ArrayBuffer)
                 message = Buffer.from(message).toString()
 
-            try { message = flatted.parse(message) }
+            try { message = CircularJSON.parse(message) }
 
             catch (error) { return }
 
