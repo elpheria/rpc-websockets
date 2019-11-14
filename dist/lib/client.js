@@ -40,6 +40,7 @@ function (_EventEmitter) {
   /**
    * Instantiate a Client class.
    * @constructor
+   * @param {WebSocketConstructible} WebSocketConstructible - factory method for WebSocket
    * @param {String} address - url to a websocket server
    * @param {Object} options - ws options object with reconnect parameters
    * @param {Function} generate_request_id - custom generation request Id

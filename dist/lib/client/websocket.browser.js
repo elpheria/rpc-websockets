@@ -64,7 +64,7 @@ function (_EventEmitter) {
    * Sends data through a websocket connection
    * @method
    * @param {(String|Object)} data - data to be sent via websocket
-   * @param {Object} options - ws options
+   * @param {Object} optionsOrCallback - ws options
    * @param {Function} callback - a callback called once the data is sent
    * @return {Undefined}
    */

@@ -1,3 +1,5 @@
+/* eslint-disable max-len */
+
 /**
  * "Server" wraps the "ws" library providing JSON RPC 2.0 support on top.
  * @module Server

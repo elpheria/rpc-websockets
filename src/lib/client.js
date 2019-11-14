@@ -6,53 +6,23 @@
 
 "use strict"
 
-import NodeWebSocket from 'ws';
 // @ts-ignore
 import assertArgs from "assert-args"
 import EventEmitter from "eventemitter3"
 import CircularJSON from "circular-json"
-import { ICommonWebSocket, IWSClientAdditionalOptions, NodeWebSocketType, ICommonWebSocketConstructible } from "./client/client.types";
-
-interface IQueueElement {
-    promise: [Parameters<ConstructorParameters<typeof Promise>[0]>[0], Parameters<ConstructorParameters<typeof Promise>[0]>[1]],
-    timeout?: ReturnType<typeof setTimeout>;
-}
-
-export interface IQueue {
-    [x: number]: IQueueElement;
-}
-
-export interface IWSRequestParams {
-    [x: string]: any;
-    [x: number]: any;
-}
-
 export default class CommonClient extends EventEmitter
 {
-    private address: string;
-    private rpc_id: number;
-    private queue: IQueue;
-    private options: IWSClientAdditionalOptions & NodeWebSocket.ClientOptions;
-    private autoconnect: boolean;
-    private ready: boolean;
-    private reconnect: boolean;
-    private reconnect_interval: number;
-    private max_reconnects: number;
-    private current_reconnects: number;
-    private generate_request_id: (method: string, params: object | Array<any>) => number;
-    private socket: ICommonWebSocket;
-    private WebSocketConstructible: ICommonWebSocketConstructible;
-
     /**
      * Instantiate a Client class.
      * @constructor
+     * @param {WebSocketConstructible} WebSocketConstructible - factory method for WebSocket
      * @param {String} address - url to a websocket server
      * @param {Object} options - ws options object with reconnect parameters
      * @param {Function} generate_request_id - custom generation request Id
      * @return {CommonClient}
      */
     constructor(
-        WebSocketConstructible: ICommonWebSocketConstructible,
+        WebSocketConstructible,
         address = "ws://localhost:8080",
         {
             autoconnect = true,
@@ -60,16 +30,13 @@ export default class CommonClient extends EventEmitter
             reconnect_interval = 1000,
             max_reconnects = 5
         } = {},
-        generate_request_id?: (method: string, params: object | Array<any>) => number
+        generate_request_id
     )
     {
         super()
-
-        this.WebSocketConstructible = WebSocketConstructible;
-
+        this.WebSocketConstructible = WebSocketConstructible
         this.queue = {}
         this.rpc_id = 0
-
         this.address = address
         this.options = arguments[1]
         this.autoconnect = autoconnect
@@ -79,11 +46,9 @@ export default class CommonClient extends EventEmitter
         this.max_reconnects = max_reconnects
         this.current_reconnects = 0
         this.generate_request_id = generate_request_id || (() => ++this.rpc_id)
-
         if (this.autoconnect)
             this._connect(this.address, this.options)
     }
-
     /**
      * Connects to a defined server if not connected already.
      * @method
@@ -93,10 +58,8 @@ export default class CommonClient extends EventEmitter
     {
         if (this.socket)
             return
-
         this._connect(this.address, this.options)
     }
-
     /**
      * Calls a registered RPC method on server.
      * @method
@@ -106,7 +69,7 @@ export default class CommonClient extends EventEmitter
      * @param {Object} ws_opts - options passed to ws
      * @return {Promise}
      */
-    call(method: string, params?: IWSRequestParams, timeout?: number, ws_opts?: Parameters<NodeWebSocketType['send']>[1])
+    call(method, params, timeout, ws_opts)
     {
         assertArgs(arguments, {
             "method": "string",
@@ -114,34 +77,27 @@ export default class CommonClient extends EventEmitter
             "[timeout]": "number",
             "[ws_opts]": "object"
         })
-
         if (!ws_opts && "object" === typeof timeout)
         {
             ws_opts = timeout
             timeout = null
         }
-
         return new Promise((resolve, reject) =>
         {
             if (!this.ready)
                 return reject(new Error("socket not ready"))
-
             const rpc_id = this.generate_request_id(method, params)
-
             const message = {
                 jsonrpc: "2.0",
                 method: method,
                 params: params || null,
                 id: rpc_id
             }
-
             this.socket.send(JSON.stringify(message), ws_opts, (error) =>
             {
                 if (error)
                     return reject(error)
-
                 this.queue[rpc_id] = { promise: [resolve, reject] }
-
                 if (timeout)
                 {
                     this.queue[rpc_id].timeout = setTimeout(() =>
@@ -153,18 +109,16 @@ export default class CommonClient extends EventEmitter
             })
         })
     }
-
     /**
      * Logins with the other side of the connection.
      * @method
      * @param {Object} params - Login credentials object
      * @return {Promise}
      */
-    async login(params: IWSRequestParams)
+    async login(params)
     {
         return await this.call("rpc.login", params)
     }
-
     /**
      * Fetches a list of client's methods registered on server.
      * @method
@@ -174,7 +128,6 @@ export default class CommonClient extends EventEmitter
     {
         return await this.call("__listMethods")
     }
-
     /**
      * Sends a JSON-RPC 2.0 notification to server.
      * @method
@@ -182,34 +135,29 @@ export default class CommonClient extends EventEmitter
      * @param {Object} params - optional method parameters
      * @return {Promise}
      */
-    notify(method: string, params: IWSRequestParams)
+    notify(method, params)
     {
         assertArgs(arguments, {
             "method": "string",
             "[params]": ["object", Array]
         })
-
         return new Promise((resolve, reject) =>
         {
             if (!this.ready)
                 return reject(new Error("socket not ready"))
-
             const message = {
                 jsonrpc: "2.0",
                 method: method,
                 params: params || null
             }
-
             this.socket.send(JSON.stringify(message), (error) =>
             {
                 if (error)
                     return reject(error)
-
                 resolve()
             })
         })
     }
-
     /**
      * Subscribes for a defined event.
      * @method
@@ -217,23 +165,18 @@ export default class CommonClient extends EventEmitter
      * @return {Undefined}
      * @throws {Error}
      */
-    async subscribe(event: string | Array<string>)
+    async subscribe(event)
     {
         assertArgs(arguments, {
-            event: [ "string", Array ]
+            event: ["string", Array]
         })
-
         if (typeof event === "string")
-            event = [ event ]
-
+            event = [event]
         const result = await this.call("rpc.on", event)
-
         if (typeof event === "string" && result[event] !== "ok")
             throw new Error("Failed subscribing to an event '" + event + "' with: " + result[event])
-
         return result
     }
-
     /**
      * Unsubscribes from a defined event.
      * @method
@@ -241,23 +184,18 @@ export default class CommonClient extends EventEmitter
      * @return {Undefined}
      * @throws {Error}
      */
-    async unsubscribe(event: string | Array<string>)
+    async unsubscribe(event)
     {
         assertArgs(arguments, {
-            event: [ "string", Array ]
+            event: ["string", Array]
         })
-
         if (typeof event === "string")
-            event = [ event ]
-
+            event = [event]
         const result = await this.call("rpc.off", event)
-
         if (typeof event === "string" && result[event] !== "ok")
             throw new Error("Failed unsubscribing from an event with: " + result)
-
         return result
     }
-
     /**
      * Closes a WebSocket connection gracefully.
      * @method
@@ -265,11 +203,10 @@ export default class CommonClient extends EventEmitter
      * @param {String} data - optional data to be sent before closing
      * @return {Undefined}
      */
-    close(code: number, data: string)
+    close(code, data)
     {
         this.socket.close(code || 1000, data)
     }
-
     /**
      * Connection/Message handler.
      * @method
@@ -278,44 +215,41 @@ export default class CommonClient extends EventEmitter
      * @param {Object} options - ws options object
      * @return {Undefined}
      */
-    private _connect(address: string, options: IWSClientAdditionalOptions & NodeWebSocket.ClientOptions)
+    _connect(address, options)
     {
         this.socket = new this.WebSocketConstructible(address, options)
-
         this.socket.addEventListener("open", () =>
         {
             this.ready = true
             this.emit("open")
             this.current_reconnects = 0
         })
-
-        this.socket.addEventListener("message", ({data: message}) =>
+        this.socket.addEventListener("message", ({ data: message }) =>
         {
             if (message instanceof ArrayBuffer)
                 message = Buffer.from(message).toString()
-
-            try { message = CircularJSON.parse(message) }
-
-            catch (error) { return }
-
+            try
+            {
+                message = CircularJSON.parse(message)
+            }
+            catch (error)
+            {
+                return
+            }
             // check if any listeners are attached and forward event
             if (message.notification && this.listeners(message.notification).length)
             {
                 if (!Object.keys(message.params).length)
                     return this.emit(message.notification)
-
                 const args = [message.notification]
-
                 if (message.params.constructor === Object)
                     args.push(message.params)
                 else
                     // using for-loop instead of unshift/spread because performance is better
                     for (let i = 0; i < message.params.length; i++)
                         args.push(message.params[i])
-
                 return this.emit.apply(this, args)
             }
-
             if (!this.queue[message.id])
             {
                 // general JSON RPC 2.0 events
@@ -324,34 +258,25 @@ export default class CommonClient extends EventEmitter
                 else
                     return
             }
-
             if (this.queue[message.id].timeout)
                 clearTimeout(this.queue[message.id].timeout)
-
             if (message.error)
                 this.queue[message.id].promise[1](message.error)
             else
                 this.queue[message.id].promise[0](message.result)
-
             this.queue[message.id] = null
         })
-
         this.socket.addEventListener("error", (error) => this.emit("error", error))
-
-        this.socket.addEventListener("close", ({code, reason}) =>
+        this.socket.addEventListener("close", ({ code, reason }) =>
         {
             if (this.ready)
                 this.emit("close", code, reason)
-
             this.ready = false
-
             if (code === 1000)
                 return
-
             this.current_reconnects++
-
             if (this.reconnect && ((this.max_reconnects > this.current_reconnects) ||
-                    this.max_reconnects === 0))
+                this.max_reconnects === 0))
                 setTimeout(() => this._connect(address, options), this.reconnect_interval)
         })
     }
