@@ -27,20 +27,21 @@ export interface IWSRequestParams {
     [x: number]: any;
 }
 
-export default (WebSocket: ICommonWebSocketConstructible) => class Client extends EventEmitter
+export default class CommonClient extends EventEmitter
 {
-    address: string;
-    rpc_id: number;
-    queue: IQueue;
-    options: IWSClientAdditionalOptions & NodeWebSocket.ClientOptions;
-    autoconnect: boolean;
-    ready: boolean;
-    reconnect: boolean;
-    reconnect_interval: number;
-    max_reconnects: number;
-    current_reconnects: number;
-    generate_request_id: (method: string, params: object | Array<any>) => number;
-    socket: ICommonWebSocket;
+    private address: string;
+    private rpc_id: number;
+    private queue: IQueue;
+    private options: IWSClientAdditionalOptions & NodeWebSocket.ClientOptions;
+    private autoconnect: boolean;
+    private ready: boolean;
+    private reconnect: boolean;
+    private reconnect_interval: number;
+    private max_reconnects: number;
+    private current_reconnects: number;
+    private generate_request_id: (method: string, params: object | Array<any>) => number;
+    private socket: ICommonWebSocket;
+    private WebSocketConstructible: ICommonWebSocketConstructible;
 
     /**
      * Instantiate a Client class.
@@ -48,18 +49,23 @@ export default (WebSocket: ICommonWebSocketConstructible) => class Client extend
      * @param {String} address - url to a websocket server
      * @param {Object} options - ws options object with reconnect parameters
      * @param {Function} generate_request_id - custom generation request Id
-     * @return {Client}
+     * @return {CommonClient}
      */
-    constructor(address = "ws://localhost:8080", {
-        autoconnect = true,
-        reconnect = true,
-        reconnect_interval = 1000,
-        max_reconnects = 5
-    } = {},
-    generate_request_id?: (method: string, params: object | Array<any>) => number
+    constructor(
+        WebSocketConstructible: ICommonWebSocketConstructible,
+        address = "ws://localhost:8080",
+        {
+            autoconnect = true,
+            reconnect = true,
+            reconnect_interval = 1000,
+            max_reconnects = 5
+        } = {},
+        generate_request_id?: (method: string, params: object | Array<any>) => number
     )
     {
         super()
+
+        this.WebSocketConstructible = WebSocketConstructible;
 
         this.queue = {}
         this.rpc_id = 0
@@ -272,9 +278,9 @@ export default (WebSocket: ICommonWebSocketConstructible) => class Client extend
      * @param {Object} options - ws options object
      * @return {Undefined}
      */
-    _connect(address: string, options: IWSClientAdditionalOptions & NodeWebSocket.ClientOptions)
+    private _connect(address: string, options: IWSClientAdditionalOptions & NodeWebSocket.ClientOptions)
     {
-        this.socket = new WebSocket(address, options)
+        this.socket = new this.WebSocketConstructible(address, options)
 
         this.socket.addEventListener("open", () =>
         {
