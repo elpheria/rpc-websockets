@@ -2,7 +2,7 @@
  * "Server" wraps the "ws" library providing JSON RPC 2.0 support on top.
  * @module Server
  */
-"use strict";
+"use strict"; // @ts-ignore
 
 var _interopRequireWildcard = require("@babel/runtime/helpers/interopRequireWildcard");
 
@@ -17,7 +17,7 @@ var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 
-var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
+var _defineProperty2 = _interopRequireDefault(require("@babel/runtime/helpers/defineProperty"));
 
 var _toConsumableArray2 = _interopRequireDefault(require("@babel/runtime/helpers/toConsumableArray"));
 
@@ -375,14 +375,10 @@ function (_EventEmitter) {
          * @return {Object}
          */
         connected: function connected() {
-          var clients = {};
           var socket_ids = (0, _toConsumableArray2["default"])(self.namespaces[name].clients.keys());
-
-          for (var i = 0, id; id = socket_ids[i]; ++i) {
-            clients[id] = self.namespaces[name].clients.get(id);
-          }
-
-          return clients;
+          return socket_ids.reduce(function (acc, curr) {
+            return Object.assign(Object.assign({}, acc), (0, _defineProperty2["default"])({}, curr, self.namespaces[name].clients.get(curr)));
+          }, {});
         },
 
         /**
@@ -472,166 +468,156 @@ function (_EventEmitter) {
       var _this5 = this;
 
       var ns = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "/";
-      socket.on("message",
-      /*#__PURE__*/
-      function () {
-        var _ref = (0, _asyncToGenerator2["default"])(
-        /*#__PURE__*/
-        _regenerator["default"].mark(function _callee(data) {
-          var msg_options, responses, _iteratorNormalCompletion3, _didIteratorError3, _iteratorError3, _iterator3, _step3, message, _response, response;
+      socket.on("message", function _callee(data) {
+        var msg_options, parsedData, responses, _iteratorNormalCompletion3, _didIteratorError3, _iteratorError3, _iterator3, _step3, message, _response, response;
 
-          return _regenerator["default"].wrap(function _callee$(_context) {
-            while (1) {
-              switch (_context.prev = _context.next) {
-                case 0:
-                  msg_options = {};
+        return _regenerator["default"].async(function _callee$(_context) {
+          while (1) {
+            switch (_context.prev = _context.next) {
+              case 0:
+                msg_options = {};
 
-                  if (data instanceof ArrayBuffer) {
-                    msg_options.binary = true;
-                    data = Buffer.from(data).toString();
-                  }
+                if (data instanceof ArrayBuffer) {
+                  msg_options.binary = true;
+                  data = Buffer.from(data).toString();
+                }
 
-                  _context.prev = 2;
-                  data = JSON.parse(data);
-                  _context.next = 9;
+                _context.prev = 2;
+                parsedData = JSON.parse(data);
+                _context.next = 9;
+                break;
+
+              case 6:
+                _context.prev = 6;
+                _context.t0 = _context["catch"](2);
+                return _context.abrupt("return", socket.send(JSON.stringify({
+                  jsonrpc: "2.0",
+                  error: utils.createError(-32700, _context.t0.toString()),
+                  id: null
+                }), msg_options));
+
+              case 9:
+                if (!Array.isArray(parsedData)) {
+                  _context.next = 46;
                   break;
+                }
 
-                case 6:
-                  _context.prev = 6;
-                  _context.t0 = _context["catch"](2);
-                  return _context.abrupt("return", socket.send(JSON.stringify({
-                    jsonrpc: "2.0",
-                    error: utils.createError(-32700, _context.t0.toString()),
-                    id: data.id || null
-                  }, msg_options)));
-
-                case 9:
-                  if (!Array.isArray(data)) {
-                    _context.next = 46;
-                    break;
-                  }
-
-                  if (data.length) {
-                    _context.next = 12;
-                    break;
-                  }
-
-                  return _context.abrupt("return", socket.send(JSON.stringify({
-                    jsonrpc: "2.0",
-                    error: utils.createError(-32600, "Invalid array"),
-                    id: null
-                  }, msg_options)));
-
-                case 12:
-                  responses = [];
-                  _iteratorNormalCompletion3 = true;
-                  _didIteratorError3 = false;
-                  _iteratorError3 = undefined;
-                  _context.prev = 16;
-                  _iterator3 = data[Symbol.iterator]();
-
-                case 18:
-                  if (_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done) {
-                    _context.next = 29;
-                    break;
-                  }
-
-                  message = _step3.value;
-                  _context.next = 22;
-                  return _this5._runMethod(message, socket._id, ns);
-
-                case 22:
-                  _response = _context.sent;
-
-                  if (_response) {
-                    _context.next = 25;
-                    break;
-                  }
-
-                  return _context.abrupt("continue", 26);
-
-                case 25:
-                  responses.push(_response);
-
-                case 26:
-                  _iteratorNormalCompletion3 = true;
-                  _context.next = 18;
+                if (parsedData.length) {
+                  _context.next = 12;
                   break;
+                }
 
-                case 29:
-                  _context.next = 35;
+                return _context.abrupt("return", socket.send(JSON.stringify({
+                  jsonrpc: "2.0",
+                  error: utils.createError(-32600, "Invalid array"),
+                  id: null
+                }), msg_options));
+
+              case 12:
+                responses = [];
+                _iteratorNormalCompletion3 = true;
+                _didIteratorError3 = false;
+                _iteratorError3 = undefined;
+                _context.prev = 16;
+                _iterator3 = parsedData[Symbol.iterator]();
+
+              case 18:
+                if (_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done) {
+                  _context.next = 29;
                   break;
+                }
 
-                case 31:
-                  _context.prev = 31;
-                  _context.t1 = _context["catch"](16);
-                  _didIteratorError3 = true;
-                  _iteratorError3 = _context.t1;
+                message = _step3.value;
+                _context.next = 22;
+                return _regenerator["default"].awrap(_this5._runMethod(message, socket._id, ns));
 
-                case 35:
-                  _context.prev = 35;
-                  _context.prev = 36;
+              case 22:
+                _response = _context.sent;
 
-                  if (!_iteratorNormalCompletion3 && _iterator3["return"] != null) {
-                    _iterator3["return"]();
-                  }
+                if (_response) {
+                  _context.next = 25;
+                  break;
+                }
 
-                case 38:
-                  _context.prev = 38;
+                return _context.abrupt("continue", 26);
 
-                  if (!_didIteratorError3) {
-                    _context.next = 41;
-                    break;
-                  }
+              case 25:
+                responses.push(_response);
 
-                  throw _iteratorError3;
+              case 26:
+                _iteratorNormalCompletion3 = true;
+                _context.next = 18;
+                break;
 
-                case 41:
-                  return _context.finish(38);
+              case 29:
+                _context.next = 35;
+                break;
 
-                case 42:
-                  return _context.finish(35);
+              case 31:
+                _context.prev = 31;
+                _context.t1 = _context["catch"](16);
+                _didIteratorError3 = true;
+                _iteratorError3 = _context.t1;
 
-                case 43:
-                  if (responses.length) {
-                    _context.next = 45;
-                    break;
-                  }
+              case 35:
+                _context.prev = 35;
+                _context.prev = 36;
 
-                  return _context.abrupt("return");
+                if (!_iteratorNormalCompletion3 && _iterator3["return"] != null) {
+                  _iterator3["return"]();
+                }
 
-                case 45:
-                  return _context.abrupt("return", socket.send(_circularJson["default"].stringify(responses), msg_options));
+              case 38:
+                _context.prev = 38;
 
-                case 46:
-                  _context.next = 48;
-                  return _this5._runMethod(data, socket._id, ns);
+                if (!_didIteratorError3) {
+                  _context.next = 41;
+                  break;
+                }
 
-                case 48:
-                  response = _context.sent;
+                throw _iteratorError3;
 
-                  if (response) {
-                    _context.next = 51;
-                    break;
-                  }
+              case 41:
+                return _context.finish(38);
 
-                  return _context.abrupt("return");
+              case 42:
+                return _context.finish(35);
 
-                case 51:
-                  return _context.abrupt("return", socket.send(_circularJson["default"].stringify(response), msg_options));
+              case 43:
+                if (responses.length) {
+                  _context.next = 45;
+                  break;
+                }
 
-                case 52:
-                case "end":
-                  return _context.stop();
-              }
+                return _context.abrupt("return");
+
+              case 45:
+                return _context.abrupt("return", socket.send(_circularJson["default"].stringify(responses), msg_options));
+
+              case 46:
+                _context.next = 48;
+                return _regenerator["default"].awrap(_this5._runMethod(parsedData, socket._id, ns));
+
+              case 48:
+                response = _context.sent;
+
+                if (response) {
+                  _context.next = 51;
+                  break;
+                }
+
+                return _context.abrupt("return");
+
+              case 51:
+                return _context.abrupt("return", socket.send(_circularJson["default"].stringify(response), msg_options));
+
+              case 52:
+              case "end":
+                return _context.stop();
             }
-          }, _callee, null, [[2, 6], [16, 31, 35, 43], [36,, 38, 42]]);
-        }));
-
-        return function (_x) {
-          return _ref.apply(this, arguments);
-        };
-      }());
+          }
+        }, null, null, [[2, 6], [16, 31, 35, 43], [36,, 38, 42]]);
+      });
     }
     /**
      * Runs a defined RPC method.
@@ -644,424 +630,414 @@ function (_EventEmitter) {
 
   }, {
     key: "_runMethod",
-    value: function () {
-      var _runMethod2 = (0, _asyncToGenerator2["default"])(
-      /*#__PURE__*/
-      _regenerator["default"].mark(function _callee2(message, socket_id) {
-        var ns,
-            results,
-            event_names,
-            _iteratorNormalCompletion4,
-            _didIteratorError4,
-            _iteratorError4,
-            _iterator4,
-            _step4,
-            name,
-            index,
-            namespace,
-            socket_index,
-            _results,
-            _iteratorNormalCompletion5,
-            _didIteratorError5,
-            _iteratorError5,
-            _iterator5,
-            _step5,
-            _name,
-            _index,
-            response,
-            _args2 = arguments;
+    value: function _runMethod(message, socket_id) {
+      var ns,
+          results,
+          event_names,
+          _iteratorNormalCompletion4,
+          _didIteratorError4,
+          _iteratorError4,
+          _iterator4,
+          _step4,
+          name,
+          index,
+          namespace,
+          socket_index,
+          _results,
+          _iteratorNormalCompletion5,
+          _didIteratorError5,
+          _iteratorError5,
+          _iterator5,
+          _step5,
+          _name,
+          _index,
+          response,
+          _args2 = arguments;
 
-        return _regenerator["default"].wrap(function _callee2$(_context2) {
-          while (1) {
-            switch (_context2.prev = _context2.next) {
-              case 0:
-                ns = _args2.length > 2 && _args2[2] !== undefined ? _args2[2] : "/";
+      return _regenerator["default"].async(function _runMethod$(_context2) {
+        while (1) {
+          switch (_context2.prev = _context2.next) {
+            case 0:
+              ns = _args2.length > 2 && _args2[2] !== undefined ? _args2[2] : "/";
 
-                if (!((0, _typeof2["default"])(message) !== "object")) {
-                  _context2.next = 3;
-                  break;
-                }
-
-                return _context2.abrupt("return", {
-                  jsonrpc: "2.0",
-                  error: utils.createError(-32600),
-                  id: null
-                });
-
-              case 3:
-                if (!(message.jsonrpc !== "2.0")) {
-                  _context2.next = 5;
-                  break;
-                }
-
-                return _context2.abrupt("return", {
-                  jsonrpc: "2.0",
-                  error: utils.createError(-32600, "Invalid JSON RPC version"),
-                  id: message.id || null
-                });
-
-              case 5:
-                if (message.method) {
-                  _context2.next = 7;
-                  break;
-                }
-
-                return _context2.abrupt("return", {
-                  jsonrpc: "2.0",
-                  error: utils.createError(-32602, "Method not specified"),
-                  id: message.id || null
-                });
-
-              case 7:
-                if (!(typeof message.method !== "string")) {
-                  _context2.next = 9;
-                  break;
-                }
-
-                return _context2.abrupt("return", {
-                  jsonrpc: "2.0",
-                  error: utils.createError(-32600, "Invalid method name"),
-                  id: message.id || null
-                });
-
-              case 9:
-                if (!(message.params && typeof message.params === "string")) {
-                  _context2.next = 11;
-                  break;
-                }
-
-                return _context2.abrupt("return", {
-                  jsonrpc: "2.0",
-                  error: utils.createError(-32600),
-                  id: message.id || null
-                });
-
-              case 11:
-                if (!(message.method === "rpc.on")) {
-                  _context2.next = 54;
-                  break;
-                }
-
-                if (message.params) {
-                  _context2.next = 14;
-                  break;
-                }
-
-                return _context2.abrupt("return", {
-                  jsonrpc: "2.0",
-                  error: utils.createError(-32000),
-                  id: message.id || null
-                });
-
-              case 14:
-                results = {};
-                event_names = Object.keys(this.namespaces[ns].events);
-                _iteratorNormalCompletion4 = true;
-                _didIteratorError4 = false;
-                _iteratorError4 = undefined;
-                _context2.prev = 19;
-                _iterator4 = message.params[Symbol.iterator]();
-
-              case 21:
-                if (_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done) {
-                  _context2.next = 37;
-                  break;
-                }
-
-                name = _step4.value;
-                index = event_names.indexOf(name);
-                namespace = this.namespaces[ns];
-
-                if (!(index === -1)) {
-                  _context2.next = 28;
-                  break;
-                }
-
-                results[name] = "provided event invalid";
-                return _context2.abrupt("continue", 34);
-
-              case 28:
-                socket_index = namespace.events[event_names[index]].indexOf(socket_id);
-
-                if (!(socket_index >= 0)) {
-                  _context2.next = 32;
-                  break;
-                }
-
-                results[name] = "socket has already been subscribed to event";
-                return _context2.abrupt("continue", 34);
-
-              case 32:
-                namespace.events[event_names[index]].push(socket_id);
-                results[name] = "ok";
-
-              case 34:
-                _iteratorNormalCompletion4 = true;
-                _context2.next = 21;
+              if (!((0, _typeof2["default"])(message) !== "object")) {
+                _context2.next = 3;
                 break;
+              }
 
-              case 37:
-                _context2.next = 43;
+              return _context2.abrupt("return", {
+                jsonrpc: "2.0",
+                error: utils.createError(-32600),
+                id: null
+              });
+
+            case 3:
+              if (!(message.jsonrpc !== "2.0")) {
+                _context2.next = 5;
                 break;
+              }
 
-              case 39:
-                _context2.prev = 39;
-                _context2.t0 = _context2["catch"](19);
-                _didIteratorError4 = true;
-                _iteratorError4 = _context2.t0;
+              return _context2.abrupt("return", {
+                jsonrpc: "2.0",
+                error: utils.createError(-32600, "Invalid JSON RPC version"),
+                id: message.id || null
+              });
 
-              case 43:
-                _context2.prev = 43;
-                _context2.prev = 44;
-
-                if (!_iteratorNormalCompletion4 && _iterator4["return"] != null) {
-                  _iterator4["return"]();
-                }
-
-              case 46:
-                _context2.prev = 46;
-
-                if (!_didIteratorError4) {
-                  _context2.next = 49;
-                  break;
-                }
-
-                throw _iteratorError4;
-
-              case 49:
-                return _context2.finish(46);
-
-              case 50:
-                return _context2.finish(43);
-
-              case 51:
-                return _context2.abrupt("return", {
-                  jsonrpc: "2.0",
-                  result: results,
-                  id: message.id || null
-                });
-
-              case 54:
-                if (!(message.method === "rpc.off")) {
-                  _context2.next = 94;
-                  break;
-                }
-
-                if (message.params) {
-                  _context2.next = 57;
-                  break;
-                }
-
-                return _context2.abrupt("return", {
-                  jsonrpc: "2.0",
-                  error: utils.createError(-32000),
-                  id: message.id || null
-                });
-
-              case 57:
-                _results = {};
-                _iteratorNormalCompletion5 = true;
-                _didIteratorError5 = false;
-                _iteratorError5 = undefined;
-                _context2.prev = 61;
-                _iterator5 = message.params[Symbol.iterator]();
-
-              case 63:
-                if (_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done) {
-                  _context2.next = 77;
-                  break;
-                }
-
-                _name = _step5.value;
-
-                if (this.namespaces[ns].events[_name]) {
-                  _context2.next = 68;
-                  break;
-                }
-
-                _results[_name] = "provided event invalid";
-                return _context2.abrupt("continue", 74);
-
-              case 68:
-                _index = this.namespaces[ns].events[_name].indexOf(socket_id);
-
-                if (!(_index === -1)) {
-                  _context2.next = 72;
-                  break;
-                }
-
-                _results[_name] = "not subscribed";
-                return _context2.abrupt("continue", 74);
-
-              case 72:
-                this.namespaces[ns].events[_name].splice(_index, 1);
-
-                _results[_name] = "ok";
-
-              case 74:
-                _iteratorNormalCompletion5 = true;
-                _context2.next = 63;
+            case 5:
+              if (message.method) {
+                _context2.next = 7;
                 break;
+              }
 
-              case 77:
-                _context2.next = 83;
+              return _context2.abrupt("return", {
+                jsonrpc: "2.0",
+                error: utils.createError(-32602, "Method not specified"),
+                id: message.id || null
+              });
+
+            case 7:
+              if (!(typeof message.method !== "string")) {
+                _context2.next = 9;
                 break;
+              }
 
-              case 79:
-                _context2.prev = 79;
-                _context2.t1 = _context2["catch"](61);
-                _didIteratorError5 = true;
-                _iteratorError5 = _context2.t1;
+              return _context2.abrupt("return", {
+                jsonrpc: "2.0",
+                error: utils.createError(-32600, "Invalid method name"),
+                id: message.id || null
+              });
 
-              case 83:
-                _context2.prev = 83;
-                _context2.prev = 84;
-
-                if (!_iteratorNormalCompletion5 && _iterator5["return"] != null) {
-                  _iterator5["return"]();
-                }
-
-              case 86:
-                _context2.prev = 86;
-
-                if (!_didIteratorError5) {
-                  _context2.next = 89;
-                  break;
-                }
-
-                throw _iteratorError5;
-
-              case 89:
-                return _context2.finish(86);
-
-              case 90:
-                return _context2.finish(83);
-
-              case 91:
-                return _context2.abrupt("return", {
-                  jsonrpc: "2.0",
-                  result: _results,
-                  id: message.id || null
-                });
-
-              case 94:
-                if (!(message.method === "rpc.login")) {
-                  _context2.next = 97;
-                  break;
-                }
-
-                if (message.params) {
-                  _context2.next = 97;
-                  break;
-                }
-
-                return _context2.abrupt("return", {
-                  jsonrpc: "2.0",
-                  error: utils.createError(-32604),
-                  id: message.id || null
-                });
-
-              case 97:
-                if (this.namespaces[ns].rpc_methods[message.method]) {
-                  _context2.next = 99;
-                  break;
-                }
-
-                return _context2.abrupt("return", {
-                  jsonrpc: "2.0",
-                  error: utils.createError(-32601),
-                  id: message.id || null
-                });
-
-              case 99:
-                response = null; // reject request if method is protected and if client is not authenticated
-
-                if (!(this.namespaces[ns].rpc_methods[message.method]["protected"] === true && this.authenticated === false)) {
-                  _context2.next = 102;
-                  break;
-                }
-
-                return _context2.abrupt("return", {
-                  jsonrpc: "2.0",
-                  error: utils.createError(-32605),
-                  id: message.id || null
-                });
-
-              case 102:
-                _context2.prev = 102;
-                _context2.next = 105;
-                return this.namespaces[ns].rpc_methods[message.method].fn(message.params);
-
-              case 105:
-                response = _context2.sent;
-                _context2.next = 115;
+            case 9:
+              if (!(message.params && typeof message.params === "string")) {
+                _context2.next = 11;
                 break;
+              }
 
-              case 108:
-                _context2.prev = 108;
-                _context2.t2 = _context2["catch"](102);
+              return _context2.abrupt("return", {
+                jsonrpc: "2.0",
+                error: utils.createError(-32600),
+                id: message.id || null
+              });
 
-                if (message.id) {
-                  _context2.next = 112;
-                  break;
-                }
+            case 11:
+              if (!(message.method === "rpc.on")) {
+                _context2.next = 54;
+                break;
+              }
 
-                return _context2.abrupt("return");
+              if (message.params) {
+                _context2.next = 14;
+                break;
+              }
 
-              case 112:
-                if (!(_context2.t2 instanceof Error)) {
-                  _context2.next = 114;
-                  break;
-                }
+              return _context2.abrupt("return", {
+                jsonrpc: "2.0",
+                error: utils.createError(-32000),
+                id: message.id || null
+              });
 
-                return _context2.abrupt("return", {
-                  jsonrpc: "2.0",
-                  error: {
-                    code: -32000,
-                    message: _context2.t2.name,
-                    data: _context2.t2.message
-                  },
-                  id: message.id
-                });
+            case 14:
+              results = {};
+              event_names = Object.keys(this.namespaces[ns].events);
+              _iteratorNormalCompletion4 = true;
+              _didIteratorError4 = false;
+              _iteratorError4 = undefined;
+              _context2.prev = 19;
+              _iterator4 = message.params[Symbol.iterator]();
 
-              case 114:
-                return _context2.abrupt("return", {
-                  jsonrpc: "2.0",
-                  error: _context2.t2,
-                  id: message.id
-                });
+            case 21:
+              if (_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done) {
+                _context2.next = 37;
+                break;
+              }
 
-              case 115:
-                if (message.id) {
-                  _context2.next = 117;
-                  break;
-                }
+              name = _step4.value;
+              index = event_names.indexOf(name);
+              namespace = this.namespaces[ns];
 
-                return _context2.abrupt("return");
+              if (!(index === -1)) {
+                _context2.next = 28;
+                break;
+              }
 
-              case 117:
-                // if login middleware returned true, set connection as authenticated
-                if (message.method === "rpc.login" && response === true) this.authenticated = true;
-                return _context2.abrupt("return", {
-                  jsonrpc: "2.0",
-                  result: response,
-                  id: message.id
-                });
+              results[name] = "provided event invalid";
+              return _context2.abrupt("continue", 34);
 
-              case 119:
-              case "end":
-                return _context2.stop();
-            }
+            case 28:
+              socket_index = namespace.events[event_names[index]].indexOf(socket_id);
+
+              if (!(socket_index >= 0)) {
+                _context2.next = 32;
+                break;
+              }
+
+              results[name] = "socket has already been subscribed to event";
+              return _context2.abrupt("continue", 34);
+
+            case 32:
+              namespace.events[event_names[index]].push(socket_id);
+              results[name] = "ok";
+
+            case 34:
+              _iteratorNormalCompletion4 = true;
+              _context2.next = 21;
+              break;
+
+            case 37:
+              _context2.next = 43;
+              break;
+
+            case 39:
+              _context2.prev = 39;
+              _context2.t0 = _context2["catch"](19);
+              _didIteratorError4 = true;
+              _iteratorError4 = _context2.t0;
+
+            case 43:
+              _context2.prev = 43;
+              _context2.prev = 44;
+
+              if (!_iteratorNormalCompletion4 && _iterator4["return"] != null) {
+                _iterator4["return"]();
+              }
+
+            case 46:
+              _context2.prev = 46;
+
+              if (!_didIteratorError4) {
+                _context2.next = 49;
+                break;
+              }
+
+              throw _iteratorError4;
+
+            case 49:
+              return _context2.finish(46);
+
+            case 50:
+              return _context2.finish(43);
+
+            case 51:
+              return _context2.abrupt("return", {
+                jsonrpc: "2.0",
+                result: results,
+                id: message.id || null
+              });
+
+            case 54:
+              if (!(message.method === "rpc.off")) {
+                _context2.next = 94;
+                break;
+              }
+
+              if (message.params) {
+                _context2.next = 57;
+                break;
+              }
+
+              return _context2.abrupt("return", {
+                jsonrpc: "2.0",
+                error: utils.createError(-32000),
+                id: message.id || null
+              });
+
+            case 57:
+              _results = {};
+              _iteratorNormalCompletion5 = true;
+              _didIteratorError5 = false;
+              _iteratorError5 = undefined;
+              _context2.prev = 61;
+              _iterator5 = message.params[Symbol.iterator]();
+
+            case 63:
+              if (_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done) {
+                _context2.next = 77;
+                break;
+              }
+
+              _name = _step5.value;
+
+              if (this.namespaces[ns].events[_name]) {
+                _context2.next = 68;
+                break;
+              }
+
+              _results[_name] = "provided event invalid";
+              return _context2.abrupt("continue", 74);
+
+            case 68:
+              _index = this.namespaces[ns].events[_name].indexOf(socket_id);
+
+              if (!(_index === -1)) {
+                _context2.next = 72;
+                break;
+              }
+
+              _results[_name] = "not subscribed";
+              return _context2.abrupt("continue", 74);
+
+            case 72:
+              this.namespaces[ns].events[_name].splice(_index, 1);
+
+              _results[_name] = "ok";
+
+            case 74:
+              _iteratorNormalCompletion5 = true;
+              _context2.next = 63;
+              break;
+
+            case 77:
+              _context2.next = 83;
+              break;
+
+            case 79:
+              _context2.prev = 79;
+              _context2.t1 = _context2["catch"](61);
+              _didIteratorError5 = true;
+              _iteratorError5 = _context2.t1;
+
+            case 83:
+              _context2.prev = 83;
+              _context2.prev = 84;
+
+              if (!_iteratorNormalCompletion5 && _iterator5["return"] != null) {
+                _iterator5["return"]();
+              }
+
+            case 86:
+              _context2.prev = 86;
+
+              if (!_didIteratorError5) {
+                _context2.next = 89;
+                break;
+              }
+
+              throw _iteratorError5;
+
+            case 89:
+              return _context2.finish(86);
+
+            case 90:
+              return _context2.finish(83);
+
+            case 91:
+              return _context2.abrupt("return", {
+                jsonrpc: "2.0",
+                result: _results,
+                id: message.id || null
+              });
+
+            case 94:
+              if (!(message.method === "rpc.login")) {
+                _context2.next = 97;
+                break;
+              }
+
+              if (message.params) {
+                _context2.next = 97;
+                break;
+              }
+
+              return _context2.abrupt("return", {
+                jsonrpc: "2.0",
+                error: utils.createError(-32604),
+                id: message.id || null
+              });
+
+            case 97:
+              if (this.namespaces[ns].rpc_methods[message.method]) {
+                _context2.next = 99;
+                break;
+              }
+
+              return _context2.abrupt("return", {
+                jsonrpc: "2.0",
+                error: utils.createError(-32601),
+                id: message.id || null
+              });
+
+            case 99:
+              response = null; // reject request if method is protected and if client is not authenticated
+
+              if (!(this.namespaces[ns].rpc_methods[message.method]["protected"] === true && this.authenticated === false)) {
+                _context2.next = 102;
+                break;
+              }
+
+              return _context2.abrupt("return", {
+                jsonrpc: "2.0",
+                error: utils.createError(-32605),
+                id: message.id || null
+              });
+
+            case 102:
+              _context2.prev = 102;
+              _context2.next = 105;
+              return _regenerator["default"].awrap(this.namespaces[ns].rpc_methods[message.method].fn(message.params));
+
+            case 105:
+              response = _context2.sent;
+              _context2.next = 115;
+              break;
+
+            case 108:
+              _context2.prev = 108;
+              _context2.t2 = _context2["catch"](102);
+
+              if (message.id) {
+                _context2.next = 112;
+                break;
+              }
+
+              return _context2.abrupt("return");
+
+            case 112:
+              if (!(_context2.t2 instanceof Error)) {
+                _context2.next = 114;
+                break;
+              }
+
+              return _context2.abrupt("return", {
+                jsonrpc: "2.0",
+                error: {
+                  code: -32000,
+                  message: _context2.t2.name,
+                  data: _context2.t2.message
+                },
+                id: message.id
+              });
+
+            case 114:
+              return _context2.abrupt("return", {
+                jsonrpc: "2.0",
+                error: _context2.t2,
+                id: message.id
+              });
+
+            case 115:
+              if (message.id) {
+                _context2.next = 117;
+                break;
+              }
+
+              return _context2.abrupt("return");
+
+            case 117:
+              // if login middleware returned true, set connection as authenticated
+              if (message.method === "rpc.login" && response === true) this.authenticated = true;
+              return _context2.abrupt("return", {
+                jsonrpc: "2.0",
+                result: response,
+                id: message.id
+              });
+
+            case 119:
+            case "end":
+              return _context2.stop();
           }
-        }, _callee2, this, [[19, 39, 43, 51], [44,, 46, 50], [61, 79, 83, 91], [84,, 86, 90], [102, 108]]);
-      }));
-
-      function _runMethod(_x2, _x3) {
-        return _runMethod2.apply(this, arguments);
-      }
-
-      return _runMethod;
-    }()
+        }
+      }, null, this, [[19, 39, 43, 51], [44,, 46, 50], [61, 79, 83, 91], [84,, 86, 90], [102, 108]]);
+    }
     /**
      * Generate a new namespace store.
      * Also preregister some special namespace methods.
