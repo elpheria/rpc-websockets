@@ -12,14 +12,15 @@ export default class CommonClient extends EventEmitter {
     /**
      * Instantiate a Client class.
      * @constructor
+     * @param {webSocketFactory} webSocketFactory - factory method for WebSocket
      * @param {String} address - url to a websocket server
      * @param {Object} options - ws options object with reconnect parameters
      * @param {Function} generate_request_id - custom generation request Id
      * @return {CommonClient}
      */
-    constructor(WebSocketFactory, address = "ws://localhost:8080", { autoconnect = true, reconnect = true, reconnect_interval = 1000, max_reconnects = 5 } = {}, generate_request_id) {
+    constructor(webSocketFactory, address = "ws://localhost:8080", { autoconnect = true, reconnect = true, reconnect_interval = 1000, max_reconnects = 5 } = {}, generate_request_id) {
         super();
-        this.WebSocketFactory = WebSocketFactory;
+        this.webSocketFactory = webSocketFactory;
         this.queue = {};
         this.rpc_id = 0;
         this.address = address;
@@ -186,7 +187,7 @@ export default class CommonClient extends EventEmitter {
      * @return {Undefined}
      */
     _connect(address, options) {
-        this.socket = this.WebSocketFactory(address, options);
+        this.socket = this.webSocketFactory(address, options);
         this.socket.addEventListener("open", () => {
             this.ready = true;
             this.emit("open");

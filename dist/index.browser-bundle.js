@@ -96,12 +96,13 @@ function (_EventEmitter) {
   /**
    * Instantiate a Client class.
    * @constructor
+   * @param {webSocketFactory} webSocketFactory - factory method for WebSocket
    * @param {String} address - url to a websocket server
    * @param {Object} options - ws options object with reconnect parameters
    * @param {Function} generate_request_id - custom generation request Id
    * @return {CommonClient}
    */
-  function CommonClient(WebSocketFactory) {
+  function CommonClient(webSocketFactory) {
     var _this;
 
     var address = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "ws://localhost:8080";
@@ -119,7 +120,7 @@ function (_EventEmitter) {
     var generate_request_id = arguments.length > 3 ? arguments[3] : undefined;
     (0, _classCallCheck2["default"])(this, CommonClient);
     _this = (0, _possibleConstructorReturn2["default"])(this, (0, _getPrototypeOf2["default"])(CommonClient).call(this));
-    _this.WebSocketFactory = WebSocketFactory;
+    _this.webSocketFactory = webSocketFactory;
     _this.queue = {};
     _this.rpc_id = 0;
     _this.address = address;
@@ -405,7 +406,7 @@ function (_EventEmitter) {
     value: function _connect(address, options) {
       var _this4 = this;
 
-      this.socket = this.WebSocketFactory(address, options);
+      this.socket = this.webSocketFactory(address, options);
       this.socket.addEventListener("open", function () {
         _this4.ready = true;
 
@@ -531,7 +532,7 @@ function (_EventEmitter) {
    * Sends data through a websocket connection
    * @method
    * @param {(String|Object)} data - data to be sent via websocket
-   * @param {Object} options - ws options
+   * @param {Object} optionsOrCallback - ws options
    * @param {Function} callback - a callback called once the data is sent
    * @return {Undefined}
    */
@@ -571,6 +572,14 @@ function (_EventEmitter) {
   }]);
   return WebSocketBrowserImpl;
 }(_eventemitter["default"]);
+/**
+ * factory method for common WebSocket instance
+ * @method
+ * @param {String} address - url to a websocket server
+ * @param {(Object)} options - websocket options
+ * @return {Undefined}
+ */
+
 
 function _default(address, options) {
   return new WebSocketBrowserImpl(address, options);

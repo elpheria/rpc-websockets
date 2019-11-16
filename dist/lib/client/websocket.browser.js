@@ -64,7 +64,7 @@ function (_EventEmitter) {
    * Sends data through a websocket connection
    * @method
    * @param {(String|Object)} data - data to be sent via websocket
-   * @param {Object} options - ws options
+   * @param {Object} optionsOrCallback - ws options
    * @param {Function} callback - a callback called once the data is sent
    * @return {Undefined}
    */
@@ -104,6 +104,14 @@ function (_EventEmitter) {
   }]);
   return WebSocketBrowserImpl;
 }(_eventemitter["default"]);
+/**
+ * factory method for common WebSocket instance
+ * @method
+ * @param {String} address - url to a websocket server
+ * @param {(Object)} options - websocket options
+ * @return {Undefined}
+ */
+
 
 function _default(address, options) {
   return new WebSocketBrowserImpl(address, options);

@@ -29,16 +29,17 @@ export default class CommonClient extends EventEmitter {
     private current_reconnects;
     private generate_request_id;
     private socket;
-    private WebSocketFactory;
+    private webSocketFactory;
     /**
      * Instantiate a Client class.
      * @constructor
+     * @param {webSocketFactory} webSocketFactory - factory method for WebSocket
      * @param {String} address - url to a websocket server
      * @param {Object} options - ws options object with reconnect parameters
      * @param {Function} generate_request_id - custom generation request Id
      * @return {CommonClient}
      */
-    constructor(WebSocketFactory: ICommonWebSocketFactory, address?: string, { autoconnect, reconnect, reconnect_interval, max_reconnects }?: {
+    constructor(webSocketFactory: ICommonWebSocketFactory, address?: string, { autoconnect, reconnect, reconnect_interval, max_reconnects }?: {
         autoconnect?: boolean;
         reconnect?: boolean;
         reconnect_interval?: number;

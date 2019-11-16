@@ -41,18 +41,19 @@ export default class CommonClient extends EventEmitter
     private current_reconnects: number;
     private generate_request_id: (method: string, params: object | Array<any>) => number;
     private socket: ICommonWebSocket;
-    private WebSocketFactory: ICommonWebSocketFactory;
+    private webSocketFactory: ICommonWebSocketFactory;
 
     /**
      * Instantiate a Client class.
      * @constructor
+     * @param {webSocketFactory} webSocketFactory - factory method for WebSocket
      * @param {String} address - url to a websocket server
      * @param {Object} options - ws options object with reconnect parameters
      * @param {Function} generate_request_id - custom generation request Id
      * @return {CommonClient}
      */
     constructor(
-        WebSocketFactory: ICommonWebSocketFactory,
+        webSocketFactory: ICommonWebSocketFactory,
         address = "ws://localhost:8080",
         {
             autoconnect = true,
@@ -65,7 +66,7 @@ export default class CommonClient extends EventEmitter
     {
         super()
 
-        this.WebSocketFactory = WebSocketFactory;
+        this.webSocketFactory = webSocketFactory;
 
         this.queue = {}
         this.rpc_id = 0
@@ -280,7 +281,7 @@ export default class CommonClient extends EventEmitter
      */
     private _connect(address: string, options: IWSClientAdditionalOptions & NodeWebSocket.ClientOptions)
     {
-        this.socket = this.WebSocketFactory(address, options);
+        this.socket = this.webSocketFactory(address, options);
 
         this.socket.addEventListener("open", () =>
         {

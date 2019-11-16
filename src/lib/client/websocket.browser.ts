@@ -37,7 +37,7 @@ class WebSocketBrowserImpl extends EventEmitter
      * Sends data through a websocket connection
      * @method
      * @param {(String|Object)} data - data to be sent via websocket
-     * @param {Object} options - ws options
+     * @param {Object} optionsOrCallback - ws options
      * @param {Function} callback - a callback called once the data is sent
      * @return {Undefined}
      */
@@ -75,6 +75,13 @@ class WebSocketBrowserImpl extends EventEmitter
     }
 }
 
+/**
+ * factory method for common WebSocket instance
+ * @method
+ * @param {String} address - url to a websocket server
+ * @param {(Object)} options - websocket options
+ * @return {Undefined}
+ */
 export default function(address: string, options: IWSClientAdditionalOptions) {
     return new WebSocketBrowserImpl(address, options);
 }
