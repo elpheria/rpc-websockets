@@ -10,6 +10,7 @@ const errors = new Map([
     [-32605, "Method forbidden"],
     [-32700, "Parse error"]
 ])
+
 /**
  * Creates a JSON-RPC 2.0-compliant error.
  * @param {Number} code - error code
@@ -22,8 +23,11 @@ function createError(code, details)
         code: code,
         message: errors.get(code) || "Internal Server Error"
     }
+
     if (details)
         error["data"] = details
+
     return error
 }
+
 export { createError }

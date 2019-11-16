@@ -10,6 +10,7 @@
 import assertArgs from "assert-args"
 import EventEmitter from "eventemitter3"
 import CircularJSON from "circular-json"
+
 export default class CommonClient extends EventEmitter
 {
     /**
@@ -34,9 +35,11 @@ export default class CommonClient extends EventEmitter
     )
     {
         super()
+
         this.webSocketFactory = webSocketFactory
         this.queue = {}
         this.rpc_id = 0
+
         this.address = address
         this.options = arguments[1]
         this.autoconnect = autoconnect
@@ -46,9 +49,11 @@ export default class CommonClient extends EventEmitter
         this.max_reconnects = max_reconnects
         this.current_reconnects = 0
         this.generate_request_id = generate_request_id || (() => ++this.rpc_id)
+
         if (this.autoconnect)
             this._connect(this.address, this.options)
     }
+
     /**
      * Connects to a defined server if not connected already.
      * @method
@@ -58,8 +63,10 @@ export default class CommonClient extends EventEmitter
     {
         if (this.socket)
             return
+
         this._connect(this.address, this.options)
     }
+
     /**
      * Calls a registered RPC method on server.
      * @method
@@ -77,27 +84,34 @@ export default class CommonClient extends EventEmitter
             "[timeout]": "number",
             "[ws_opts]": "object"
         })
+
         if (!ws_opts && "object" === typeof timeout)
         {
             ws_opts = timeout
             timeout = null
         }
+
         return new Promise((resolve, reject) =>
         {
             if (!this.ready)
                 return reject(new Error("socket not ready"))
+
             const rpc_id = this.generate_request_id(method, params)
+
             const message = {
                 jsonrpc: "2.0",
                 method: method,
                 params: params || null,
                 id: rpc_id
             }
+
             this.socket.send(JSON.stringify(message), ws_opts, (error) =>
             {
                 if (error)
                     return reject(error)
+
                 this.queue[rpc_id] = { promise: [resolve, reject] }
+
                 if (timeout)
                 {
                     this.queue[rpc_id].timeout = setTimeout(() =>
@@ -109,6 +123,7 @@ export default class CommonClient extends EventEmitter
             })
         })
     }
+
     /**
      * Logins with the other side of the connection.
      * @method
@@ -119,6 +134,7 @@ export default class CommonClient extends EventEmitter
     {
         return await this.call("rpc.login", params)
     }
+
     /**
      * Fetches a list of client's methods registered on server.
      * @method
@@ -128,6 +144,7 @@ export default class CommonClient extends EventEmitter
     {
         return await this.call("__listMethods")
     }
+
     /**
      * Sends a JSON-RPC 2.0 notification to server.
      * @method
@@ -141,23 +158,28 @@ export default class CommonClient extends EventEmitter
             "method": "string",
             "[params]": ["object", Array]
         })
+
         return new Promise((resolve, reject) =>
         {
             if (!this.ready)
                 return reject(new Error("socket not ready"))
+
             const message = {
                 jsonrpc: "2.0",
                 method: method,
                 params: params || null
             }
+
             this.socket.send(JSON.stringify(message), (error) =>
             {
                 if (error)
                     return reject(error)
+
                 resolve()
             })
         })
     }
+
     /**
      * Subscribes for a defined event.
      * @method
@@ -168,15 +190,20 @@ export default class CommonClient extends EventEmitter
     async subscribe(event)
     {
         assertArgs(arguments, {
-            event: ["string", Array]
+            event: [ "string", Array ]
         })
+
         if (typeof event === "string")
-            event = [event]
+            event = [ event ]
+
         const result = await this.call("rpc.on", event)
+
         if (typeof event === "string" && result[event] !== "ok")
             throw new Error("Failed subscribing to an event '" + event + "' with: " + result[event])
+
         return result
     }
+
     /**
      * Unsubscribes from a defined event.
      * @method
@@ -187,15 +214,20 @@ export default class CommonClient extends EventEmitter
     async unsubscribe(event)
     {
         assertArgs(arguments, {
-            event: ["string", Array]
+            event: [ "string", Array ]
         })
+
         if (typeof event === "string")
             event = [event]
+
         const result = await this.call("rpc.off", event)
+
         if (typeof event === "string" && result[event] !== "ok")
             throw new Error("Failed unsubscribing from an event with: " + result)
+
         return result
     }
+
     /**
      * Closes a WebSocket connection gracefully.
      * @method
@@ -207,6 +239,7 @@ export default class CommonClient extends EventEmitter
     {
         this.socket.close(code || 1000, data)
     }
+
     /**
      * Connection/Message handler.
      * @method
@@ -218,6 +251,7 @@ export default class CommonClient extends EventEmitter
     _connect(address, options)
     {
         this.socket = this.webSocketFactory(address, options)
+
         this.socket.addEventListener("open", () =>
         {
             this.ready = true
@@ -241,15 +275,19 @@ export default class CommonClient extends EventEmitter
             {
                 if (!Object.keys(message.params).length)
                     return this.emit(message.notification)
+
                 const args = [message.notification]
+
                 if (message.params.constructor === Object)
                     args.push(message.params)
                 else
                     // using for-loop instead of unshift/spread because performance is better
                     for (let i = 0; i < message.params.length; i++)
                         args.push(message.params[i])
+
                 return this.emit.apply(this, args)
             }
+
             if (!this.queue[message.id])
             {
                 // general JSON RPC 2.0 events
@@ -258,23 +296,32 @@ export default class CommonClient extends EventEmitter
                 else
                     return
             }
+
             if (this.queue[message.id].timeout)
                 clearTimeout(this.queue[message.id].timeout)
+
             if (message.error)
                 this.queue[message.id].promise[1](message.error)
             else
                 this.queue[message.id].promise[0](message.result)
+
             this.queue[message.id] = null
         })
+
         this.socket.addEventListener("error", (error) => this.emit("error", error))
+
         this.socket.addEventListener("close", ({ code, reason }) =>
         {
             if (this.ready)
                 this.emit("close", code, reason)
+
             this.ready = false
+
             if (code === 1000)
                 return
+
             this.current_reconnects++
+
             if (this.reconnect && ((this.max_reconnects > this.current_reconnects) ||
                 this.max_reconnects === 0))
                 setTimeout(() => this._connect(address, options), this.reconnect_interval)

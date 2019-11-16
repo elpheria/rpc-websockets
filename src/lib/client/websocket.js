@@ -3,6 +3,7 @@
 "use strict"
 
 import WebSocket from "ws"
+
 /**
  * factory method for common WebSocket instance
  * @method

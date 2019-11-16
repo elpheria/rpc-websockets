@@ -6,6 +6,7 @@
 "use strict"
 
 import EventEmitter from "eventemitter3"
+
 class WebSocketBrowserImpl extends EventEmitter
 {
     /** Instantiate a WebSocket class
@@ -18,7 +19,9 @@ class WebSocketBrowserImpl extends EventEmitter
     constructor(address, options, protocols)
     {
         super()
+
         this.socket = new window.WebSocket(address, protocols)
+
         this.socket.onopen = () => this.emit("open")
         this.socket.onmessage = (event) => this.emit("message", event.data)
         this.socket.onerror = (error) => this.emit("error", error)
@@ -27,6 +30,7 @@ class WebSocketBrowserImpl extends EventEmitter
             this.emit("close", event.code, event.reason)
         }
     }
+
     /**
      * Sends data through a websocket connection
      * @method
@@ -38,6 +42,7 @@ class WebSocketBrowserImpl extends EventEmitter
     send(data, optionsOrCallback, callback)
     {
         const cb = callback || optionsOrCallback
+
         try
         {
             this.socket.send(data)
@@ -60,6 +65,7 @@ class WebSocketBrowserImpl extends EventEmitter
     {
         this.socket.close(code, reason)
     }
+
     addEventListener(type, listener, options)
     {
         this.socket.addEventListener(type, listener, options)

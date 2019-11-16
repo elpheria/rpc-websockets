@@ -2,6 +2,7 @@
 
 import WebSocket from "./lib/client/websocket"
 import CommonClient from "./lib/client"
+
 export class Client extends CommonClient
 {
     constructor(
@@ -24,4 +25,5 @@ export class Client extends CommonClient
             }, generate_request_id)
     }
 }
+
 export { default as Server } from "./lib/server"

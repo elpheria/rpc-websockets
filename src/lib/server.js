@@ -13,7 +13,9 @@ import { Server as WebSocketServer } from "ws"
 import uuid from "uuid"
 import url from "url"
 import CircularJSON from "circular-json"
+
 import * as utils from "./utils"
+
 export default class Server extends EventEmitter
 {
     /**
@@ -25,6 +27,7 @@ export default class Server extends EventEmitter
     constructor(options)
     {
         super()
+
         /**
          * Stores all connected sockets with a universally unique identifier
          * in the appropriate namespace.
@@ -38,36 +41,48 @@ export default class Server extends EventEmitter
          */
         this.namespaces = {}
         this.authenticated = false
+
         this.wss = new WebSocketServer(options)
+
         this.wss.on("listening", () => this.emit("listening"))
+
         this.wss.on("connection", (socket, request) =>
         {
             this.emit("connection", socket, request)
+
             const u = url.parse(request.url, true)
             const ns = u.pathname
+
             if (u.query.socket_id)
                 socket._id = u.query.socket_id
             else
                 socket._id = uuid.v1()
+
             // cleanup after the socket gets disconnected
             socket.on("close", () =>
             {
                 this.namespaces[ns].clients.delete(socket._id)
+
                 for (const event of Object.keys(this.namespaces[ns].events))
                 {
                     const index = this.namespaces[ns].events[event].indexOf(socket._id)
+
                     if (index >= 0)
                         this.namespaces[ns].events[event].splice(index, 1)
                 }
             })
-            if (!this.namespaces[ns])
-                this._generateNamespace(ns)
+
+            if (!this.namespaces[ns]) this._generateNamespace(ns)
+
             // store socket and method
             this.namespaces[ns].clients.set(socket._id, socket)
+
             return this._handleRPC(socket, ns)
         })
+
         this.wss.on("error", (error) => this.emit("error", error))
     }
+
     /**
      * Registers an RPC method.
      * @method
@@ -84,17 +99,20 @@ export default class Server extends EventEmitter
             fn: "function",
             "[ns]": "string"
         })
-        if (!this.namespaces[ns])
-            this._generateNamespace(ns)
+
+        if (!this.namespaces[ns]) this._generateNamespace(ns)
+
         this.namespaces[ns].rpc_methods[name] = {
             fn: fn,
             protected: false
         }
+
         return {
             protected: () => this._makeProtected(name, ns),
             public: () => this._makePublic(name, ns)
         }
     }
+
     /**
      * Sets an auth method.
      * @method
@@ -107,6 +125,7 @@ export default class Server extends EventEmitter
     {
         this.register("rpc.login", fn, ns)
     }
+
     /**
      * Marks an RPC method as protected.
      * @method
@@ -118,6 +137,7 @@ export default class Server extends EventEmitter
     {
         this.namespaces[ns].rpc_methods[name].protected = true
     }
+
     /**
      * Marks an RPC method as public.
      * @method
@@ -129,6 +149,7 @@ export default class Server extends EventEmitter
     {
         this.namespaces[ns].rpc_methods[name].protected = false
     }
+
     /**
      * Removes a namespace and closes all connections
      * @method
@@ -141,16 +162,21 @@ export default class Server extends EventEmitter
         assertArgs(arguments, {
             ns: "string"
         })
+
         var namespace = this.namespaces[ns]
+
         if (namespace)
         {
             delete namespace.rpc_methods
             delete namespace.events
+
             for (const socket of namespace.clients.values())
                 socket.close()
+
             delete this.namespaces[ns]
         }
     }
+
     /**
      * Creates a new event that can be emitted to clients.
      * @method
@@ -165,26 +191,32 @@ export default class Server extends EventEmitter
             "name": "string",
             "[ns]": "string"
         })
-        if (!this.namespaces[ns])
-            this._generateNamespace(ns)
+
+        if (!this.namespaces[ns]) this._generateNamespace(ns)
         else
         {
             const index = this.namespaces[ns].events[name]
+
             if (index !== undefined)
                 throw new Error(`Already registered event ${ns}${name}`)
         }
+
         this.namespaces[ns].events[name] = []
+
         // forward emitted event to subscribers
         this.on(name, (...params) =>
         {
             // flatten an object if no spreading is wanted
             if (params.length === 1 && params[0] instanceof Object)
                 params = params[0]
+
             for (const socket_id of this.namespaces[ns].events[name])
             {
                 const socket = this.namespaces[ns].clients.get(socket_id)
+
                 if (!socket)
                     continue
+
                 socket.send(CircularJSON.stringify({
                     notification: name,
                     params: params || null
@@ -192,6 +224,7 @@ export default class Server extends EventEmitter
             }
         })
     }
+
     /**
      * Returns a requested namespace object
      * @method
@@ -204,35 +237,45 @@ export default class Server extends EventEmitter
         assertArgs(arguments, {
             "name": "string",
         })
-        if (!this.namespaces[name])
-            this._generateNamespace(name)
+
+        if (!this.namespaces[name]) this._generateNamespace(name)
+
         const self = this
+
         return {
             // self.register convenience method
             register(fn_name, fn)
             {
                 if (arguments.length !== 2)
                     throw new Error("must provide exactly two arguments")
+
                 if (typeof fn_name !== "string")
                     throw new Error("name must be a string")
+
                 if (typeof fn !== "function")
                     throw new Error("handler must be a function")
+
                 return self.register(fn_name, fn, name)
             },
+
             // self.event convenience method
             event(ev_name)
             {
                 if (arguments.length !== 1)
                     throw new Error("must provide exactly one argument")
+
                 if (typeof ev_name !== "string")
                     throw new Error("name must be a string")
+
                 self.event(ev_name, name)
             },
+
             // self.eventList convenience method
             get eventList()
             {
                 return Object.keys(self.namespaces[name].events)
             },
+
             /**
              * Emits a specified event to this namespace.
              * @inner
@@ -243,7 +286,8 @@ export default class Server extends EventEmitter
              */
             emit(event, params)
             {
-                const socket_ids = [...self.namespaces[name].clients.keys()]
+                const socket_ids = [ ...self.namespaces[name].clients.keys() ]
+
                 for (var i = 0, id; id = socket_ids[i]; ++i)
                 {
                     self.namespaces[name].clients.get(id).send(CircularJSON.stringify({
@@ -252,6 +296,7 @@ export default class Server extends EventEmitter
                     }))
                 }
             },
+
             /**
              * Returns a name of this namespace.
              * @inner
@@ -263,6 +308,7 @@ export default class Server extends EventEmitter
             {
                 return name
             },
+
             /**
              * Returns a hash of websocket objects connected to this namespace.
              * @inner
@@ -274,6 +320,7 @@ export default class Server extends EventEmitter
                 const socket_ids = [...self.namespaces[name].clients.keys()]
                 return socket_ids.reduce((acc, curr) => (Object.assign(Object.assign({}, acc), { [curr]: self.namespaces[name].clients.get(curr) })), {})
             },
+
             /**
              * Returns a list of client unique identifiers connected to this namespace.
              * @inner
@@ -286,6 +333,7 @@ export default class Server extends EventEmitter
             }
         }
     }
+
     /**
      * Lists all created events in a given namespace. Defaults to "/".
      * @method
@@ -298,10 +346,12 @@ export default class Server extends EventEmitter
         assertArgs(arguments, {
             "[ns]": "string",
         })
-        if (!this.namespaces[ns])
-            return []
+
+        if (!this.namespaces[ns]) return []
+
         return Object.keys(this.namespaces[ns].events)
     }
+
     /**
      * Creates a JSON-RPC 2.0 compliant error
      * @method
@@ -317,12 +367,14 @@ export default class Server extends EventEmitter
             "message": "string",
             "[data]": ["string", "object"]
         })
+
         return {
             code: code,
             message: message,
             data: data || null
         }
     }
+
     /**
      * Closes the server and terminates all clients.
      * @method
@@ -343,6 +395,7 @@ export default class Server extends EventEmitter
             }
         })
     }
+
     /**
      * Handles all WebSocket JSON RPC 2.0 requests.
      * @private
@@ -352,19 +405,21 @@ export default class Server extends EventEmitter
      */
     _handleRPC(socket, ns = "/")
     {
-        socket.on("message", async (data) =>
+        socket.on("message", async(data) =>
         {
             const msg_options = {}
+
             if (data instanceof ArrayBuffer)
             {
                 msg_options.binary = true
+
                 data = Buffer.from(data).toString()
             }
+
             let parsedData
-            try
-            {
-                parsedData = JSON.parse(data)
-            }
+
+            try { parsedData = JSON.parse(data) }
+
             catch (error)
             {
                 return socket.send(JSON.stringify({
@@ -373,6 +428,7 @@ export default class Server extends EventEmitter
                     id: null
                 }), msg_options)
             }
+
             if (Array.isArray(parsedData))
             {
                 if (!parsedData.length)
@@ -381,24 +437,34 @@ export default class Server extends EventEmitter
                         error: utils.createError(-32600, "Invalid array"),
                         id: null
                     }), msg_options)
+
                 const responses = []
+
                 for (const message of parsedData)
                 {
                     const response = await this._runMethod(message, socket._id, ns)
+
                     if (!response)
                         continue
+
                     responses.push(response)
                 }
+
                 if (!responses.length)
                     return
+
                 return socket.send(CircularJSON.stringify(responses), msg_options)
             }
+
             const response = await this._runMethod(parsedData, socket._id, ns)
+
             if (!response)
                 return
+
             return socket.send(CircularJSON.stringify(response), msg_options)
         })
     }
+
     /**
      * Runs a defined RPC method.
      * @private
@@ -415,30 +481,35 @@ export default class Server extends EventEmitter
                 error: utils.createError(-32600),
                 id: null
             }
+
         if (message.jsonrpc !== "2.0")
             return {
                 jsonrpc: "2.0",
                 error: utils.createError(-32600, "Invalid JSON RPC version"),
                 id: message.id || null
             }
+
         if (!message.method)
             return {
                 jsonrpc: "2.0",
                 error: utils.createError(-32602, "Method not specified"),
                 id: message.id || null
             }
+
         if (typeof message.method !== "string")
             return {
                 jsonrpc: "2.0",
                 error: utils.createError(-32600, "Invalid method name"),
                 id: message.id || null
             }
+
         if (message.params && typeof message.params === "string")
             return {
                 jsonrpc: "2.0",
                 error: utils.createError(-32600),
                 id: message.id || null
             }
+
         if (message.method === "rpc.on")
         {
             if (!message.params)
@@ -447,17 +518,22 @@ export default class Server extends EventEmitter
                     error: utils.createError(-32000),
                     id: message.id || null
                 }
+
             const results = {}
+
             const event_names = Object.keys(this.namespaces[ns].events)
+
             for (const name of message.params)
             {
                 const index = event_names.indexOf(name)
                 const namespace = this.namespaces[ns]
+
                 if (index === -1)
                 {
                     results[name] = "provided event invalid"
                     continue
                 }
+
                 const socket_index = namespace.events[event_names[index]].indexOf(socket_id)
                 if (socket_index >= 0)
                 {
@@ -465,8 +541,10 @@ export default class Server extends EventEmitter
                     continue
                 }
                 namespace.events[event_names[index]].push(socket_id)
+
                 results[name] = "ok"
             }
+
             return {
                 jsonrpc: "2.0",
                 result: results,
@@ -481,7 +559,9 @@ export default class Server extends EventEmitter
                     error: utils.createError(-32000),
                     id: message.id || null
                 }
+
             const results = {}
+
             for (const name of message.params)
             {
                 if (!this.namespaces[ns].events[name])
@@ -489,15 +569,19 @@ export default class Server extends EventEmitter
                     results[name] = "provided event invalid"
                     continue
                 }
+
                 const index = this.namespaces[ns].events[name].indexOf(socket_id)
+
                 if (index === -1)
                 {
                     results[name] = "not subscribed"
                     continue
                 }
+
                 this.namespaces[ns].events[name].splice(index, 1)
                 results[name] = "ok"
             }
+
             return {
                 jsonrpc: "2.0",
                 result: results,
@@ -513,6 +597,7 @@ export default class Server extends EventEmitter
                     id: message.id || null
                 }
         }
+
         if (!this.namespaces[ns].rpc_methods[message.method])
         {
             return {
@@ -521,7 +606,9 @@ export default class Server extends EventEmitter
                 id: message.id || null
             }
         }
+
         let response = null
+
         // reject request if method is protected and if client is not authenticated
         if (this.namespaces[ns].rpc_methods[message.method].protected === true &&
             this.authenticated === false)
@@ -540,6 +627,7 @@ export default class Server extends EventEmitter
         {
             if (!message.id)
                 return
+
             if (error instanceof Error)
                 return {
                     jsonrpc: "2.0",
@@ -550,24 +638,29 @@ export default class Server extends EventEmitter
                     },
                     id: message.id
                 }
+
             return {
                 jsonrpc: "2.0",
                 error: error,
                 id: message.id
             }
         }
+
         // client sent a notification, so we won't need a reply
         if (!message.id)
             return
+
         // if login middleware returned true, set connection as authenticated
         if (message.method === "rpc.login" && response === true)
             this.authenticated = true
+
         return {
             jsonrpc: "2.0",
             result: response,
             id: message.id
         }
     }
+
     /**
      * Generate a new namespace store.
      * Also preregister some special namespace methods.

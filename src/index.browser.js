@@ -2,6 +2,7 @@
 
 import WebSocketBrowserImpl from "./lib/client/websocket.browser"
 import CommonClient from "./lib/client"
+
 export class Client extends CommonClient
 {
     constructor(
