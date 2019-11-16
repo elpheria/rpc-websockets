@@ -3,8 +3,8 @@
  * @module Client
  */
 import EventEmitter from "eventemitter3";
-import { BrowserWebSocketType, NodeWebSocketType } from "./client.types";
-export default class WebSocketBrowserImpl extends EventEmitter {
+import { BrowserWebSocketType, NodeWebSocketType, IWSClientAdditionalOptions } from "./client.types";
+declare class WebSocketBrowserImpl extends EventEmitter {
     socket: BrowserWebSocketType;
     /** Instantiate a WebSocket class
      * @constructor
@@ -34,3 +34,5 @@ export default class WebSocketBrowserImpl extends EventEmitter {
     close(code?: number, reason?: string): void;
     addEventListener<K extends keyof WebSocketEventMap>(type: K, listener: (ev: WebSocketEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
 }
+export default function (address: string, options: IWSClientAdditionalOptions): WebSocketBrowserImpl;
+export {};

@@ -4,7 +4,7 @@
 
 import WebSocket from "ws"
 /**
- * Sends data through a websocket connection
+ * factory method for common WebSocket instance
  * @method
  * @param {String} address - url to a websocket server
  * @param {(Object)} options - websocket options

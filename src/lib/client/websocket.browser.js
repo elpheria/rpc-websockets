@@ -6,7 +6,7 @@
 "use strict"
 
 import EventEmitter from "eventemitter3"
-export default class WebSocketBrowserImpl extends EventEmitter
+class WebSocketBrowserImpl extends EventEmitter
 {
     /** Instantiate a WebSocket class
      * @constructor
@@ -64,4 +64,16 @@ export default class WebSocketBrowserImpl extends EventEmitter
     {
         this.socket.addEventListener(type, listener, options)
     }
+}
+
+/**
+ * factory method for common WebSocket instance
+ * @method
+ * @param {String} address - url to a websocket server
+ * @param {(Object)} options - websocket options
+ * @return {Undefined}
+ */
+export default function (address, options)
+{
+    return new WebSocketBrowserImpl(address, options)
 }

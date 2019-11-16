@@ -8,8 +8,8 @@ export interface IWSClientAdditionalOptions {
     reconnect_interval?: number;
     max_reconnects?: number;
 }
-export interface ICommonWebSocketConstructible {
-    new (address: string, options: IWSClientAdditionalOptions): ICommonWebSocket;
+export interface ICommonWebSocketFactory {
+    (address: string, options: IWSClientAdditionalOptions): ICommonWebSocket;
 }
 export interface ICommonWebSocket {
     send: (data: Parameters<BrowserWebSocketType['send']>[0], optionsOrCallback: ((error?: Error) => void) | Parameters<NodeWebSocketType['send']>[1], callback?: (error?: Error) => void) => void;
