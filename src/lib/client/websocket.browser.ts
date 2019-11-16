@@ -5,9 +5,9 @@
 
 "use strict"
 import EventEmitter from "eventemitter3"
-import { BrowserWebSocketType, NodeWebSocketType } from "./client.types"
+import { BrowserWebSocketType, NodeWebSocketType, IWSClientAdditionalOptions } from "./client.types"
 
-export default class WebSocketBrowserImpl extends EventEmitter
+class WebSocketBrowserImpl extends EventEmitter
 {
     socket: BrowserWebSocketType
 
@@ -73,4 +73,8 @@ export default class WebSocketBrowserImpl extends EventEmitter
     addEventListener<K extends keyof WebSocketEventMap>(type: K, listener: (ev: WebSocketEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void {
         this.socket.addEventListener(type, listener, options);
     }
+}
+
+export default function(address: string, options: IWSClientAdditionalOptions) {
+    return new WebSocketBrowserImpl(address, options);
 }

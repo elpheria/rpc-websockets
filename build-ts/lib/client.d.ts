@@ -4,7 +4,7 @@
  * @module Client
  */
 import EventEmitter from "eventemitter3";
-import { NodeWebSocketType, ICommonWebSocketConstructible } from "./client/client.types";
+import { NodeWebSocketType, ICommonWebSocketFactory } from "./client/client.types";
 interface IQueueElement {
     promise: [Parameters<ConstructorParameters<typeof Promise>[0]>[0], Parameters<ConstructorParameters<typeof Promise>[0]>[1]];
     timeout?: ReturnType<typeof setTimeout>;
@@ -29,7 +29,7 @@ export default class CommonClient extends EventEmitter {
     private current_reconnects;
     private generate_request_id;
     private socket;
-    private WebSocketConstructible;
+    private WebSocketFactory;
     /**
      * Instantiate a Client class.
      * @constructor
@@ -38,7 +38,7 @@ export default class CommonClient extends EventEmitter {
      * @param {Function} generate_request_id - custom generation request Id
      * @return {CommonClient}
      */
-    constructor(WebSocketConstructible: ICommonWebSocketConstructible, address?: string, { autoconnect, reconnect, reconnect_interval, max_reconnects }?: {
+    constructor(WebSocketFactory: ICommonWebSocketFactory, address?: string, { autoconnect, reconnect, reconnect_interval, max_reconnects }?: {
         autoconnect?: boolean;
         reconnect?: boolean;
         reconnect_interval?: number;

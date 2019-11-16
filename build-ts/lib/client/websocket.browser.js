@@ -4,7 +4,7 @@
  */
 "use strict";
 import EventEmitter from "eventemitter3";
-export default class WebSocketBrowserImpl extends EventEmitter {
+class WebSocketBrowserImpl extends EventEmitter {
     /** Instantiate a WebSocket class
      * @constructor
      * @param {String} address - url to a websocket server
@@ -54,4 +54,7 @@ export default class WebSocketBrowserImpl extends EventEmitter {
     addEventListener(type, listener, options) {
         this.socket.addEventListener(type, listener, options);
     }
+}
+export default function (address, options) {
+    return new WebSocketBrowserImpl(address, options);
 }

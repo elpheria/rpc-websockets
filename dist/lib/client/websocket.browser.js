@@ -9,7 +9,7 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports["default"] = void 0;
+exports["default"] = _default;
 
 var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime/helpers/classCallCheck"));
 
@@ -105,4 +105,6 @@ function (_EventEmitter) {
   return WebSocketBrowserImpl;
 }(_eventemitter["default"]);
 
-exports["default"] = WebSocketBrowserImpl;
+function _default(address, options) {
+  return new WebSocketBrowserImpl(address, options);
+}

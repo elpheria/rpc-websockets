@@ -101,7 +101,7 @@ function (_EventEmitter) {
    * @param {Function} generate_request_id - custom generation request Id
    * @return {CommonClient}
    */
-  function CommonClient(WebSocketConstructible) {
+  function CommonClient(WebSocketFactory) {
     var _this;
 
     var address = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "ws://localhost:8080";
@@ -119,7 +119,7 @@ function (_EventEmitter) {
     var generate_request_id = arguments.length > 3 ? arguments[3] : undefined;
     (0, _classCallCheck2["default"])(this, CommonClient);
     _this = (0, _possibleConstructorReturn2["default"])(this, (0, _getPrototypeOf2["default"])(CommonClient).call(this));
-    _this.WebSocketConstructible = WebSocketConstructible;
+    _this.WebSocketFactory = WebSocketFactory;
     _this.queue = {};
     _this.rpc_id = 0;
     _this.address = address;
@@ -405,7 +405,7 @@ function (_EventEmitter) {
     value: function _connect(address, options) {
       var _this4 = this;
 
-      this.socket = new this.WebSocketConstructible(address, options);
+      this.socket = this.WebSocketFactory(address, options);
       this.socket.addEventListener("open", function () {
         _this4.ready = true;
 
@@ -476,7 +476,7 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports["default"] = void 0;
+exports["default"] = _default;
 
 var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime/helpers/classCallCheck"));
 
@@ -572,7 +572,9 @@ function (_EventEmitter) {
   return WebSocketBrowserImpl;
 }(_eventemitter["default"]);
 
-exports["default"] = WebSocketBrowserImpl;
+function _default(address, options) {
+  return new WebSocketBrowserImpl(address, options);
+}
 },{"@babel/runtime/helpers/classCallCheck":12,"@babel/runtime/helpers/createClass":13,"@babel/runtime/helpers/getPrototypeOf":14,"@babel/runtime/helpers/inherits":15,"@babel/runtime/helpers/interopRequireDefault":16,"@babel/runtime/helpers/possibleConstructorReturn":17,"eventemitter3":36}],4:[function(require,module,exports){
 /**
  * @module {function} 101/exists

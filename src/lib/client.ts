@@ -11,7 +11,7 @@ import NodeWebSocket from 'ws';
 import assertArgs from "assert-args"
 import EventEmitter from "eventemitter3"
 import CircularJSON from "circular-json"
-import { ICommonWebSocket, IWSClientAdditionalOptions, NodeWebSocketType, ICommonWebSocketConstructible } from "./client/client.types";
+import { ICommonWebSocket, IWSClientAdditionalOptions, NodeWebSocketType, ICommonWebSocketFactory } from "./client/client.types";
 
 interface IQueueElement {
     promise: [Parameters<ConstructorParameters<typeof Promise>[0]>[0], Parameters<ConstructorParameters<typeof Promise>[0]>[1]],
@@ -41,7 +41,7 @@ export default class CommonClient extends EventEmitter
     private current_reconnects: number;
     private generate_request_id: (method: string, params: object | Array<any>) => number;
     private socket: ICommonWebSocket;
-    private WebSocketConstructible: ICommonWebSocketConstructible;
+    private WebSocketFactory: ICommonWebSocketFactory;
 
     /**
      * Instantiate a Client class.
@@ -52,7 +52,7 @@ export default class CommonClient extends EventEmitter
      * @return {CommonClient}
      */
     constructor(
-        WebSocketConstructible: ICommonWebSocketConstructible,
+        WebSocketFactory: ICommonWebSocketFactory,
         address = "ws://localhost:8080",
         {
             autoconnect = true,
@@ -65,7 +65,7 @@ export default class CommonClient extends EventEmitter
     {
         super()
 
-        this.WebSocketConstructible = WebSocketConstructible;
+        this.WebSocketFactory = WebSocketFactory;
 
         this.queue = {}
         this.rpc_id = 0
@@ -280,7 +280,7 @@ export default class CommonClient extends EventEmitter
      */
     private _connect(address: string, options: IWSClientAdditionalOptions & NodeWebSocket.ClientOptions)
     {
-        this.socket = new this.WebSocketConstructible(address, options)
+        this.socket = this.WebSocketFactory(address, options);
 
         this.socket.addEventListener("open", () =>
         {

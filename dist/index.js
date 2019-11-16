@@ -47,8 +47,7 @@ function (_CommonClient) {
 
     var generate_request_id = arguments.length > 2 ? arguments[2] : undefined;
     (0, _classCallCheck2["default"])(this, Client);
-    return (0, _possibleConstructorReturn2["default"])(this, (0, _getPrototypeOf2["default"])(Client).call(this, // @ts-ignore
-    _websocket["default"], address, {
+    return (0, _possibleConstructorReturn2["default"])(this, (0, _getPrototypeOf2["default"])(Client).call(this, _websocket["default"], address, {
       autoconnect: autoconnect,
       reconnect: reconnect,
       reconnect_interval: reconnect_interval,

@@ -11,8 +11,8 @@ export interface IWSClientAdditionalOptions {
     max_reconnects?: number;
 }
 
-export interface ICommonWebSocketConstructible {
-    new(address: string, options: IWSClientAdditionalOptions): ICommonWebSocket;
+export interface ICommonWebSocketFactory {
+    (address: string, options: IWSClientAdditionalOptions): ICommonWebSocket;
 }
 
 export interface ICommonWebSocket {
