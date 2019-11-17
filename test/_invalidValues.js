@@ -3,6 +3,7 @@ const NUMBER = [
     "", "   ", "123", "abs",
     true, false,
     [], ["some"], {}, {prop: "some"},
+    () => {}
 ]
 
 const NUMBER__INTEGER = [
@@ -17,6 +18,7 @@ const STRING = [
     -Infinity, -12, -3.18, 0, 1, 2.14, Infinity,
     true, false,
     [], ["some"], {}, {prop: "some"},
+    () => {}
 ]
 
 const STRING__NON_EMPTY = [
@@ -32,7 +34,8 @@ const STRING__FILLED = [
 const BOOLEAN = [
     -Infinity, -12, -3.18, 0, 1, 2.14, Infinity,
     "", " ", "abc",
-    [], ["some"], {}, {prop: "some"}
+    [], ["some"], {}, {prop: "some"},
+    () => {}
 ]
 
 const FUNCTION = [
@@ -49,6 +52,7 @@ const ALL_INVALID = [
     "", "   ", "123", "abs",
     true, false,
     [], ["some"], {}, {prop: "some"},
+    () => {}
 ]
 
 module.exports = {
