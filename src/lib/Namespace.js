@@ -467,6 +467,8 @@ export default class Namespace extends EventEmitter
      */
     async sendNotification(name, params)
     {
+        assertNotificationName(name)
+
         // Send notification to all connected sockets if namespace is not using
         // "string subscriptions", otherwise send notification only to subscribed sockets:
         const clients = this.options.strict_notifications
@@ -540,7 +542,7 @@ export default class Namespace extends EventEmitter
      */
     onInternalNotification(notification, handler)
     {
-        this._changeSubscriptionStatus("on", false, notification, handler)
+        this._changeSubscriptionStatus("on", true, notification, handler)
     }
 
     /**
@@ -556,7 +558,7 @@ export default class Namespace extends EventEmitter
      */
     onceInternalNotification(notification, handler)
     {
-        this._changeSubscriptionStatus("once", false, notification, handler)
+        this._changeSubscriptionStatus("once", true, notification, handler)
     }
 
     /**
@@ -572,7 +574,7 @@ export default class Namespace extends EventEmitter
      */
     offInternalNotification(notification, handler)
     {
-        this._changeSubscriptionStatus("off", false, notification, handler)
+        this._changeSubscriptionStatus("off", true, notification, handler)
     }
 
     /**
@@ -583,21 +585,32 @@ export default class Namespace extends EventEmitter
      *
      * @returns {void}
      */
-    sendInternalNotification(name, params)
+    async sendInternalNotification(name, params)
     {
+        assertNotificationName(name, true)
+
+        if (!name.startsWith("rpc."))
+        {
+            name = `rpc.${name}`
+        }
+
         // Send notification to all connected sockets if namespace is not using
         // "string subscriptions", otherwise send notification only to subscribed sockets:
         const clients = this.options.strict_notifications
             ? this._notificationToSubscribers.get(name)
             : this.getClients()
 
+        const notificationsSent = []
         if (clients)
         {
             for (const socket of clients)
             {
-                socket.sendNotification(name, params)
+                const sendProcess = socket.sendInternalNotification(name, params)
+                notificationsSent.push(sendProcess)
             }
         }
+
+        return Promise.all(notificationsSent)
     }
 
     /*

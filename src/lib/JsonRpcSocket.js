@@ -468,9 +468,10 @@ export default class JsonRPCSocket extends EventEmitter
      */
     async sendInternalNotification(method, params)
     {
+        const notificationObject = jsonrpc.createInternalNotification(method, params)
         return new Promise((resolve, reject) =>
         {
-            this.send(jsonrpc.createInternalNotification(method, params), (error) =>
+            this.send(notificationObject, (error) =>
             {
                 if (error)
                     reject(error)

@@ -485,6 +485,12 @@ export default class Server extends EventEmitter
      */
     unregisterInternalNotification(names, ns = "/")
     {
+        if (!Array.isArray(names))
+        {
+            names = [names]
+        }
+        names.forEach((name) => assertNotificationName(name, true))
+
         if (this.hasNamespace(ns))
             this.getNamespace(ns).unregisterInternalNotification(names)
     }
@@ -559,10 +565,19 @@ export default class Server extends EventEmitter
      *
      * @returns {void}
      */
-    sendInternalNotification(name, params)
+    async sendInternalNotification(name, params)
     {
+        assertNotificationName(name, true)
+
+        const notificationsSent = []
+
         for (const namespace of this._namespaces.values())
-            namespace.sendInternalNotification(name, params)
+        {
+            const sendProcess = namespace.sendInternalNotification(name, params)
+            notificationsSent.push(sendProcess)
+        }
+
+        return Promise.all(notificationsSent)
     }
 
     /* ----------------------------------------

@@ -657,6 +657,13 @@ var Server = function (_EventEmitter) {
         value: function unregisterInternalNotification(names) {
             var ns = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "/";
 
+            if (!Array.isArray(names)) {
+                names = [names];
+            }
+            names.forEach(function (name) {
+                return (0, _Namespace.assertNotificationName)(name, true);
+            });
+
             if (this.hasNamespace(ns)) this.getNamespace(ns).unregisterInternalNotification(names);
         }
 
@@ -741,32 +748,80 @@ var Server = function (_EventEmitter) {
 
     }, {
         key: "sendInternalNotification",
-        value: function sendInternalNotification(name, params) {
-            var _iteratorNormalCompletion2 = true;
-            var _didIteratorError2 = false;
-            var _iteratorError2 = undefined;
+        value: function () {
+            var _ref4 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee2(name, params) {
+                var notificationsSent, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, namespace, sendProcess;
 
-            try {
-                for (var _iterator2 = (0, _getIterator3.default)(this._namespaces.values()), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-                    var namespace = _step2.value;
+                return _regenerator2.default.wrap(function _callee2$(_context2) {
+                    while (1) {
+                        switch (_context2.prev = _context2.next) {
+                            case 0:
+                                (0, _Namespace.assertNotificationName)(name, true);
 
-                    namespace.sendInternalNotification(name, params);
-                }
-            } catch (err) {
-                _didIteratorError2 = true;
-                _iteratorError2 = err;
-            } finally {
-                try {
-                    if (!_iteratorNormalCompletion2 && _iterator2.return) {
-                        _iterator2.return();
+                                notificationsSent = [];
+                                _iteratorNormalCompletion2 = true;
+                                _didIteratorError2 = false;
+                                _iteratorError2 = undefined;
+                                _context2.prev = 5;
+
+
+                                for (_iterator2 = (0, _getIterator3.default)(this._namespaces.values()); !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+                                    namespace = _step2.value;
+                                    sendProcess = namespace.sendInternalNotification(name, params);
+
+                                    notificationsSent.push(sendProcess);
+                                }
+
+                                _context2.next = 13;
+                                break;
+
+                            case 9:
+                                _context2.prev = 9;
+                                _context2.t0 = _context2["catch"](5);
+                                _didIteratorError2 = true;
+                                _iteratorError2 = _context2.t0;
+
+                            case 13:
+                                _context2.prev = 13;
+                                _context2.prev = 14;
+
+                                if (!_iteratorNormalCompletion2 && _iterator2.return) {
+                                    _iterator2.return();
+                                }
+
+                            case 16:
+                                _context2.prev = 16;
+
+                                if (!_didIteratorError2) {
+                                    _context2.next = 19;
+                                    break;
+                                }
+
+                                throw _iteratorError2;
+
+                            case 19:
+                                return _context2.finish(16);
+
+                            case 20:
+                                return _context2.finish(13);
+
+                            case 21:
+                                return _context2.abrupt("return", _promise2.default.all(notificationsSent));
+
+                            case 22:
+                            case "end":
+                                return _context2.stop();
+                        }
                     }
-                } finally {
-                    if (_didIteratorError2) {
-                        throw _iteratorError2;
-                    }
-                }
+                }, _callee2, this, [[5, 9, 13, 21], [14,, 16, 20]]);
+            }));
+
+            function sendInternalNotification(_x10, _x11) {
+                return _ref4.apply(this, arguments);
             }
-        }
+
+            return sendInternalNotification;
+        }()
 
         /* ----------------------------------------
          | RPC Methods related methods

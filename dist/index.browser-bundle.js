@@ -765,18 +765,20 @@ var JsonRPCSocket = function (_EventEmitter) {
             var _ref10 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee9(method, params) {
                 var _this6 = this;
 
+                var notificationObject;
                 return _regenerator2.default.wrap(function _callee9$(_context9) {
                     while (1) {
                         switch (_context9.prev = _context9.next) {
                             case 0:
+                                notificationObject = _jsonRpcMsg2.default.createInternalNotification(method, params);
                                 return _context9.abrupt("return", new _promise2.default(function (resolve, reject) {
-                                    _this6.send(_jsonRpcMsg2.default.createInternalNotification(method, params), function (error) {
+                                    _this6.send(notificationObject, function (error) {
                                         if (error) reject(error);
                                         resolve();
                                     });
                                 }));
 
-                            case 1:
+                            case 2:
                             case "end":
                                 return _context9.stop();
                         }
@@ -1444,20 +1446,22 @@ var Namespace = function (_EventEmitter) {
                     while (1) {
                         switch (_context2.prev = _context2.next) {
                             case 0:
+                                assertNotificationName(name);
+
                                 // Send notification to all connected sockets if namespace is not using
                                 // "string subscriptions", otherwise send notification only to subscribed sockets:
                                 clients = this.options.strict_notifications ? this._notificationToSubscribers.get(name) : this.getClients();
                                 notificationsSent = [];
 
                                 if (!clients) {
-                                    _context2.next = 22;
+                                    _context2.next = 23;
                                     break;
                                 }
 
                                 _iteratorNormalCompletion3 = true;
                                 _didIteratorError3 = false;
                                 _iteratorError3 = undefined;
-                                _context2.prev = 6;
+                                _context2.prev = 7;
 
                                 for (_iterator3 = (0, _getIterator3.default)(clients); !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
                                     socket = _step3.value;
@@ -1465,48 +1469,48 @@ var Namespace = function (_EventEmitter) {
 
                                     notificationsSent.push(sendProcess);
                                 }
-                                _context2.next = 14;
+                                _context2.next = 15;
                                 break;
 
-                            case 10:
-                                _context2.prev = 10;
-                                _context2.t0 = _context2["catch"](6);
+                            case 11:
+                                _context2.prev = 11;
+                                _context2.t0 = _context2["catch"](7);
                                 _didIteratorError3 = true;
                                 _iteratorError3 = _context2.t0;
 
-                            case 14:
-                                _context2.prev = 14;
+                            case 15:
                                 _context2.prev = 15;
+                                _context2.prev = 16;
 
                                 if (!_iteratorNormalCompletion3 && _iterator3.return) {
                                     _iterator3.return();
                                 }
 
-                            case 17:
-                                _context2.prev = 17;
+                            case 18:
+                                _context2.prev = 18;
 
                                 if (!_didIteratorError3) {
-                                    _context2.next = 20;
+                                    _context2.next = 21;
                                     break;
                                 }
 
                                 throw _iteratorError3;
 
-                            case 20:
-                                return _context2.finish(17);
-
                             case 21:
-                                return _context2.finish(14);
+                                return _context2.finish(18);
 
                             case 22:
-                                return _context2.abrupt("return", _promise2.default.all(notificationsSent));
+                                return _context2.finish(15);
 
                             case 23:
+                                return _context2.abrupt("return", _promise2.default.all(notificationsSent));
+
+                            case 24:
                             case "end":
                                 return _context2.stop();
                         }
                     }
-                }, _callee2, this, [[6, 10, 14, 22], [15,, 17, 21]]);
+                }, _callee2, this, [[7, 11, 15, 23], [16,, 18, 22]]);
             }));
 
             function sendNotification(_x5, _x6) {
@@ -1579,7 +1583,7 @@ var Namespace = function (_EventEmitter) {
     }, {
         key: "onInternalNotification",
         value: function onInternalNotification(notification, handler) {
-            this._changeSubscriptionStatus("on", false, notification, handler);
+            this._changeSubscriptionStatus("on", true, notification, handler);
         }
 
         /**
@@ -1597,7 +1601,7 @@ var Namespace = function (_EventEmitter) {
     }, {
         key: "onceInternalNotification",
         value: function onceInternalNotification(notification, handler) {
-            this._changeSubscriptionStatus("once", false, notification, handler);
+            this._changeSubscriptionStatus("once", true, notification, handler);
         }
 
         /**
@@ -1615,7 +1619,7 @@ var Namespace = function (_EventEmitter) {
     }, {
         key: "offInternalNotification",
         value: function offInternalNotification(notification, handler) {
-            this._changeSubscriptionStatus("off", false, notification, handler);
+            this._changeSubscriptionStatus("off", true, notification, handler);
         }
 
         /**
@@ -1629,38 +1633,91 @@ var Namespace = function (_EventEmitter) {
 
     }, {
         key: "sendInternalNotification",
-        value: function sendInternalNotification(name, params) {
-            // Send notification to all connected sockets if namespace is not using
-            // "string subscriptions", otherwise send notification only to subscribed sockets:
-            var clients = this.options.strict_notifications ? this._notificationToSubscribers.get(name) : this.getClients();
+        value: function () {
+            var _ref5 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee3(name, params) {
+                var clients, notificationsSent, _iteratorNormalCompletion4, _didIteratorError4, _iteratorError4, _iterator4, _step4, socket, sendProcess;
 
-            if (clients) {
-                var _iteratorNormalCompletion4 = true;
-                var _didIteratorError4 = false;
-                var _iteratorError4 = undefined;
+                return _regenerator2.default.wrap(function _callee3$(_context3) {
+                    while (1) {
+                        switch (_context3.prev = _context3.next) {
+                            case 0:
+                                assertNotificationName(name, true);
 
-                try {
-                    for (var _iterator4 = (0, _getIterator3.default)(clients), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-                        var socket = _step4.value;
+                                if (!name.startsWith("rpc.")) {
+                                    name = "rpc." + name;
+                                }
 
-                        socket.sendNotification(name, params);
-                    }
-                } catch (err) {
-                    _didIteratorError4 = true;
-                    _iteratorError4 = err;
-                } finally {
-                    try {
-                        if (!_iteratorNormalCompletion4 && _iterator4.return) {
-                            _iterator4.return();
+                                // Send notification to all connected sockets if namespace is not using
+                                // "string subscriptions", otherwise send notification only to subscribed sockets:
+                                clients = this.options.strict_notifications ? this._notificationToSubscribers.get(name) : this.getClients();
+                                notificationsSent = [];
+
+                                if (!clients) {
+                                    _context3.next = 24;
+                                    break;
+                                }
+
+                                _iteratorNormalCompletion4 = true;
+                                _didIteratorError4 = false;
+                                _iteratorError4 = undefined;
+                                _context3.prev = 8;
+
+                                for (_iterator4 = (0, _getIterator3.default)(clients); !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+                                    socket = _step4.value;
+                                    sendProcess = socket.sendInternalNotification(name, params);
+
+                                    notificationsSent.push(sendProcess);
+                                }
+                                _context3.next = 16;
+                                break;
+
+                            case 12:
+                                _context3.prev = 12;
+                                _context3.t0 = _context3["catch"](8);
+                                _didIteratorError4 = true;
+                                _iteratorError4 = _context3.t0;
+
+                            case 16:
+                                _context3.prev = 16;
+                                _context3.prev = 17;
+
+                                if (!_iteratorNormalCompletion4 && _iterator4.return) {
+                                    _iterator4.return();
+                                }
+
+                            case 19:
+                                _context3.prev = 19;
+
+                                if (!_didIteratorError4) {
+                                    _context3.next = 22;
+                                    break;
+                                }
+
+                                throw _iteratorError4;
+
+                            case 22:
+                                return _context3.finish(19);
+
+                            case 23:
+                                return _context3.finish(16);
+
+                            case 24:
+                                return _context3.abrupt("return", _promise2.default.all(notificationsSent));
+
+                            case 25:
+                            case "end":
+                                return _context3.stop();
                         }
-                    } finally {
-                        if (_didIteratorError4) {
-                            throw _iteratorError4;
-                        }
                     }
-                }
+                }, _callee3, this, [[8, 12, 16, 24], [17,, 19, 23]]);
+            }));
+
+            function sendInternalNotification(_x7, _x8) {
+                return _ref5.apply(this, arguments);
             }
-        }
+
+            return sendInternalNotification;
+        }()
 
         /*
          |------------------------------------------------------------------------------------------
@@ -1692,10 +1749,10 @@ var Namespace = function (_EventEmitter) {
 
             if (!methods || (typeof methods === "undefined" ? "undefined" : (0, _typeof3.default)(methods)) !== "object" || Array.isArray(methods)) throw new Error("Methods list is not a mapping of names to handlers");
 
-            (0, _entries2.default)(methods).forEach(function (_ref5) {
-                var _ref6 = (0, _slicedToArray3.default)(_ref5, 2),
-                    name = _ref6[0],
-                    handler = _ref6[1];
+            (0, _entries2.default)(methods).forEach(function (_ref6) {
+                var _ref7 = (0, _slicedToArray3.default)(_ref6, 2),
+                    name = _ref7[0],
+                    handler = _ref7[1];
 
                 if (!isInternal && name.startsWith("rpc.")) throw new Error("\".rpc\" prefix should be used only for internal methods");
                 if (isInternal && !name.startsWith("rpc.")) name = "rpc." + name;
