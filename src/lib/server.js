@@ -597,7 +597,7 @@ export default class Server extends EventEmitter
      */
     registerMethod(name, fn, ns = "/")
     {
-        this.getOrCreateNamespace(ns).registerMethod(name, fn, ns)
+        this.getOrCreateNamespace(ns).registerMethod(name, fn)
     }
 
     /**
@@ -608,7 +608,7 @@ export default class Server extends EventEmitter
      *
      * @returns {void}
      */
-    unregisterMethod(name, ns)
+    unregisterMethod(name, ns = "/")
     {
         if (this.hasNamespace(ns))
             this.getNamespace(ns).unregisterMethod(name)
@@ -625,7 +625,7 @@ export default class Server extends EventEmitter
      */
     registerInternalMethod(name, fn, ns = "/")
     {
-        this.getOrCreateNamespace(ns).registerInternalMethod(name, fn, ns)
+        this.getOrCreateNamespace(ns).registerInternalMethod(name, fn)
     }
 
     /**
@@ -636,7 +636,7 @@ export default class Server extends EventEmitter
      *
      * @returns {void}
      */
-    unregisterInternalMethod(name, ns)
+    unregisterInternalMethod(name, ns = "/")
     {
         if (this.hasNamespace(ns))
             this.getNamespace(ns).unregisterInternalMethod(name)

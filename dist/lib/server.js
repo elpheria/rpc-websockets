@@ -844,7 +844,7 @@ var Server = function (_EventEmitter) {
         value: function registerMethod(name, fn) {
             var ns = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "/";
 
-            this.getOrCreateNamespace(ns).registerMethod(name, fn, ns);
+            this.getOrCreateNamespace(ns).registerMethod(name, fn);
         }
 
         /**
@@ -858,7 +858,9 @@ var Server = function (_EventEmitter) {
 
     }, {
         key: "unregisterMethod",
-        value: function unregisterMethod(name, ns) {
+        value: function unregisterMethod(name) {
+            var ns = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "/";
+
             if (this.hasNamespace(ns)) this.getNamespace(ns).unregisterMethod(name);
         }
 
@@ -877,7 +879,7 @@ var Server = function (_EventEmitter) {
         value: function registerInternalMethod(name, fn) {
             var ns = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "/";
 
-            this.getOrCreateNamespace(ns).registerInternalMethod(name, fn, ns);
+            this.getOrCreateNamespace(ns).registerInternalMethod(name, fn);
         }
 
         /**
@@ -891,7 +893,9 @@ var Server = function (_EventEmitter) {
 
     }, {
         key: "unregisterInternalMethod",
-        value: function unregisterInternalMethod(name, ns) {
+        value: function unregisterInternalMethod(name) {
+            var ns = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "/";
+
             if (this.hasNamespace(ns)) this.getNamespace(ns).unregisterInternalMethod(name);
         }
 
