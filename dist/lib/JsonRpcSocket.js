@@ -701,18 +701,20 @@ var JsonRPCSocket = function (_EventEmitter) {
             var _ref9 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee8(method, params) {
                 var _this5 = this;
 
+                var notificationObject;
                 return _regenerator2.default.wrap(function _callee8$(_context8) {
                     while (1) {
                         switch (_context8.prev = _context8.next) {
                             case 0:
+                                notificationObject = _jsonRpcMsg2.default.createNotification(method, params);
                                 return _context8.abrupt("return", new _promise2.default(function (resolve, reject) {
-                                    _this5.send(_jsonRpcMsg2.default.createNotification(method, params), function (error) {
+                                    _this5.send(notificationObject, function (error) {
                                         if (error) reject(error);
                                         resolve();
                                     });
                                 }));
 
-                            case 1:
+                            case 2:
                             case "end":
                                 return _context8.stop();
                         }

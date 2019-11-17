@@ -439,10 +439,19 @@ export default class Server extends EventEmitter
      *
      * @returns {void}
      */
-    sendNotification(name, params)
+    async sendNotification(name, params)
     {
+        assertNotificationName(name)
+
+        const notificationsSent = []
+
         for (const namespace of this._namespaces.values())
-            namespace.sendNotification(name, params)
+        {
+            const sendProcess = namespace.sendNotification(name, params)
+            notificationsSent.push(sendProcess)
+        }
+
+        return Promise.all(notificationsSent)
     }
 
     /* ----------------------------------------

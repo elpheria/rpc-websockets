@@ -43,6 +43,14 @@ const FUNCTION = [
     [], ["some"], {}, {prop: "some"}
 ]
 
+const ALL_INVALID = [
+    NaN,
+    -Infinity, -12, -3.18, 0, 1, 2.14, Infinity,
+    "", "   ", "123", "abs",
+    true, false,
+    [], ["some"], {}, {prop: "some"},
+]
+
 module.exports = {
     NUMBER,
     NUMBER__INTEGER,
@@ -51,5 +59,6 @@ module.exports = {
     STRING__NON_EMPTY,
     STRING__FILLED,
     BOOLEAN,
-    FUNCTION
+    FUNCTION,
+    ALL_INVALID
 }

@@ -722,18 +722,20 @@ var JsonRPCSocket = function (_EventEmitter) {
             var _ref9 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee8(method, params) {
                 var _this5 = this;
 
+                var notificationObject;
                 return _regenerator2.default.wrap(function _callee8$(_context8) {
                     while (1) {
                         switch (_context8.prev = _context8.next) {
                             case 0:
+                                notificationObject = _jsonRpcMsg2.default.createNotification(method, params);
                                 return _context8.abrupt("return", new _promise2.default(function (resolve, reject) {
-                                    _this5.send(_jsonRpcMsg2.default.createNotification(method, params), function (error) {
+                                    _this5.send(notificationObject, function (error) {
                                         if (error) reject(error);
                                         resolve();
                                     });
                                 }));
 
-                            case 1:
+                            case 2:
                             case "end":
                                 return _context8.stop();
                         }
@@ -824,6 +826,10 @@ JsonRPCSocket.RPC_ERRORS = RPC_ERRORS;
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
+
+var _promise = require("babel-runtime/core-js/promise");
+
+var _promise2 = _interopRequireDefault(_promise);
 
 var _from = require("babel-runtime/core-js/array/from");
 
@@ -1430,38 +1436,85 @@ var Namespace = function (_EventEmitter) {
 
     }, {
         key: "sendNotification",
-        value: function sendNotification(name, params) {
-            // Send notification to all connected sockets if namespace is not using
-            // "string subscriptions", otherwise send notification only to subscribed sockets:
-            var clients = this.options.strict_notifications ? this._notificationToSubscribers.get(name) : this.getClients();
+        value: function () {
+            var _ref4 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee2(name, params) {
+                var clients, notificationsSent, _iteratorNormalCompletion3, _didIteratorError3, _iteratorError3, _iterator3, _step3, socket, sendProcess;
 
-            if (clients) {
-                var _iteratorNormalCompletion3 = true;
-                var _didIteratorError3 = false;
-                var _iteratorError3 = undefined;
+                return _regenerator2.default.wrap(function _callee2$(_context2) {
+                    while (1) {
+                        switch (_context2.prev = _context2.next) {
+                            case 0:
+                                // Send notification to all connected sockets if namespace is not using
+                                // "string subscriptions", otherwise send notification only to subscribed sockets:
+                                clients = this.options.strict_notifications ? this._notificationToSubscribers.get(name) : this.getClients();
+                                notificationsSent = [];
 
-                try {
-                    for (var _iterator3 = (0, _getIterator3.default)(clients), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-                        var socket = _step3.value;
+                                if (!clients) {
+                                    _context2.next = 22;
+                                    break;
+                                }
 
-                        socket.sendNotification(name, params);
-                    }
-                } catch (err) {
-                    _didIteratorError3 = true;
-                    _iteratorError3 = err;
-                } finally {
-                    try {
-                        if (!_iteratorNormalCompletion3 && _iterator3.return) {
-                            _iterator3.return();
+                                _iteratorNormalCompletion3 = true;
+                                _didIteratorError3 = false;
+                                _iteratorError3 = undefined;
+                                _context2.prev = 6;
+
+                                for (_iterator3 = (0, _getIterator3.default)(clients); !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+                                    socket = _step3.value;
+                                    sendProcess = socket.sendNotification(name, params);
+
+                                    notificationsSent.push(sendProcess);
+                                }
+                                _context2.next = 14;
+                                break;
+
+                            case 10:
+                                _context2.prev = 10;
+                                _context2.t0 = _context2["catch"](6);
+                                _didIteratorError3 = true;
+                                _iteratorError3 = _context2.t0;
+
+                            case 14:
+                                _context2.prev = 14;
+                                _context2.prev = 15;
+
+                                if (!_iteratorNormalCompletion3 && _iterator3.return) {
+                                    _iterator3.return();
+                                }
+
+                            case 17:
+                                _context2.prev = 17;
+
+                                if (!_didIteratorError3) {
+                                    _context2.next = 20;
+                                    break;
+                                }
+
+                                throw _iteratorError3;
+
+                            case 20:
+                                return _context2.finish(17);
+
+                            case 21:
+                                return _context2.finish(14);
+
+                            case 22:
+                                return _context2.abrupt("return", _promise2.default.all(notificationsSent));
+
+                            case 23:
+                            case "end":
+                                return _context2.stop();
                         }
-                    } finally {
-                        if (_didIteratorError3) {
-                            throw _iteratorError3;
-                        }
                     }
-                }
+                }, _callee2, this, [[6, 10, 14, 22], [15,, 17, 21]]);
+            }));
+
+            function sendNotification(_x5, _x6) {
+                return _ref4.apply(this, arguments);
             }
-        }
+
+            return sendNotification;
+        }()
 
         /* ----------------------------------------
          | Internal notifications related methods
@@ -1639,10 +1692,10 @@ var Namespace = function (_EventEmitter) {
 
             if (!methods || (typeof methods === "undefined" ? "undefined" : (0, _typeof3.default)(methods)) !== "object" || Array.isArray(methods)) throw new Error("Methods list is not a mapping of names to handlers");
 
-            (0, _entries2.default)(methods).forEach(function (_ref4) {
-                var _ref5 = (0, _slicedToArray3.default)(_ref4, 2),
-                    name = _ref5[0],
-                    handler = _ref5[1];
+            (0, _entries2.default)(methods).forEach(function (_ref5) {
+                var _ref6 = (0, _slicedToArray3.default)(_ref5, 2),
+                    name = _ref6[0],
+                    handler = _ref6[1];
 
                 if (!isInternal && name.startsWith("rpc.")) throw new Error("\".rpc\" prefix should be used only for internal methods");
                 if (isInternal && !name.startsWith("rpc.")) name = "rpc." + name;
@@ -1880,7 +1933,7 @@ var Namespace = function (_EventEmitter) {
 }(_eventemitter2.default);
 
 exports.default = Namespace;
-},{"./JsonRpcSocket":2,"./helpers":6,"babel-runtime/core-js/array/from":22,"babel-runtime/core-js/get-iterator":23,"babel-runtime/core-js/map":25,"babel-runtime/core-js/object/assign":26,"babel-runtime/core-js/object/entries":29,"babel-runtime/core-js/object/get-prototype-of":30,"babel-runtime/core-js/set":34,"babel-runtime/helpers/asyncToGenerator":37,"babel-runtime/helpers/classCallCheck":38,"babel-runtime/helpers/createClass":39,"babel-runtime/helpers/defineProperty":40,"babel-runtime/helpers/inherits":42,"babel-runtime/helpers/possibleConstructorReturn":43,"babel-runtime/helpers/slicedToArray":44,"babel-runtime/helpers/typeof":45,"babel-runtime/regenerator":46,"eventemitter3":182}],4:[function(require,module,exports){
+},{"./JsonRpcSocket":2,"./helpers":6,"babel-runtime/core-js/array/from":22,"babel-runtime/core-js/get-iterator":23,"babel-runtime/core-js/map":25,"babel-runtime/core-js/object/assign":26,"babel-runtime/core-js/object/entries":29,"babel-runtime/core-js/object/get-prototype-of":30,"babel-runtime/core-js/promise":33,"babel-runtime/core-js/set":34,"babel-runtime/helpers/asyncToGenerator":37,"babel-runtime/helpers/classCallCheck":38,"babel-runtime/helpers/createClass":39,"babel-runtime/helpers/defineProperty":40,"babel-runtime/helpers/inherits":42,"babel-runtime/helpers/possibleConstructorReturn":43,"babel-runtime/helpers/slicedToArray":44,"babel-runtime/helpers/typeof":45,"babel-runtime/regenerator":46,"eventemitter3":182}],4:[function(require,module,exports){
 /**
  * "Client" wraps "ws" or a browser-implemented "WebSocket" library
  * according to the environment providing JSON RPC 2.0 support on top.

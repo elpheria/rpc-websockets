@@ -465,7 +465,7 @@ export default class Namespace extends EventEmitter
      *
      * @returns {void}
      */
-    sendNotification(name, params)
+    async sendNotification(name, params)
     {
         // Send notification to all connected sockets if namespace is not using
         // "string subscriptions", otherwise send notification only to subscribed sockets:
@@ -473,13 +473,17 @@ export default class Namespace extends EventEmitter
             ? this._notificationToSubscribers.get(name)
             : this.getClients()
 
+        const notificationsSent = []
         if (clients)
         {
             for (const socket of clients)
             {
-                socket.sendNotification(name, params)
+                const sendProcess = socket.sendNotification(name, params)
+                notificationsSent.push(sendProcess)
             }
         }
+
+        return Promise.all(notificationsSent)
     }
 
     /* ----------------------------------------

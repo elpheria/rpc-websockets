@@ -9,9 +9,17 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
+var _regenerator = require("babel-runtime/regenerator");
+
+var _regenerator2 = _interopRequireDefault(_regenerator);
+
 var _getIterator2 = require("babel-runtime/core-js/get-iterator");
 
 var _getIterator3 = _interopRequireDefault(_getIterator2);
+
+var _asyncToGenerator2 = require("babel-runtime/helpers/asyncToGenerator");
+
+var _asyncToGenerator3 = _interopRequireDefault(_asyncToGenerator2);
 
 var _slicedToArray2 = require("babel-runtime/helpers/slicedToArray");
 
@@ -535,32 +543,80 @@ var Server = function (_EventEmitter) {
 
     }, {
         key: "sendNotification",
-        value: function sendNotification(name, params) {
-            var _iteratorNormalCompletion = true;
-            var _didIteratorError = false;
-            var _iteratorError = undefined;
+        value: function () {
+            var _ref3 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee(name, params) {
+                var notificationsSent, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, namespace, sendProcess;
 
-            try {
-                for (var _iterator = (0, _getIterator3.default)(this._namespaces.values()), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-                    var namespace = _step.value;
+                return _regenerator2.default.wrap(function _callee$(_context) {
+                    while (1) {
+                        switch (_context.prev = _context.next) {
+                            case 0:
+                                (0, _Namespace.assertNotificationName)(name);
 
-                    namespace.sendNotification(name, params);
-                }
-            } catch (err) {
-                _didIteratorError = true;
-                _iteratorError = err;
-            } finally {
-                try {
-                    if (!_iteratorNormalCompletion && _iterator.return) {
-                        _iterator.return();
+                                notificationsSent = [];
+                                _iteratorNormalCompletion = true;
+                                _didIteratorError = false;
+                                _iteratorError = undefined;
+                                _context.prev = 5;
+
+
+                                for (_iterator = (0, _getIterator3.default)(this._namespaces.values()); !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                                    namespace = _step.value;
+                                    sendProcess = namespace.sendNotification(name, params);
+
+                                    notificationsSent.push(sendProcess);
+                                }
+
+                                _context.next = 13;
+                                break;
+
+                            case 9:
+                                _context.prev = 9;
+                                _context.t0 = _context["catch"](5);
+                                _didIteratorError = true;
+                                _iteratorError = _context.t0;
+
+                            case 13:
+                                _context.prev = 13;
+                                _context.prev = 14;
+
+                                if (!_iteratorNormalCompletion && _iterator.return) {
+                                    _iterator.return();
+                                }
+
+                            case 16:
+                                _context.prev = 16;
+
+                                if (!_didIteratorError) {
+                                    _context.next = 19;
+                                    break;
+                                }
+
+                                throw _iteratorError;
+
+                            case 19:
+                                return _context.finish(16);
+
+                            case 20:
+                                return _context.finish(13);
+
+                            case 21:
+                                return _context.abrupt("return", _promise2.default.all(notificationsSent));
+
+                            case 22:
+                            case "end":
+                                return _context.stop();
+                        }
                     }
-                } finally {
-                    if (_didIteratorError) {
-                        throw _iteratorError;
-                    }
-                }
+                }, _callee, this, [[5, 9, 13, 21], [14,, 16, 20]]);
+            }));
+
+            function sendNotification(_x5, _x6) {
+                return _ref3.apply(this, arguments);
             }
-        }
+
+            return sendNotification;
+        }()
 
         /* ----------------------------------------
          | RPC internal Notifications related methods

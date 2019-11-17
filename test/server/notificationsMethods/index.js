@@ -6,4 +6,5 @@ module.exports = ({runWebSocketServer, connectTo}) =>
     require("./onNotification")({runWebSocketServer, connectTo})
     require("./onceNotification")({runWebSocketServer, connectTo})
     require("./offNotification")({runWebSocketServer, connectTo})
+    require("./sendNotification")({runWebSocketServer, connectTo})
 }
