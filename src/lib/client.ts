@@ -6,30 +6,75 @@
 
 "use strict"
 
+import NodeWebSocket from "ws"
+// @ts-ignore
 import assertArgs from "assert-args"
 import EventEmitter from "eventemitter3"
 import CircularJSON from "circular-json"
+import {
+    ICommonWebSocket,
+    IWSClientAdditionalOptions,
+    NodeWebSocketType,
+    ICommonWebSocketFactory
+} from "./client/client.types"
 
-export default (WebSocket) => class Client extends EventEmitter
+interface IQueueElement {
+    promise: [
+        Parameters<ConstructorParameters<typeof Promise>[0]>[0],
+        Parameters<ConstructorParameters<typeof Promise>[0]>[1]
+    ];
+    timeout?: ReturnType<typeof setTimeout>;
+}
+
+export interface IQueue {
+    [x: number]: IQueueElement;
+}
+
+export interface IWSRequestParams {
+    [x: string]: any;
+    [x: number]: any;
+}
+
+export default class CommonClient extends EventEmitter
 {
+    private address: string;
+    private rpc_id: number;
+    private queue: IQueue;
+    private options: IWSClientAdditionalOptions & NodeWebSocket.ClientOptions;
+    private autoconnect: boolean;
+    private ready: boolean;
+    private reconnect: boolean;
+    private reconnect_interval: number;
+    private max_reconnects: number;
+    private current_reconnects: number;
+    private generate_request_id: (method: string, params: object | Array<any>) => number;
+    private socket: ICommonWebSocket;
+    private webSocketFactory: ICommonWebSocketFactory;
+
     /**
      * Instantiate a Client class.
      * @constructor
+     * @param {webSocketFactory} webSocketFactory - factory method for WebSocket
      * @param {String} address - url to a websocket server
      * @param {Object} options - ws options object with reconnect parameters
      * @param {Function} generate_request_id - custom generation request Id
-     * @return {Client}
+     * @return {CommonClient}
      */
-    constructor(address = "ws://localhost:8080", {
-        autoconnect = true,
-        reconnect = true,
-        reconnect_interval = 1000,
-        max_reconnects = 5
-    } = {},
-    generate_request_id
+    constructor(
+        webSocketFactory: ICommonWebSocketFactory,
+        address = "ws://localhost:8080",
+        {
+            autoconnect = true,
+            reconnect = true,
+            reconnect_interval = 1000,
+            max_reconnects = 5
+        } = {},
+        generate_request_id?: (method: string, params: object | Array<any>) => number
     )
     {
         super()
+
+        this.webSocketFactory = webSocketFactory
 
         this.queue = {}
         this.rpc_id = 0
@@ -70,7 +115,12 @@ export default (WebSocket) => class Client extends EventEmitter
      * @param {Object} ws_opts - options passed to ws
      * @return {Promise}
      */
-    call(method, params, timeout, ws_opts)
+    call(
+        method: string,
+        params?: IWSRequestParams,
+        timeout?: number,
+        ws_opts?: Parameters<NodeWebSocketType["send"]>[1]
+    )
     {
         assertArgs(arguments, {
             "method": "string",
@@ -124,7 +174,7 @@ export default (WebSocket) => class Client extends EventEmitter
      * @param {Object} params - Login credentials object
      * @return {Promise}
      */
-    async login(params)
+    async login(params: IWSRequestParams)
     {
         return await this.call("rpc.login", params)
     }
@@ -146,7 +196,7 @@ export default (WebSocket) => class Client extends EventEmitter
      * @param {Object} params - optional method parameters
      * @return {Promise}
      */
-    notify(method, params)
+    notify(method: string, params: IWSRequestParams)
     {
         assertArgs(arguments, {
             "method": "string",
@@ -181,7 +231,7 @@ export default (WebSocket) => class Client extends EventEmitter
      * @return {Undefined}
      * @throws {Error}
      */
-    async subscribe(event)
+    async subscribe(event: string | Array<string>)
     {
         assertArgs(arguments, {
             event: [ "string", Array ]
@@ -201,11 +251,11 @@ export default (WebSocket) => class Client extends EventEmitter
     /**
      * Unsubscribes from a defined event.
      * @method
-     * @param {String} event - event name
+     * @param {String|Array} event - event name
      * @return {Undefined}
      * @throws {Error}
      */
-    async unsubscribe(event)
+    async unsubscribe(event: string | Array<string>)
     {
         assertArgs(arguments, {
             event: [ "string", Array ]
@@ -229,7 +279,7 @@ export default (WebSocket) => class Client extends EventEmitter
      * @param {String} data - optional data to be sent before closing
      * @return {Undefined}
      */
-    close(code, data)
+    close(code: number, data: string)
     {
         this.socket.close(code || 1000, data)
     }
@@ -242,18 +292,21 @@ export default (WebSocket) => class Client extends EventEmitter
      * @param {Object} options - ws options object
      * @return {Undefined}
      */
-    _connect(address, options)
+    private _connect(
+        address: string,
+        options: IWSClientAdditionalOptions & NodeWebSocket.ClientOptions
+    )
     {
-        this.socket = new WebSocket(address, options)
+        this.socket = this.webSocketFactory(address, options)
 
-        this.socket.on("open", () =>
+        this.socket.addEventListener("open", () =>
         {
             this.ready = true
             this.emit("open")
             this.current_reconnects = 0
         })
 
-        this.socket.on("message", (message) =>
+        this.socket.addEventListener("message", ({data: message}) =>
         {
             if (message instanceof ArrayBuffer)
                 message = Buffer.from(message).toString()
@@ -300,12 +353,12 @@ export default (WebSocket) => class Client extends EventEmitter
             this.queue[message.id] = null
         })
 
-        this.socket.on("error", (error) => this.emit("error", error))
+        this.socket.addEventListener("error", (error) => this.emit("error", error))
 
-        this.socket.on("close", (code, message) =>
+        this.socket.addEventListener("close", ({code, reason}) =>
         {
             if (this.ready)
-                this.emit("close", code, message)
+                this.emit("close", code, reason)
 
             this.ready = false
 

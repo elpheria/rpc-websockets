@@ -5,24 +5,60 @@
 
 "use strict"
 
+// @ts-ignore
 import assertArgs from "assert-args"
 import EventEmitter from "eventemitter3"
-import { Server as WebSocketServer } from "ws"
+import NodeWebSocket, { Server as WebSocketServer } from "ws"
 import uuid from "uuid"
 import url from "url"
 import CircularJSON from "circular-json"
 
 import * as utils from "./utils"
 
+interface INamespaceEvent {
+    [x: string]: Array<string>;
+}
+
+interface IRPCMethodParams {
+    [x: string]: any;
+}
+
+interface IRPCMethod {
+    [x: string]: {
+        fn: (params: IRPCMethodParams) => any;
+        protected: boolean;
+    };
+}
+
+interface INamespace {
+    [x: string]: {
+        rpc_methods: IRPCMethod;
+        clients: Map<string, IWebSocketWithId>;
+        events: INamespaceEvent;
+    };
+}
+
+interface IWebSocketWithId extends NodeWebSocket {
+    _id: string;
+}
+
+interface IRPCResult {
+    [x: string]: string;
+}
+
 export default class Server extends EventEmitter
 {
+    private namespaces: INamespace;
+    private authenticated: boolean;
+    wss: InstanceType<typeof WebSocketServer>;
+
     /**
      * Instantiate a Server class.
      * @constructor
      * @param {Object} options - ws constructor's parameters with rpc
      * @return {Server} - returns a new Server instance
      */
-    constructor(options)
+    constructor(options: NodeWebSocket.ServerOptions)
     {
         super()
 
@@ -44,7 +80,7 @@ export default class Server extends EventEmitter
 
         this.wss.on("listening", () => this.emit("listening"))
 
-        this.wss.on("connection", (socket, request) =>
+        this.wss.on("connection", (socket: IWebSocketWithId, request) =>
         {
             this.emit("connection", socket, request)
 
@@ -52,7 +88,7 @@ export default class Server extends EventEmitter
             const ns = u.pathname
 
             if (u.query.socket_id)
-                socket._id = u.query.socket_id
+                socket._id = u.query.socket_id as string
             else
                 socket._id = uuid.v1()
 
@@ -90,7 +126,7 @@ export default class Server extends EventEmitter
      * @throws {TypeError}
      * @return {Object} - returns the RPCMethod object
      */
-    register(name, fn, ns = "/")
+    register(name: string, fn: (params: IRPCMethodParams) => void, ns = "/")
     {
         assertArgs(arguments, {
             name: "string",
@@ -119,7 +155,7 @@ export default class Server extends EventEmitter
      * @throws {TypeError}
      * @return {Undefined}
      */
-    setAuth(fn, ns = "/")
+    setAuth(fn: (params: IRPCMethodParams) => boolean, ns = "/")
     {
         this.register("rpc.login", fn, ns)
     }
@@ -131,7 +167,7 @@ export default class Server extends EventEmitter
      * @param {String} ns - namespace identifier
      * @return {Undefined}
      */
-    _makeProtected(name, ns = "/")
+    private _makeProtected(name: string, ns = "/")
     {
         this.namespaces[ns].rpc_methods[name].protected = true
     }
@@ -143,7 +179,7 @@ export default class Server extends EventEmitter
      * @param {String} ns - namespace identifier
      * @return {Undefined}
      */
-    _makePublic(name, ns = "/")
+    private _makePublic(name: string, ns = "/")
     {
         this.namespaces[ns].rpc_methods[name].protected = false
     }
@@ -155,13 +191,13 @@ export default class Server extends EventEmitter
      * @throws {TypeError}
      * @return {Undefined}
      */
-    closeNamespace(ns)
+    closeNamespace(ns: string)
     {
         assertArgs(arguments, {
             ns: "string"
         })
 
-        var namespace = this.namespaces[ns]
+        const namespace = this.namespaces[ns]
 
         if (namespace)
         {
@@ -183,7 +219,7 @@ export default class Server extends EventEmitter
      * @throws {TypeError}
      * @return {Undefined}
      */
-    event(name, ns = "/")
+    event(name: string, ns = "/")
     {
         assertArgs(arguments, {
             "name": "string",
@@ -230,7 +266,7 @@ export default class Server extends EventEmitter
      * @throws {TypeError}
      * @return {Object} - namespace object
      */
-    of(name)
+    of(name: string)
     {
         assertArgs(arguments, {
             "name": "string",
@@ -242,7 +278,7 @@ export default class Server extends EventEmitter
 
         return {
             // self.register convenience method
-            register(fn_name, fn)
+            register(fn_name: string, fn: (params: IRPCMethodParams) => void)
             {
                 if (arguments.length !== 2)
                     throw new Error("must provide exactly two arguments")
@@ -257,7 +293,7 @@ export default class Server extends EventEmitter
             },
 
             // self.event convenience method
-            event(ev_name)
+            event(ev_name: string)
             {
                 if (arguments.length !== 1)
                     throw new Error("must provide exactly one argument")
@@ -282,7 +318,7 @@ export default class Server extends EventEmitter
              * @param {Array} params - event parameters
              * @return {Undefined}
              */
-            emit(event, params)
+            emit(event: string, params: Array<string>)
             {
                 const socket_ids = [ ...self.namespaces[name].clients.keys() ]
 
@@ -315,13 +351,12 @@ export default class Server extends EventEmitter
              */
             connected()
             {
-                const clients = {}
                 const socket_ids = [ ...self.namespaces[name].clients.keys() ]
 
-                for (var i = 0, id; id = socket_ids[i]; ++i)
-                    clients[id] = self.namespaces[name].clients.get(id)
-
-                return clients
+                return socket_ids.reduce((acc, curr) => ({
+                    ...acc,
+                    [curr]: self.namespaces[name].clients.get(curr)
+                }), {})
             },
 
             /**
@@ -363,7 +398,7 @@ export default class Server extends EventEmitter
      * @param {String|Object} data - details containing additional information about the error
      * @return {Object}
      */
-    createError(code, message, data)
+    createError(code: number, message: string, data: string | object)
     {
         assertArgs(arguments, {
             "code": "number",
@@ -404,11 +439,11 @@ export default class Server extends EventEmitter
      * @param {String} ns - namespaces identifier
      * @return {Undefined}
      */
-    _handleRPC(socket, ns = "/")
+    private _handleRPC(socket: IWebSocketWithId, ns = "/")
     {
         socket.on("message", async(data) =>
         {
-            const msg_options = {}
+            const msg_options: Parameters<NodeWebSocket["send"]>[1] = {}
 
             if (data instanceof ArrayBuffer)
             {
@@ -417,29 +452,31 @@ export default class Server extends EventEmitter
                 data = Buffer.from(data).toString()
             }
 
-            try { data = JSON.parse(data) }
+            let parsedData: any
+
+            try { parsedData = JSON.parse(data as string) }
 
             catch (error)
             {
                 return socket.send(JSON.stringify({
                     jsonrpc: "2.0",
                     error: utils.createError(-32700, error.toString()),
-                    id: data.id || null
-                }, msg_options))
+                    id: null
+                }), msg_options)
             }
 
-            if (Array.isArray(data))
+            if (Array.isArray(parsedData))
             {
-                if (!data.length)
+                if (!parsedData.length)
                     return socket.send(JSON.stringify({
                         jsonrpc: "2.0",
                         error: utils.createError(-32600, "Invalid array"),
                         id: null
-                    }, msg_options))
+                    }), msg_options)
 
                 const responses = []
 
-                for (const message of data)
+                for (const message of parsedData)
                 {
                     const response = await this._runMethod(message, socket._id, ns)
 
@@ -455,7 +492,7 @@ export default class Server extends EventEmitter
                 return socket.send(CircularJSON.stringify(responses), msg_options)
             }
 
-            const response = await this._runMethod(data, socket._id, ns)
+            const response = await this._runMethod(parsedData, socket._id, ns)
 
             if (!response)
                 return
@@ -472,7 +509,7 @@ export default class Server extends EventEmitter
      * @param {String} ns - namespaces identifier
      * @return {Object|undefined}
      */
-    async _runMethod(message, socket_id, ns = "/")
+    private async _runMethod(message: any, socket_id: string, ns = "/")
     {
         if (typeof message !== "object")
             return {
@@ -518,7 +555,7 @@ export default class Server extends EventEmitter
                     id: message.id || null
                 }
 
-            const results = {}
+            const results: IRPCMethodParams = {}
 
             const event_names = Object.keys(this.namespaces[ns].events)
 
@@ -559,7 +596,7 @@ export default class Server extends EventEmitter
                     id: message.id || null
                 }
 
-            const results = {}
+            const results: IRPCResult = {}
 
             for (const name of message.params)
             {
@@ -666,7 +703,7 @@ export default class Server extends EventEmitter
      * @param {String} name - namespaces identifier
      * @return {undefined}
      */
-    _generateNamespace(name)
+    private _generateNamespace(name: string)
     {
         this.namespaces[name] = {
             rpc_methods: {

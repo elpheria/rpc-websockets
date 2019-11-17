@@ -4,7 +4,7 @@
   "description": "JSON-RPC 2.0 implementation over WebSockets for Node.js",
   "main": "./dist/index.js",
   "scripts": {
-    "build": "mkdir -p ./dist && eslint --fix -c ./.eslintrc './src/**/*.js' './test/**/*.js' && babel ./src -d ./dist && browserify -s RPCWebSocket ./dist/index.browser.js > ./dist/index.browser-bundle.js",
+    "build": "tsc && mkdir -p ./dist && eslint --fix -c ./.eslintrc './src/**/*.ts' && babel ./build-ts -d ./dist --copy-files && browserify -s RPCWebSocket ./dist/index.browser.js > ./dist/index.browser-bundle.js",
     "pretest": "npm run-script build",
     "test": "mocha --exit test/*spec.js",
     "coverage": "istanbul cover _mocha --report lcovonly -- -R spec --exit && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
@@ -28,14 +28,20 @@
     "@babel/core": "^7.4.5",
     "@babel/plugin-transform-runtime": "^7.4.4",
     "@babel/preset-env": "^7.4.5",
+    "@babel/preset-typescript": "^7.7.2",
+    "@typescript-eslint/eslint-plugin": "^2.7.0",
+    "@typescript-eslint/parser": "^2.7.0",
+    "@types/uuid": "^3.4.6",
+    "@types/ws": "^6.0.3",
     "babel-eslint": "^8.2.6",
     "browserify": "^16.2.3",
     "chai": "^4.2.0",
     "coveralls": "^3.0.3",
-    "eslint": "^4.19.1",
+    "eslint": "^6.6.0",
     "istanbul": "^0.4.5",
     "mocha": "^5.2.0",
-    "mocha-lcov-reporter": "^1.3.0"
+    "mocha-lcov-reporter": "^1.3.0",
+    "typescript": "^3.7.2"
   },
   "browser": "./dist/index.browser.js",
   "keywords": [

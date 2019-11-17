@@ -6,17 +6,20 @@
 "use strict"
 
 import EventEmitter from "eventemitter3"
+import { BrowserWebSocketType, NodeWebSocketType, IWSClientAdditionalOptions } from "./client.types"
 
-export default class WebSocket extends EventEmitter
+class WebSocketBrowserImpl extends EventEmitter
 {
+    socket: BrowserWebSocketType
+
     /** Instantiate a WebSocket class
      * @constructor
      * @param {String} address - url to a websocket server
      * @param {(Object)} options - websocket options
      * @param {(String|Array)} protocols - a list of protocols
-     * @return {WebSocket} - returns a WebSocket instance
+     * @return {WebSocketBrowserImpl} - returns a WebSocket instance
      */
-    constructor(address, options, protocols)
+    constructor(address: string, options: {}, protocols?: string | string[])
     {
         super()
 
@@ -35,20 +38,24 @@ export default class WebSocket extends EventEmitter
      * Sends data through a websocket connection
      * @method
      * @param {(String|Object)} data - data to be sent via websocket
-     * @param {Object} options - ws options
+     * @param {Object} optionsOrCallback - ws options
      * @param {Function} callback - a callback called once the data is sent
      * @return {Undefined}
      */
-    send(data, options, callback)
+    send(
+        data: Parameters<BrowserWebSocketType["send"]>[0],
+        optionsOrCallback: (error?: Error) => void | Parameters<NodeWebSocketType["send"]>[1],
+        callback?: () => void
+    )
     {
-        callback = callback || options
+        const cb = callback || optionsOrCallback
 
         try
         {
             this.socket.send(data)
-            callback()
+            cb()
         }
-        catch (error) { callback(error) }
+        catch (error) { cb(error) }
     }
 
     /**
@@ -59,8 +66,29 @@ export default class WebSocket extends EventEmitter
      * @return {Undefined}
      * @throws {Error}
      */
-    close(code, reason)
+    close(code?: number, reason?: string)
     {
         this.socket.close(code, reason)
     }
+
+    addEventListener<K extends keyof WebSocketEventMap>(
+        type: K,
+        listener: (ev: WebSocketEventMap[K]) => any,
+        options?: boolean | AddEventListenerOptions
+    ): void
+    {
+        this.socket.addEventListener(type, listener, options)
+    }
+}
+
+/**
+ * factory method for common WebSocket instance
+ * @method
+ * @param {String} address - url to a websocket server
+ * @param {(Object)} options - websocket options
+ * @return {Undefined}
+ */
+export default function(address: string, options: IWSClientAdditionalOptions)
+{
+    return new WebSocketBrowserImpl(address, options)
 }

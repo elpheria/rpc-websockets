@@ -9,7 +9,7 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports["default"] = void 0;
+exports["default"] = _default;
 
 var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime/helpers/classCallCheck"));
 
@@ -23,23 +23,23 @@ var _inherits2 = _interopRequireDefault(require("@babel/runtime/helpers/inherits
 
 var _eventemitter = _interopRequireDefault(require("eventemitter3"));
 
-var WebSocket =
+var WebSocketBrowserImpl =
 /*#__PURE__*/
 function (_EventEmitter) {
-  (0, _inherits2["default"])(WebSocket, _EventEmitter);
+  (0, _inherits2["default"])(WebSocketBrowserImpl, _EventEmitter);
 
   /** Instantiate a WebSocket class
    * @constructor
    * @param {String} address - url to a websocket server
    * @param {(Object)} options - websocket options
    * @param {(String|Array)} protocols - a list of protocols
-   * @return {WebSocket} - returns a WebSocket instance
+   * @return {WebSocketBrowserImpl} - returns a WebSocket instance
    */
-  function WebSocket(address, options, protocols) {
+  function WebSocketBrowserImpl(address, options, protocols) {
     var _this;
 
-    (0, _classCallCheck2["default"])(this, WebSocket);
-    _this = (0, _possibleConstructorReturn2["default"])(this, (0, _getPrototypeOf2["default"])(WebSocket).call(this));
+    (0, _classCallCheck2["default"])(this, WebSocketBrowserImpl);
+    _this = (0, _possibleConstructorReturn2["default"])(this, (0, _getPrototypeOf2["default"])(WebSocketBrowserImpl).call(this));
     _this.socket = new window.WebSocket(address, protocols);
 
     _this.socket.onopen = function () {
@@ -64,22 +64,22 @@ function (_EventEmitter) {
    * Sends data through a websocket connection
    * @method
    * @param {(String|Object)} data - data to be sent via websocket
-   * @param {Object} options - ws options
+   * @param {Object} optionsOrCallback - ws options
    * @param {Function} callback - a callback called once the data is sent
    * @return {Undefined}
    */
 
 
-  (0, _createClass2["default"])(WebSocket, [{
+  (0, _createClass2["default"])(WebSocketBrowserImpl, [{
     key: "send",
-    value: function send(data, options, callback) {
-      callback = callback || options;
+    value: function send(data, optionsOrCallback, callback) {
+      var cb = callback || optionsOrCallback;
 
       try {
         this.socket.send(data);
-        callback();
+        cb();
       } catch (error) {
-        callback(error);
+        cb(error);
       }
     }
     /**
@@ -96,8 +96,23 @@ function (_EventEmitter) {
     value: function close(code, reason) {
       this.socket.close(code, reason);
     }
+  }, {
+    key: "addEventListener",
+    value: function addEventListener(type, listener, options) {
+      this.socket.addEventListener(type, listener, options);
+    }
   }]);
-  return WebSocket;
+  return WebSocketBrowserImpl;
 }(_eventemitter["default"]);
+/**
+ * factory method for common WebSocket instance
+ * @method
+ * @param {String} address - url to a websocket server
+ * @param {(Object)} options - websocket options
+ * @return {Undefined}
+ */
 
-exports["default"] = WebSocket;
+
+function _default(address, options) {
+  return new WebSocketBrowserImpl(address, options);
+}
