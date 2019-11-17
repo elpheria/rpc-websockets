@@ -6,15 +6,23 @@
 
 "use strict"
 
-import NodeWebSocket from 'ws';
+import NodeWebSocket from "ws"
 // @ts-ignore
 import assertArgs from "assert-args"
 import EventEmitter from "eventemitter3"
 import CircularJSON from "circular-json"
-import { ICommonWebSocket, IWSClientAdditionalOptions, NodeWebSocketType, ICommonWebSocketFactory } from "./client/client.types";
+import {
+    ICommonWebSocket,
+    IWSClientAdditionalOptions,
+    NodeWebSocketType,
+    ICommonWebSocketFactory
+} from "./client/client.types"
 
 interface IQueueElement {
-    promise: [Parameters<ConstructorParameters<typeof Promise>[0]>[0], Parameters<ConstructorParameters<typeof Promise>[0]>[1]],
+    promise: [
+        Parameters<ConstructorParameters<typeof Promise>[0]>[0],
+        Parameters<ConstructorParameters<typeof Promise>[0]>[1]
+    ];
     timeout?: ReturnType<typeof setTimeout>;
 }
 
@@ -66,7 +74,7 @@ export default class CommonClient extends EventEmitter
     {
         super()
 
-        this.webSocketFactory = webSocketFactory;
+        this.webSocketFactory = webSocketFactory
 
         this.queue = {}
         this.rpc_id = 0
@@ -107,7 +115,12 @@ export default class CommonClient extends EventEmitter
      * @param {Object} ws_opts - options passed to ws
      * @return {Promise}
      */
-    call(method: string, params?: IWSRequestParams, timeout?: number, ws_opts?: Parameters<NodeWebSocketType['send']>[1])
+    call(
+        method: string,
+        params?: IWSRequestParams,
+        timeout?: number,
+        ws_opts?: Parameters<NodeWebSocketType["send"]>[1]
+    )
     {
         assertArgs(arguments, {
             "method": "string",
@@ -279,9 +292,12 @@ export default class CommonClient extends EventEmitter
      * @param {Object} options - ws options object
      * @return {Undefined}
      */
-    private _connect(address: string, options: IWSClientAdditionalOptions & NodeWebSocket.ClientOptions)
+    private _connect(
+        address: string,
+        options: IWSClientAdditionalOptions & NodeWebSocket.ClientOptions
+    )
     {
-        this.socket = this.webSocketFactory(address, options);
+        this.socket = this.webSocketFactory(address, options)
 
         this.socket.addEventListener("open", () =>
         {

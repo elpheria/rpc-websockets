@@ -35,7 +35,7 @@ interface INamespace {
         rpc_methods: IRPCMethod;
         clients: Map<string, IWebSocketWithId>;
         events: INamespaceEvent;
-    }
+    };
 }
 
 interface IWebSocketWithId extends NodeWebSocket {
@@ -88,7 +88,7 @@ export default class Server extends EventEmitter
             const ns = u.pathname
 
             if (u.query.socket_id)
-                socket._id = u.query.socket_id as string;
+                socket._id = u.query.socket_id as string
             else
                 socket._id = uuid.v1()
 
@@ -126,7 +126,7 @@ export default class Server extends EventEmitter
      * @throws {TypeError}
      * @return {Object} - returns the RPCMethod object
      */
-    register(name: string, fn: (params: IRPCMethodParams) => void, ns: string = "/")
+    register(name: string, fn: (params: IRPCMethodParams) => void, ns = "/")
     {
         assertArgs(arguments, {
             name: "string",
@@ -155,7 +155,7 @@ export default class Server extends EventEmitter
      * @throws {TypeError}
      * @return {Undefined}
      */
-    setAuth(fn: (params: IRPCMethodParams) => boolean, ns: string = "/")
+    setAuth(fn: (params: IRPCMethodParams) => boolean, ns = "/")
     {
         this.register("rpc.login", fn, ns)
     }
@@ -167,7 +167,7 @@ export default class Server extends EventEmitter
      * @param {String} ns - namespace identifier
      * @return {Undefined}
      */
-    private _makeProtected(name: string, ns: string = "/")
+    private _makeProtected(name: string, ns = "/")
     {
         this.namespaces[ns].rpc_methods[name].protected = true
     }
@@ -179,7 +179,7 @@ export default class Server extends EventEmitter
      * @param {String} ns - namespace identifier
      * @return {Undefined}
      */
-    private _makePublic(name: string, ns: string = "/")
+    private _makePublic(name: string, ns = "/")
     {
         this.namespaces[ns].rpc_methods[name].protected = false
     }
@@ -197,7 +197,7 @@ export default class Server extends EventEmitter
             ns: "string"
         })
 
-        var namespace = this.namespaces[ns]
+        const namespace = this.namespaces[ns]
 
         if (namespace)
         {
@@ -219,7 +219,7 @@ export default class Server extends EventEmitter
      * @throws {TypeError}
      * @return {Undefined}
      */
-    event(name: string, ns: string = "/")
+    event(name: string, ns = "/")
     {
         assertArgs(arguments, {
             "name": "string",
@@ -356,7 +356,7 @@ export default class Server extends EventEmitter
                 return socket_ids.reduce((acc, curr) => ({
                     ...acc,
                     [curr]: self.namespaces[name].clients.get(curr)
-                }), {});
+                }), {})
             },
 
             /**
@@ -379,7 +379,7 @@ export default class Server extends EventEmitter
      * @readonly
      * @return {Array} - returns a list of created events
      */
-    eventList(ns: string = "/")
+    eventList(ns = "/")
     {
         assertArgs(arguments, {
             "[ns]": "string",
@@ -443,7 +443,7 @@ export default class Server extends EventEmitter
     {
         socket.on("message", async(data) =>
         {
-            const msg_options: Parameters<NodeWebSocket['send']>[1] = {}
+            const msg_options: Parameters<NodeWebSocket["send"]>[1] = {}
 
             if (data instanceof ArrayBuffer)
             {
@@ -452,7 +452,7 @@ export default class Server extends EventEmitter
                 data = Buffer.from(data).toString()
             }
 
-            let parsedData: any;
+            let parsedData: any
 
             try { parsedData = JSON.parse(data as string) }
 
@@ -509,7 +509,7 @@ export default class Server extends EventEmitter
      * @param {String} ns - namespaces identifier
      * @return {Object|undefined}
      */
-    private async _runMethod(message: any, socket_id: string, ns: string = "/")
+    private async _runMethod(message: any, socket_id: string, ns = "/")
     {
         if (typeof message !== "object")
             return {

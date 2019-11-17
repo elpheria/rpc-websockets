@@ -22,7 +22,7 @@ declare class WebSocketBrowserImpl extends EventEmitter {
      * @param {Function} callback - a callback called once the data is sent
      * @return {Undefined}
      */
-    send(data: Parameters<BrowserWebSocketType['send']>[0], optionsOrCallback: (error?: Error) => void | Parameters<NodeWebSocketType['send']>[1], callback?: () => void): void;
+    send(data: Parameters<BrowserWebSocketType["send"]>[0], optionsOrCallback: (error?: Error) => void | Parameters<NodeWebSocketType["send"]>[1], callback?: () => void): void;
     /**
      * Closes an underlying socket
      * @method

@@ -4,6 +4,7 @@
  */
 
 "use strict"
+
 import EventEmitter from "eventemitter3"
 import { BrowserWebSocketType, NodeWebSocketType, IWSClientAdditionalOptions } from "./client.types"
 
@@ -42,12 +43,12 @@ class WebSocketBrowserImpl extends EventEmitter
      * @return {Undefined}
      */
     send(
-        data: Parameters<BrowserWebSocketType['send']>[0],
-        optionsOrCallback: (error?: Error) => void | Parameters<NodeWebSocketType['send']>[1],
+        data: Parameters<BrowserWebSocketType["send"]>[0],
+        optionsOrCallback: (error?: Error) => void | Parameters<NodeWebSocketType["send"]>[1],
         callback?: () => void
     )
     {
-        const cb = callback || optionsOrCallback;
+        const cb = callback || optionsOrCallback
 
         try
         {
@@ -70,8 +71,13 @@ class WebSocketBrowserImpl extends EventEmitter
         this.socket.close(code, reason)
     }
 
-    addEventListener<K extends keyof WebSocketEventMap>(type: K, listener: (ev: WebSocketEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void {
-        this.socket.addEventListener(type, listener, options);
+    addEventListener<K extends keyof WebSocketEventMap>(
+        type: K,
+        listener: (ev: WebSocketEventMap[K]) => any,
+        options?: boolean | AddEventListenerOptions
+    ): void
+    {
+        this.socket.addEventListener(type, listener, options)
     }
 }
 
@@ -82,6 +88,7 @@ class WebSocketBrowserImpl extends EventEmitter
  * @param {(Object)} options - websocket options
  * @return {Undefined}
  */
-export default function(address: string, options: IWSClientAdditionalOptions) {
-    return new WebSocketBrowserImpl(address, options);
+export default function(address: string, options: IWSClientAdditionalOptions)
+{
+    return new WebSocketBrowserImpl(address, options)
 }

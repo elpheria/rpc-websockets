@@ -12,6 +12,10 @@ import { IWSClientAdditionalOptions } from "./client.types"
  * @param {(Object)} options - websocket options
  * @return {Undefined}
  */
-export default function(address: string, options: IWSClientAdditionalOptions & WebSocket.ClientOptions) {
-    return new WebSocket(address, options);
+export default function(
+    address: string,
+    options: IWSClientAdditionalOptions & WebSocket.ClientOptions
+)
+{
+    return new WebSocket(address, options)
 }

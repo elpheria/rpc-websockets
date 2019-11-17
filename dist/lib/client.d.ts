@@ -60,7 +60,7 @@ export default class CommonClient extends EventEmitter {
      * @param {Object} ws_opts - options passed to ws
      * @return {Promise}
      */
-    call(method: string, params?: IWSRequestParams, timeout?: number, ws_opts?: Parameters<NodeWebSocketType['send']>[1]): Promise<unknown>;
+    call(method: string, params?: IWSRequestParams, timeout?: number, ws_opts?: Parameters<NodeWebSocketType["send"]>[1]): Promise<unknown>;
     /**
      * Logins with the other side of the connection.
      * @method

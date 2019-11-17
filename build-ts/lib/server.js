@@ -128,7 +128,7 @@ export default class Server extends EventEmitter {
         assertArgs(arguments, {
             ns: "string"
         });
-        var namespace = this.namespaces[ns];
+        const namespace = this.namespaces[ns];
         if (namespace) {
             delete namespace.rpc_methods;
             delete namespace.events;

@@ -2,9 +2,10 @@
 
 import WebSocket from "./lib/client/websocket"
 import CommonClient from "./lib/client"
-import { NodeWebSocketTypeOptions, IWSClientAdditionalOptions } from "./lib/client/client.types";
+import { NodeWebSocketTypeOptions, IWSClientAdditionalOptions } from "./lib/client/client.types"
 
-export class Client extends CommonClient {
+export class Client extends CommonClient
+{
     constructor(
         address = "ws://localhost:8080",
         {
@@ -14,7 +15,8 @@ export class Client extends CommonClient {
             max_reconnects = 5
         }: IWSClientAdditionalOptions & NodeWebSocketTypeOptions = {},
         generate_request_id?: (method: string, params: object | Array<any>) => number
-    ) {
+    )
+    {
         super(
             WebSocket,
             address,
@@ -25,7 +27,7 @@ export class Client extends CommonClient {
                 max_reconnects
             },
             generate_request_id
-        );
+        )
     }
 }
 
