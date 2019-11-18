@@ -9,7 +9,7 @@ const WebSocketServer = require("../dist").Server
 
 const WebSocket = require("../dist").Client
 const SERVER_HOST = "localhost"
-const SERVER_PORT = 8080 // random free port
+const SERVER_PORT = 0 // random free port
 
 describe("Client", function()
 {
@@ -686,4 +686,3 @@ function runServer(port, host)
         wss.on("listening", () => resolve(wss))
     })
 }
-
