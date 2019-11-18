@@ -1,6 +1,23 @@
-import JsonRPCSocket, {RPC_ERRORS} from "./JsonRpcSocket"
+import JsonRPCSocket, {RPC_ERRORS} from "../JsonRpcSocket"
+import {
+    IJsonRpcSocket,
+    TJsonRpcSocketId,
+    TRpcNotificationName,
+    TRpcNotificationHandler,
+    TRpcNotificationParams,
+    IRpcRequest,
+    TRpcRequestName,
+    TRpcRequestHandler,
+    IRpcResponder
+} from "../JsonRpcSocket/types"
 import EventEmitter from "eventemitter3"
-import {getType} from "./helpers"
+import {getType} from "../helpers"
+import {
+    INamespace,
+    TNamespaceName,
+    INamespaceOptions,
+    INotificationsSubscriptionsResult
+} from "./types"
 
 /**
  * Function that validates namespace name
@@ -8,7 +25,7 @@ import {getType} from "./helpers"
  * @throws TypeError if name is not valid
  * @returns {void}
  */
-export function assertNamespaceName(name)
+export function assertNamespaceName(name?: any)
 {
     if (
         name === null ||
@@ -29,7 +46,7 @@ export function assertNamespaceName(name)
  * @throws TypeError if name is not valid
  * @returns {void}
  */
-export function assertNotificationName(name, isInternal = false)
+export function assertNotificationName(name: any, isInternal = false)
 {
     if (typeof name !== "string")
         throw new TypeError(
@@ -49,9 +66,15 @@ export function assertNotificationName(name, isInternal = false)
  * Namespace class
  * @class
  */
-export default class Namespace extends EventEmitter
+export default class Namespace extends EventEmitter implements INamespace
 {
-    constructor(name, options)
+    private _name: TNamespaceName;
+    private options: INamespaceOptions;
+    private _clients: Set<IJsonRpcSocket>;
+    private _requestsHandlers: Map<TRpcRequestName, TRpcRequestHandler>;
+    private _notificationToSubscribers: Map<TRpcNotificationName, Set<IJsonRpcSocket>>;
+
+    constructor(name: TNamespaceName, options: INamespaceOptions)
     {
         super()
 
@@ -87,10 +110,10 @@ export default class Namespace extends EventEmitter
         // TODO: was "__listMethods", renamed to "rpc.listMethods"
         this.registerInternalMethod("listMethods", () => this.getRegisteredMethodsNames())
         this.registerInternalMethod("listEvents", () => this.getRegisteredNotifications())
-        this.registerInternalMethod("on", (notifications, socket) =>
+        this.registerInternalMethod("on", (notifications: string[], socket: IJsonRpcSocket) =>
             this._updateRemoteSubscribers(true, notifications, socket)
         )
-        this.registerInternalMethod("off", (notifications, socket) =>
+        this.registerInternalMethod("off", (notifications: string[], socket: IJsonRpcSocket) =>
             this._updateRemoteSubscribers(false, notifications, socket)
         )
     }
@@ -108,7 +131,7 @@ export default class Namespace extends EventEmitter
     close()
     {
         for (const socket of this.getClients())
-            socket.close()
+            socket.close(1000, "Namespace is closing")
         this.destruct()
     }
 
@@ -132,7 +155,7 @@ export default class Namespace extends EventEmitter
      *
      * @private
      */
-    async _handleRequest(request, response, socket)
+    async _handleRequest(request: IRpcRequest, response: IRpcResponder, socket: IJsonRpcSocket)
     {
         if (!this._requestsHandlers.has(request.method))
         {
@@ -175,7 +198,7 @@ export default class Namespace extends EventEmitter
      |
      |*/
 
-    addClient(socket)
+    addClient(socket: IJsonRpcSocket): INamespace
     {
         if (!this.hasClient(socket))
         {
@@ -218,13 +241,13 @@ export default class Namespace extends EventEmitter
         return this
     }
 
-    removeClient(socket)
+    removeClient(socket: IJsonRpcSocket)
     {
         this._clients.delete(socket)
         this._notificationToSubscribers.forEach((subscribers) => subscribers.delete(socket))
     }
 
-    hasClient(socketOrId)
+    hasClient(socketOrId: IJsonRpcSocket | TJsonRpcSocketId)
     {
         const socket = typeof socketOrId === "string"
             ? this.getClient(socketOrId)
@@ -237,7 +260,7 @@ export default class Namespace extends EventEmitter
         return this._clients.values()
     }
 
-    getClient(id)
+    getClient(id: TJsonRpcSocketId)
     {
         let result = null
 
@@ -270,7 +293,11 @@ export default class Namespace extends EventEmitter
      *
      * @private
      */
-    _changeNotificationPresence(shouldBeAdded, isInternal, names)
+    _changeNotificationPresence(
+        shouldBeAdded: boolean,
+        isInternal: boolean,
+        names: TRpcNotificationName | Array<TRpcNotificationName>
+    )
     {
         if (!Array.isArray(names))
             names = [names]
@@ -303,12 +330,19 @@ export default class Namespace extends EventEmitter
      *
      * @private
      */
-    _updateRemoteSubscribers(add, notifications, socket)
+    _updateRemoteSubscribers(
+        add: boolean,
+        notifications: Array<TRpcNotificationName>,
+        socket: IJsonRpcSocket
+    ): INotificationsSubscriptionsResult
     {
         if (!Array.isArray(notifications))
             throw new Error("No notifications passed")
 
-        return notifications.reduce((result, notificationName) =>
+        return notifications.reduce((
+            result: INotificationsSubscriptionsResult,
+            notificationName: string
+        ) =>
         {
             if (!this.options.strict_notifications)
             {
@@ -344,7 +378,12 @@ export default class Namespace extends EventEmitter
      *
      * @private
      */
-    _changeSubscriptionStatus(action, isInternal, subscriptions, handler)
+    _changeSubscriptionStatus(
+        action: "on" | "off" | "once",
+        isInternal: boolean,
+        subscriptions: TRpcNotificationName | {[key: string]: TRpcNotificationHandler},
+        handler?: TRpcNotificationHandler
+    )
     {
         if (subscriptions && typeof subscriptions !== "object")
             subscriptions = {[subscriptions]: handler}
@@ -381,7 +420,7 @@ export default class Namespace extends EventEmitter
      *
      * @returns {void}
      */
-    registerNotification(names)
+    registerNotification(names: TRpcNotificationName | Array<TRpcNotificationName>)
     {
         return this._changeNotificationPresence(true, false, names)
     }
@@ -393,7 +432,7 @@ export default class Namespace extends EventEmitter
      *
      * @returns {void}
      */
-    unregisterNotification(names)
+    unregisterNotification(names: TRpcNotificationName | Array<TRpcNotificationName>)
     {
         return this._changeNotificationPresence(false, false, names)
     }
@@ -420,7 +459,10 @@ export default class Namespace extends EventEmitter
      *
      * @returns {void}
      */
-    onNotification(notification, handler)
+    onNotification(
+        notification: TRpcNotificationName | {[key: string]: TRpcNotificationHandler},
+        handler?: TRpcNotificationHandler
+    )
     {
         this._changeSubscriptionStatus("on", false, notification, handler)
     }
@@ -436,7 +478,10 @@ export default class Namespace extends EventEmitter
      *
      * @returns {void}
      */
-    onceNotification(notification, handler)
+    onceNotification(
+        notification: TRpcNotificationName | {[key: string]: TRpcNotificationHandler},
+        handler?: TRpcNotificationHandler
+    )
     {
         this._changeSubscriptionStatus("once", false, notification, handler)
     }
@@ -452,7 +497,10 @@ export default class Namespace extends EventEmitter
      *
      * @returns {void}
      */
-    offNotification(notification, handler)
+    offNotification(
+        notification: TRpcNotificationName | {[key: string]: TRpcNotificationHandler},
+        handler?: TRpcNotificationHandler
+    )
     {
         this._changeSubscriptionStatus("off", false, notification, handler)
     }
@@ -465,7 +513,10 @@ export default class Namespace extends EventEmitter
      *
      * @returns {void}
      */
-    async sendNotification(name, params)
+    async sendNotification(
+        name: TRpcNotificationName,
+        params?: TRpcNotificationParams
+    )
     {
         assertNotificationName(name)
 
@@ -501,7 +552,7 @@ export default class Namespace extends EventEmitter
      *
      * @returns {void}
      */
-    registerInternalNotification(names)
+    registerInternalNotification(names: TRpcNotificationName | Array<TRpcNotificationName>)
     {
         return this._changeNotificationPresence(true, true, names)
     }
@@ -513,7 +564,7 @@ export default class Namespace extends EventEmitter
      *
      * @returns {void}
      */
-    unregisterInternalNotification(names)
+    unregisterInternalNotification(names: TRpcNotificationName | Array<TRpcNotificationName>)
     {
         return this._changeNotificationPresence(false, true, names)
     }
@@ -540,7 +591,10 @@ export default class Namespace extends EventEmitter
      *
      * @returns {void}
      */
-    onInternalNotification(notification, handler)
+    onInternalNotification(
+        notification: TRpcNotificationName | {[key: string]: TRpcNotificationHandler},
+        handler?: TRpcNotificationHandler
+    )
     {
         this._changeSubscriptionStatus("on", true, notification, handler)
     }
@@ -556,7 +610,10 @@ export default class Namespace extends EventEmitter
      *
      * @returns {void}
      */
-    onceInternalNotification(notification, handler)
+    onceInternalNotification(
+        notification: TRpcNotificationName | {[key: string]: TRpcNotificationHandler},
+        handler?: TRpcNotificationHandler
+    )
     {
         this._changeSubscriptionStatus("once", true, notification, handler)
     }
@@ -572,7 +629,10 @@ export default class Namespace extends EventEmitter
      *
      * @returns {void}
      */
-    offInternalNotification(notification, handler)
+    offInternalNotification(
+        notification: TRpcNotificationName | {[key: string]: TRpcNotificationHandler},
+        handler?: TRpcNotificationHandler
+    )
     {
         this._changeSubscriptionStatus("off", true, notification, handler)
     }
@@ -585,7 +645,10 @@ export default class Namespace extends EventEmitter
      *
      * @returns {void}
      */
-    async sendInternalNotification(name, params)
+    async sendInternalNotification(
+        name: TRpcNotificationName,
+        params?: TRpcNotificationParams
+    )
     {
         assertNotificationName(name, true)
 
@@ -631,7 +694,11 @@ export default class Namespace extends EventEmitter
      *
      * @private
      */
-    _registerMethods(isInternal, methods, methodHandler)
+    _registerMethods(
+        isInternal: boolean,
+        methods: TRpcRequestName | {[key: string]: TRpcRequestHandler},
+        methodHandler?: TRpcRequestHandler
+    )
     {
         if (methods && typeof methods !== "object")
         {
@@ -665,12 +732,14 @@ export default class Namespace extends EventEmitter
      *
      * @private
      */
-    _unregisterMethods(isInternal, methods)
+    _unregisterMethods(
+        isInternal: boolean,
+        methods: TRpcRequestName | Array<TRpcRequestName>
+    )
     {
-        if (methods && !Array.isArray(methods))
-            methods = [methods]
+        const methodsList = Array.isArray(methods) ? methods : [methods]
 
-        methods.forEach((method) =>
+        methodsList.forEach((method) =>
         {
             if (!isInternal && method.startsWith("rpc."))
                 throw new Error("\".rpc\" prefix should be used only for internal methods")
@@ -689,7 +758,10 @@ export default class Namespace extends EventEmitter
      *
      * @returns {void}
      */
-    registerMethod(methods, methodHandler)
+    registerMethod(
+        methods: TRpcRequestName | {[key: string]: TRpcRequestHandler},
+        methodHandler?: TRpcRequestHandler
+    )
     {
         this._registerMethods(false, methods, methodHandler)
     }
@@ -697,11 +769,11 @@ export default class Namespace extends EventEmitter
     /**
      * Unregister a handler for method with given name or given hash of methods
      *
-     * @param {object|string} methods - method name or map of method => handler
+     * @param {Array<string>|string} methods - method name or map of method => handler
      *
      * @returns {void}
      */
-    unregisterMethod(methods)
+    unregisterMethod(methods: TRpcRequestName | Array<TRpcRequestName>)
     {
         this._unregisterMethods(false, methods)
     }
@@ -725,7 +797,10 @@ export default class Namespace extends EventEmitter
      *
      * @returns {void}
      */
-    registerInternalMethod(methods, methodHandler)
+    registerInternalMethod(
+        methods: TRpcRequestName | {[key: string]: TRpcRequestHandler},
+        methodHandler?: TRpcRequestHandler
+    )
     {
         this._registerMethods(true, methods, methodHandler)
     }
@@ -737,7 +812,7 @@ export default class Namespace extends EventEmitter
      *
      * @returns {void}
      */
-    unregisterInternalMethod(methods)
+    unregisterInternalMethod(methods: TRpcRequestName | Array<TRpcRequestName>)
     {
         this._unregisterMethods(true, methods)
     }
@@ -766,7 +841,7 @@ export default class Namespace extends EventEmitter
      * @returns {void}
      * @deprecated
      */
-    event(ev_name)
+    event(ev_name: TRpcNotificationName)
     {
         if (arguments.length !== 1)
             throw new Error("must provide exactly one argument")
@@ -787,7 +862,7 @@ export default class Namespace extends EventEmitter
      * @returns {void}
      * @deprecated
      */
-    register(fn_name, fn)
+    register(fn_name: TRpcRequestName, fn: TRpcRequestHandler)
     {
         if (arguments.length !== 2)
             throw new Error("must provide exactly two arguments")
@@ -818,7 +893,7 @@ export default class Namespace extends EventEmitter
      */
     connected()
     {
-        const clients = {}
+        const clients: {[key: string]: IJsonRpcSocket} = {}
 
         for (const client of this._clients)
             clients[client.getId()] = client

@@ -1,8 +1,5 @@
-/* eslint no-unused-vars: "off" */
-
 "use strict"
 
-const should = require("chai").should()
 const expect = require("chai").expect
 const WebSocket = require("ws")
 
@@ -377,7 +374,7 @@ describe("Server", function()
         {
             it("should connect client with a custom socket id", function(done)
             {
-                connect(port, host, "/custom", "?socket_id=foo").then((ws) =>
+                connect(port, host, "/custom", "?socket_id=foo").then(() =>
                 {
                     expect(server.of("/custom").connected().foo).not.to.be.undefined
                     done()
@@ -1311,7 +1308,7 @@ describe("Server", function()
                         }
                     }))
 
-                    ws.once("message", function(message)
+                    ws.once("message", function()
                     {
                         ws.send(JSON.stringify({
                             id: ++rpc_id,
@@ -1320,10 +1317,8 @@ describe("Server", function()
                             params: [4]
                         }))
 
-                        ws.once("message", function(message)
+                        ws.once("message", function()
                         {
-                            message = JSON.parse(message)
-
                             rpc_id++
                             ws.close()
                             done()
@@ -1348,7 +1343,7 @@ describe("Server", function()
  */
 function getInstance(port, host)
 {
-    return new Promise((resolve, reject) =>
+    return new Promise((resolve) =>
     {
         const wss = new WebSocketServer({
             host: host || SERVER_HOST,
@@ -1376,19 +1371,5 @@ function connect(port, host, path, query)
 
         client.on("open", () => resolve(client))
         client.on("error", (error) => reject(error))
-    })
-}
-
-/**
- * Disconnects from an RPC server.
- * @param {Object} client - Client instance
- * @return {Promise}
- */
-function disconnect(client)
-{
-    return new Promise(function(resolve, reject)
-    {
-        client.close()
-        resolve()
     })
 }

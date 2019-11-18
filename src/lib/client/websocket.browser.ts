@@ -6,7 +6,12 @@
 "use strict"
 
 import EventEmitter from "eventemitter3"
-import { BrowserWebSocketType, NodeWebSocketType, IWSClientAdditionalOptions } from "./client.types"
+import {
+    BrowserWebSocketType,
+    BrowserWebSocketTypeOptions,
+    NodeWebSocketType,
+    TCommonWebSocket
+} from "../common.types"
 
 class WebSocketBrowserImpl extends EventEmitter
 {
@@ -88,7 +93,9 @@ class WebSocketBrowserImpl extends EventEmitter
  * @param {(Object)} options - websocket options
  * @return {Undefined}
  */
-export default function(address: string, options: IWSClientAdditionalOptions)
+export default function(address: string, options: BrowserWebSocketTypeOptions): TCommonWebSocket
 {
-    return new WebSocketBrowserImpl(address, options)
+    // TODO: check this conversion of types - looks like browser socket implementation
+    //       have different API then WS.Socket instance:
+    return new WebSocketBrowserImpl(address, options) as unknown as TCommonWebSocket
 }

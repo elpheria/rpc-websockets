@@ -2,6 +2,7 @@
 
 "use strict"
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const should = require("chai").should()
 const expect = require("chai").expect
 const WebSocketServer = require("../dist").Server
@@ -45,7 +46,7 @@ describe("Client", function()
 
                 server.register("hang", function()
                 {
-                    return new Promise(function(resolve, reject)
+                    return new Promise(function(resolve)
                     {
                         setTimeout(function() { resolve() }, 3000)
                     })
@@ -264,7 +265,7 @@ describe("Client", function()
 
             client.on("open", function()
             {
-                client.call("cryptic").then(function(response)
+                client.call("cryptic").then(function()
                 {
                     done(new Error("should not be authorized to run this method"))
                     client.close()
@@ -667,7 +668,7 @@ describe("Client", function()
  */
 function runServer(port, host)
 {
-    return new Promise((resolve, reject) =>
+    return new Promise((resolve) =>
     {
         const wss = new WebSocketServer(
             {

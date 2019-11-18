@@ -3,7 +3,7 @@
 "use strict"
 
 import WebSocket from "ws"
-import { IWSClientAdditionalOptions } from "./client.types"
+import {NodeWebSocketTypeOptions, TCommonWebSocket} from "../common.types"
 
 /**
  * factory method for common WebSocket instance
@@ -14,8 +14,10 @@ import { IWSClientAdditionalOptions } from "./client.types"
  */
 export default function(
     address: string,
-    options: IWSClientAdditionalOptions & WebSocket.ClientOptions
-)
+    options: NodeWebSocketTypeOptions
+): TCommonWebSocket
 {
-    return new WebSocket(address, options)
+    // TODO: check this conversion of types - looks like browser socket implementation
+    //       have different API then WS.Socket instance:
+    return new WebSocket(address, options) as unknown as TCommonWebSocket
 }

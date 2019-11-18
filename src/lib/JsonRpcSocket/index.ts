@@ -1,7 +1,26 @@
+// @ts-ignore
 import jsonrpc from "json-rpc-msg"
 import uuid from "uuid/v1"
 import EventEmitter from "eventemitter3"
 import CircularJSON from "circular-json"
+import {
+    IRpcRequest,
+    IJsonRpcSocket,
+    IJsonRPCSocketOptions,
+    TJsonRpcSocketId,
+    TRpcRequestId,
+    TRpcRequestName,
+    IParsedRpcNotification,
+    IParsedRpcInternalNotification,
+    IParsedRpcRequest,
+    IParsedRpcInternalRequest,
+    TParsedRpcSimpleMessage,
+    IRpcResponder,
+    TRpcRequestParams,
+    TRpcNotificationName,
+    TRpcNotificationParams
+} from "./types"
+import {TCommonWebSocket} from "../common.types"
 
 /**
  * List additional JSON RPC errors
@@ -23,19 +42,25 @@ export const RPC_ERRORS = {
  *
  * @constructor
  */
-export function RPCServerError(error)
+export class RPCServerError extends Error
 {
-    this.message = error.message
-    this.name = this.constructor.name
-    this.code = error.code
-    this.data = error.data
-    if (Error.captureStackTrace)
-        Error.captureStackTrace(this, this.constructor)
-    else
-        this.stack = (new Error()).stack
+    public message: string;
+    public code: number;
+    public data: any;
+    public stack: any;
+
+    constructor(error: {message: string, code: number, data?: any})
+    {
+        super()
+        this.message = error.message
+        this.code = error.code
+        this.data = error.data
+        if (Error.captureStackTrace)
+            Error.captureStackTrace(this, this.constructor)
+        else
+            this.stack = (new Error()).stack
+    }
 }
-RPCServerError.prototype = Object.create(Error.prototype)
-RPCServerError.prototype.constructor = RPCServerError
 
 /**
  * Constructor of error object, that should be thrown if response was not received in given time
@@ -43,34 +68,57 @@ RPCServerError.prototype.constructor = RPCServerError
  *
  * @param {object} request - failed request object
  */
-export function TimeoutError(request)
+export class TimeoutError extends Error
 {
-    this.message = `Request to method "${request.method}" timed out`
-    this.name = this.constructor.name
-    if (Error.captureStackTrace)
-        Error.captureStackTrace(this, this.constructor)
-    else
-        this.stack = (new Error()).stack
+    public code: number;
+    public message: string;
+    public data: any;
+    public stack: any;
+
+    constructor(request: IRpcRequest)
+    {
+        super()
+        this.message = `Request to method "${request.method}" timed out`
+        if (Error.captureStackTrace)
+            Error.captureStackTrace(this, this.constructor)
+        else
+            this.stack = (new Error()).stack
+    }
 }
-TimeoutError.prototype = Object.create(Error.prototype)
-TimeoutError.prototype.constructor = TimeoutError
+
+interface RpcRequestWrapper {
+    timer?: NodeJS.Timeout,
+    promise: {
+        resolve: (data: any) => void,
+        reject: (error: any) => void
+    }
+}
 
 /**
  * Wrapper for WebSockets
  */
-export default class JsonRPCSocket extends EventEmitter
+export default class JsonRPCSocket extends EventEmitter implements IJsonRpcSocket
 {
-    constructor(socket, id, options = {})
+    static TimeoutError = TimeoutError;
+    static RPCServerError = RPCServerError;
+    static RPC_ERRORS = RPC_ERRORS;
+
+    private options: IJsonRPCSocketOptions;
+    private _pendingRequests: Map<TRpcRequestId, RpcRequestWrapper>;
+    private _id: TJsonRpcSocketId;
+    private _socket: TCommonWebSocket;
+
+    constructor(socket: TCommonWebSocket, id: TJsonRpcSocketId, options: IJsonRPCSocketOptions = {})
     {
         super()
         this.options = {
-            generate_request_id: options.generate_request_id || uuid
+            generate_request_id: options.generate_request_id || (() => uuid())
         }
         this._pendingRequests = new Map()
         this._id = id
         this._socket = socket
         this._socket.on("open", (...args) => this.emit("open", ...args))
-        this._socket.on("message", (data) =>
+        this._socket.on("message", (data: string | Buffer | ArrayBuffer) =>
         {
             this.emit("message", data)
             this._handleRpcMessage(data)
@@ -85,9 +133,11 @@ export default class JsonRPCSocket extends EventEmitter
      * @returns {Promise<void>}
      * @private
      */
-    async _handleRpcMessage(data)
+    async _handleRpcMessage(data: string | Buffer | ArrayBuffer)
     {
-        const msg_options = {}
+        const msg_options = {
+            binary: false
+        }
 
         // Convert binary messages to string:
         if (data instanceof Buffer || data instanceof ArrayBuffer)
@@ -149,7 +199,9 @@ export default class JsonRPCSocket extends EventEmitter
         }
         case jsonrpc.MESSAGE_TYPES.BATCH: {
             const batch = message.payload
-            let results = await Promise.all(batch.map((msg) =>
+            let results: Array<any> = await Promise.all(batch.map((
+                msg: jsonrpc.ParserError | TParsedRpcSimpleMessage
+            ) =>
             {
                 // If current item of batch is invalid rpc-request - return RPC-response with error:
                 if (msg instanceof jsonrpc.ParserError)
@@ -202,7 +254,7 @@ export default class JsonRPCSocket extends EventEmitter
      * @returns {void}
      * @private
      */
-    _handleIncomingNotification(message)
+    _handleIncomingNotification(message: IParsedRpcNotification | IParsedRpcInternalNotification)
     {
         let notificationType = null
         if (message.type === jsonrpc.MESSAGE_TYPES.NOTIFICATION)
@@ -226,9 +278,9 @@ export default class JsonRPCSocket extends EventEmitter
      * @returns {Promise.<object>} - promise that on fullfilled returns JSON-RPC message
      * @private
      */
-    async _handleIncomingRequest(message)
+    async _handleIncomingRequest(message: IParsedRpcRequest | IParsedRpcInternalRequest)
     {
-        let eventName = null
+        let eventName = ""
         if (message.type === jsonrpc.MESSAGE_TYPES.REQUEST)
             eventName = "rpc:request"
         else if (message.type === jsonrpc.MESSAGE_TYPES.INTERNAL_REQUEST)
@@ -240,14 +292,14 @@ export default class JsonRPCSocket extends EventEmitter
         const waitForResponse = new Promise((resolve) =>
         {
             let isFullfilled = false
-            const res = {
+            const res: IRpcResponder = {
                 isSent() { return isFullfilled },
-                send(response)
+                send(response: any)
                 {
                     resolve({type: "response", data: response})
                     isFullfilled = true
                 },
-                throw(error, additionalData)
+                throw(error: {code: number, message: string}, additionalData?: any)
                 {
                     resolve({type: "error", data: {error, additionalData}})
                     isFullfilled = true
@@ -260,7 +312,7 @@ export default class JsonRPCSocket extends EventEmitter
 
         // Parse response results and convert it to RPC message:
         return await waitForResponse.then(
-            (result) =>
+            (result: {type: "error" | "response", data: {error?: string, additionalData?: any}}) =>
             {
                 if (result.type === "error")
                 {
@@ -291,16 +343,22 @@ export default class JsonRPCSocket extends EventEmitter
      * @param {object} wsOptions? - websocket options
      * @returns {Promise<*>}
      */
-    async _callMethod(isInternal, method, params, waitTime = 60000, wsOptions)
+    async _callMethod(
+        isInternal: boolean,
+        method: TRpcRequestName,
+        params?: TRpcRequestParams,
+        waitTime: number = 60000,
+        wsOptions?: { mask?: boolean; binary?: boolean; compress?: boolean; fin?: boolean }
+    )
     {
         return new Promise((resolve, reject) =>
         {
             // Generate request id:
-            const id = this.options.generate_request_id()
+            const id = this.options.generate_request_id(method, params)
 
             // Build temporary request signature to help resolve and reject request and control
             // it's life time:
-            const request = {
+            const request: RpcRequestWrapper = {
                 timer: isFinite(waitTime)
                     ? setTimeout(
                         () => request.promise.reject(new TimeoutError({method, params}))
@@ -326,7 +384,7 @@ export default class JsonRPCSocket extends EventEmitter
                 ? jsonrpc.createInternalRequest(id, method, params)
                 : jsonrpc.createRequest(id, method, params)
 
-            this.send(requestObj, wsOptions, (error) =>
+            this.send(requestObj, wsOptions, (error: Error) =>
             {
                 if (error)
                     return request.promise.reject(error)
@@ -340,6 +398,7 @@ export default class JsonRPCSocket extends EventEmitter
     /**
      * Handle response from server
      *
+     * @param {object} responseData - response data
      * @param {string|number} id - request ID
      * @param {*} result - result if response successful
      * @param {{code: number, message: string, data: (array|object)}} error - error
@@ -348,8 +407,15 @@ export default class JsonRPCSocket extends EventEmitter
      *
      * @private
      */
-    _handleRPCResponse({id, result, error})
+    _handleRPCResponse(
+        responseData: {
+            id: TRpcRequestId,
+            result?: any,
+            error?: {code: number, message: string, data?: any}
+        }
+    )
     {
+        const {id, result, error} = responseData
         const pendingRequest = this._pendingRequests.get(id)
         if (!pendingRequest) return
         if (error)
@@ -385,7 +451,7 @@ export default class JsonRPCSocket extends EventEmitter
      * @param {String} reason? - A human-readable string explaining why the connection is closing.
      * @returns {void}
      */
-    close(code = 1000, reason)
+    close(code = 1000, reason?: string)
     {
         this._socket.close(code, reason)
     }
@@ -398,7 +464,11 @@ export default class JsonRPCSocket extends EventEmitter
      * @param {object} wsOptions? - websocket options
      * @returns {Promise<*>}
      */
-    async callMethod(method, params, waitTime, wsOptions)
+    async callMethod(
+        method: TRpcRequestName,
+        params?: TRpcRequestParams,
+        waitTime?: number,
+        wsOptions?: { mask?: boolean; binary?: boolean; compress?: boolean; fin?: boolean })
     {
         return this._callMethod(false, method, params, waitTime, wsOptions)
     }
@@ -411,7 +481,12 @@ export default class JsonRPCSocket extends EventEmitter
      * @param {object} wsOptions? - websocket options
      * @returns {Promise<*>}
      */
-    async callInternalMethod(method, params, waitTime, wsOptions)
+    async callInternalMethod(
+        method: TRpcRequestName,
+        params?: TRpcRequestParams,
+        waitTime?: number,
+        wsOptions?: { mask?: boolean; binary?: boolean; compress?: boolean; fin?: boolean }
+    )
     {
         return this._callMethod(true, method, params, waitTime, wsOptions)
     }
@@ -423,7 +498,7 @@ export default class JsonRPCSocket extends EventEmitter
      */
     async listRemoteMethods()
     {
-        return this.callInternalMethod("listMethods")
+        return this.callInternalMethod("listMethods") as Promise<Array<string>>
     }
 
     /**
@@ -431,9 +506,9 @@ export default class JsonRPCSocket extends EventEmitter
      *
      * @returns {Promise<array<string>>}
      */
-    async listRemoteEvents()
+    async listRemoteEvents(): Promise<Array<string>>
     {
-        return this.callInternalMethod("listEvents")
+        return this.callInternalMethod("listEvents") as Promise<Array<string>>
     }
 
     /**
@@ -444,7 +519,10 @@ export default class JsonRPCSocket extends EventEmitter
      *
      * @returns {Promise}
      */
-    async sendNotification(method, params)
+    async sendNotification(
+        method: TRpcNotificationName,
+        params: TRpcNotificationParams
+    ): Promise<void>
     {
         const notificationObject = jsonrpc.createNotification(method, params)
         return new Promise((resolve, reject) =>
@@ -466,7 +544,10 @@ export default class JsonRPCSocket extends EventEmitter
      *
      * @returns {Promise}
      */
-    async sendInternalNotification(method, params)
+    async sendInternalNotification(
+        method: TRpcNotificationName,
+        params: TRpcNotificationParams
+    ): Promise<void>
     {
         const notificationObject = jsonrpc.createInternalNotification(method, params)
         return new Promise((resolve, reject) =>
@@ -489,7 +570,12 @@ export default class JsonRPCSocket extends EventEmitter
      *
      * @returns {*}
      */
-    send(data, options, cb)
+    send(
+        data: any,
+        options?: { mask?: boolean; binary?: boolean; compress?: boolean; fin?: boolean } |
+            ((err?: Error) => void),
+        cb?: (err?: Error) => void
+    )
     {
         if (
             data &&
@@ -500,10 +586,7 @@ export default class JsonRPCSocket extends EventEmitter
         {
             data = CircularJSON.stringify(data)
         }
+        // @ts-ignore
         return this._socket.send(data, options, cb)
     }
 }
-
-JsonRPCSocket.TimeoutError = TimeoutError
-JsonRPCSocket.RPCServerError = RPCServerError
-JsonRPCSocket.RPC_ERRORS = RPC_ERRORS

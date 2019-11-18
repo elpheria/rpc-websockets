@@ -63,5 +63,7 @@ class WebSocketBrowserImpl extends EventEmitter {
  * @return {Undefined}
  */
 export default function (address, options) {
+    // TODO: check this conversion of types - looks like browser socket implementation
+    //       have different API then WS.Socket instance:
     return new WebSocketBrowserImpl(address, options);
 }

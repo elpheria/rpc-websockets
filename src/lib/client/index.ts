@@ -6,17 +6,39 @@
 
 "use strict"
 
-import NodeWebSocket from "ws"
 // @ts-ignore
 import assertArgs from "assert-args"
+import NodeWebSocket from "ws"
 import EventEmitter from "eventemitter3"
-import Namespace from "./Namespace"
-import JsonRPCSocket, {TimeoutError, RPCServerError} from "./JsonRpcSocket"
+import Namespace from "../Namespace"
+import JsonRPCSocket, {TimeoutError, RPCServerError} from "../JsonRpcSocket"
+import {
+    IJsonRpcSocket,
+    TRpcNotificationHandler,
+    TRpcNotificationName,
+    TRpcNotificationParams, TRpcRequestHandler, TRpcRequestName, TRpcRequestParams
+} from "../JsonRpcSocket/types"
+import {INamespace} from "../Namespace/types"
+import {
+    BrowserWebSocketTypeOptions,
+    ICommonWebSocketFactory
+} from "../common.types"
+import {
+    IWSClientAdditionalOptions
+} from "./types"
 
 export default class CommonClient extends EventEmitter
 {
     static RPCResponseTimeoutError = TimeoutError
     static RPCServerError = RPCServerError
+
+    private wsOptions: NodeWebSocket.ClientOptions;
+    private options: IWSClientAdditionalOptions;
+    private _webSocketFactory: ICommonWebSocketFactory;
+    private _ready: boolean;
+    private _currentReconnects: number;
+    private _rpcSocket: IJsonRpcSocket;
+    private _namespace: INamespace;
 
     /**
      * Instantiate a Client class.
@@ -27,14 +49,14 @@ export default class CommonClient extends EventEmitter
      * @param {Function} generate_request_id - custom generation request Id
      * @return {CommonClient}
      */
-    constructor(address = "ws://localhost:8080", {
+    constructor(webSocketFactory: ICommonWebSocketFactory, address = "ws://localhost:8080", {
         autoconnect = true,
         reconnect = true,
         reconnect_interval = 1000,
         max_reconnects = 5,
         strict_subscriptions = true
     } = {},
-    generate_request_id
+    generate_request_id?: (method: string, params: object | Array<any>) => number
     )
     {
         super()
@@ -50,12 +72,11 @@ export default class CommonClient extends EventEmitter
             generate_request_id
         }
 
+        this._webSocketFactory = webSocketFactory
         this._ready = false
         this._currentReconnects = 0
-        this._socket = null
         this._rpcSocket = null
         this._namespace = new Namespace("/", {
-            strict_subscriptions,
             // Client namespace should never use strict notifications, so client's events will
             // always be delivered to server:
             strict_notifications: false
@@ -73,9 +94,9 @@ export default class CommonClient extends EventEmitter
      * @param {Object} options - ws options object
      * @return {Undefined}
      */
-    _connect(address, options)
+    _connect(address: string, options: BrowserWebSocketTypeOptions)
     {
-        const socket = new WebSocket(address, options)
+        const socket = this._webSocketFactory(address, options)
         const rpcSocket = new JsonRPCSocket(socket, "main", {
             generate_request_id: this.options.generate_request_id || null
         })
@@ -87,9 +108,9 @@ export default class CommonClient extends EventEmitter
             this._currentReconnects = 0
         })
 
-        rpcSocket.on("error", (error) => this.emit("error", error))
+        rpcSocket.on("error", (error: Error) => this.emit("error", error))
 
-        rpcSocket.on("close", (code, message) =>
+        rpcSocket.on("close", (code: number, message: string) =>
         {
             if (this._ready)
                 this.emit("close", code, message)
@@ -111,7 +132,6 @@ export default class CommonClient extends EventEmitter
                 setTimeout(() => this._connect(address, options), this.options.reconnect_interval)
         })
 
-        this._socket = socket
         this._rpcSocket = rpcSocket
 
         // Add socket to namespace:
@@ -150,7 +170,7 @@ export default class CommonClient extends EventEmitter
      * @param {String} data - optional data to be sent before closing
      * @return {Undefined}
      */
-    close(code, data)
+    close(code: number, data?: any)
     {
         if (this._rpcSocket)
         {
@@ -174,7 +194,7 @@ export default class CommonClient extends EventEmitter
      |----------------------------------------
      |
      |*/
-    async _updateSubscription(subscribe, events)
+    async _updateSubscription(subscribe: boolean, events: string | string[])
     {
         if (typeof events === "string")
             events = [ events ]
@@ -185,7 +205,7 @@ export default class CommonClient extends EventEmitter
         // Successfully update subscription state if "strict subscriptions" mode is not used:
         if (!this.options.strict_subscriptions)
         {
-            return events.reduce((result, event) =>
+            return events.reduce((result: {[key: string]: string}, event) =>
             {
                 result[event] = "ok"
                 return result
@@ -228,7 +248,7 @@ export default class CommonClient extends EventEmitter
      *
      * @returns {Promise<array<string>>}
      */
-    async listRemoteEvents()
+    async listRemoteEvents(): Promise<Array<string>>
     {
         return this._rpcSocket.listRemoteEvents()
     }
@@ -242,7 +262,7 @@ export default class CommonClient extends EventEmitter
      *
      * @return {Undefined}
      */
-    registerNotification(name)
+    registerNotification(name: TRpcNotificationName | Array<TRpcNotificationName>)
     {
         return this._namespace.registerNotification(name)
     }
@@ -254,7 +274,7 @@ export default class CommonClient extends EventEmitter
      *
      * @returns {void}
      */
-    unregisterNotification(names)
+    unregisterNotification(names: TRpcNotificationName | Array<TRpcNotificationName>)
     {
         return this._namespace.unregisterNotification(names)
     }
@@ -280,7 +300,10 @@ export default class CommonClient extends EventEmitter
      *
      * @returns {void}
      */
-    onNotification(notification, handler)
+    onNotification(
+        notification: TRpcNotificationName | {[key: string]: TRpcNotificationHandler},
+        handler?: TRpcNotificationHandler
+    )
     {
         return this._namespace.onNotification(notification, handler)
     }
@@ -296,7 +319,10 @@ export default class CommonClient extends EventEmitter
      *
      * @returns {void}
      */
-    onceNotification(notification, handler)
+    onceNotification(
+        notification: TRpcNotificationName | {[key: string]: TRpcNotificationHandler},
+        handler?: TRpcNotificationHandler
+    )
     {
         return this._namespace.onceNotification(notification, handler)
     }
@@ -312,7 +338,10 @@ export default class CommonClient extends EventEmitter
      *
      * @returns {void}
      */
-    offNotification(notification, handler)
+    offNotification(
+        notification: TRpcNotificationName | {[key: string]: TRpcNotificationHandler},
+        handler?: TRpcNotificationHandler
+    )
     {
         return this._namespace.offNotification(notification, handler)
     }
@@ -325,7 +354,10 @@ export default class CommonClient extends EventEmitter
      *
      * @returns {Promise}
      */
-    async sendNotification(method, params)
+    async sendNotification(
+        method: TRpcNotificationName,
+        params?: TRpcNotificationParams
+    )
     {
         return this._namespace.sendNotification(method, params)
     }
@@ -343,7 +375,7 @@ export default class CommonClient extends EventEmitter
      *
      * @return {Undefined}
      */
-    registerInternalNotification(name)
+    registerInternalNotification(name: TRpcNotificationName | Array<TRpcNotificationName>)
     {
         this._namespace.registerInternalNotification(name)
     }
@@ -355,7 +387,7 @@ export default class CommonClient extends EventEmitter
      *
      * @returns {void}
      */
-    unregisterInternalNotification(names)
+    unregisterInternalNotification(names: TRpcNotificationName | Array<TRpcNotificationName>)
     {
         this._namespace.unregisterInternalNotification(names)
     }
@@ -381,7 +413,10 @@ export default class CommonClient extends EventEmitter
      *
      * @returns {void}
      */
-    onInternalNotification(notification, handler)
+    onInternalNotification(
+        notification: TRpcNotificationName | {[key: string]: TRpcNotificationHandler},
+        handler?: TRpcNotificationHandler
+    )
     {
         return this._namespace.onInternalNotification(notification, handler)
     }
@@ -397,7 +432,10 @@ export default class CommonClient extends EventEmitter
      *
      * @returns {void}
      */
-    onceInternalNotification(notification, handler)
+    onceInternalNotification(
+        notification: TRpcNotificationName | {[key: string]: TRpcNotificationHandler},
+        handler?: TRpcNotificationHandler
+    )
     {
         return this._namespace.onceInternalNotification(notification, handler)
     }
@@ -413,7 +451,10 @@ export default class CommonClient extends EventEmitter
      *
      * @returns {void}
      */
-    offInternalNotification(notification, handler)
+    offInternalNotification(
+        notification: TRpcNotificationName | {[key: string]: TRpcNotificationHandler},
+        handler?: TRpcNotificationHandler
+    )
     {
         return this._namespace.offInternalNotification(notification, handler)
     }
@@ -426,7 +467,10 @@ export default class CommonClient extends EventEmitter
      *
      * @returns {Promise}
      */
-    async sendInternalNotification(method, params)
+    async sendInternalNotification(
+        method: TRpcNotificationName,
+        params?: TRpcNotificationParams
+    )
     {
         return this._namespace.sendInternalNotification(method, params)
     }
@@ -454,7 +498,7 @@ export default class CommonClient extends EventEmitter
      *
      * @returns {void}
      */
-    registerMethod(name, fn)
+    registerMethod(name: TRpcRequestName, fn: TRpcRequestHandler)
     {
         this._namespace.registerMethod(name, fn)
     }
@@ -466,7 +510,7 @@ export default class CommonClient extends EventEmitter
      *
      * @returns {void}
      */
-    unregisterMethod(name)
+    unregisterMethod(name: TRpcRequestName)
     {
         this._namespace.unregisterMethod(name)
     }
@@ -489,7 +533,12 @@ export default class CommonClient extends EventEmitter
      * @param {object} wsOptions? - websocket options
      * @returns {Promise<*>}
      */
-    async callMethod(method, params, waitTime, wsOptions)
+    async callMethod(
+        method: TRpcRequestName,
+        params?: TRpcRequestParams,
+        waitTime?: number,
+        wsOptions?: { mask?: boolean; binary?: boolean; compress?: boolean; fin?: boolean }
+    )
     {
         return this._rpcSocket.callMethod(method, params, waitTime, wsOptions)
     }
@@ -505,11 +554,10 @@ export default class CommonClient extends EventEmitter
      *
      * @param {string} name - method name
      * @param {function} fn - method handler
-     * @param {string} ns? - namespace name to register
      *
      * @returns {void}
      */
-    registerInternalMethod(name, fn)
+    registerInternalMethod(name: TRpcRequestName, fn: TRpcRequestHandler)
     {
         return this._namespace.registerInternalMethod(name, fn)
     }
@@ -518,14 +566,12 @@ export default class CommonClient extends EventEmitter
      * Registers an internal RPC method
      *
      * @param {string} name - method name
-     * @param {function} fn - method handler
-     * @param {string} ns? - namespace name to register
      *
      * @returns {void}
      */
-    unregisterInternalMethod(name, fn)
+    unregisterInternalMethod(name: TRpcRequestName)
     {
-        return this._namespace.unregisterInternalMethod(name, fn)
+        return this._namespace.unregisterInternalMethod(name)
     }
 
     /**
@@ -546,7 +592,12 @@ export default class CommonClient extends EventEmitter
      * @param {object} wsOptions? - websocket options
      * @returns {Promise<*>}
      */
-    async callInternalMethod(method, params, waitTime, wsOptions)
+    async callInternalMethod(
+        method: TRpcRequestName,
+        params?: TRpcRequestParams,
+        waitTime?: number,
+        wsOptions?: { mask?: boolean; binary?: boolean; compress?: boolean; fin?: boolean }
+    )
     {
         return this._rpcSocket.callInternalMethod(method, params, waitTime, wsOptions)
     }
@@ -566,7 +617,12 @@ export default class CommonClient extends EventEmitter
      * @return {Promise}
      * @deprecated
      */
-    call(method, params, timeout, ws_opts)
+    call(
+        method: TRpcRequestName,
+        params?: TRpcRequestParams,
+        timeout?: number,
+        ws_opts?: object
+    )
     {
         assertArgs(arguments, {
             "method": "string",
@@ -600,7 +656,7 @@ export default class CommonClient extends EventEmitter
      * @return {Promise}
      * @deprecated
      */
-    async notify(method, params)
+    async notify(method: TRpcNotificationName, params?: TRpcNotificationParams)
     {
         if (typeof method !== "string")
             return Promise.reject(
