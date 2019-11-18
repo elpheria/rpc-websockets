@@ -343,7 +343,7 @@ Once the Server class is instantiated, you can use a `ws` library's instance via
 
 **DEPRECATED, use [server.registerMethod](#serverregistermethodname-handler-ns--) or [server.registerInternalMethod](#serverregisterinternalmethodname-handler-ns--) instead**
 
-Registers an RPC method.
+Registers an RPC method and returns the RPCMethod object to manage method permissions.
 
 Parameters:
 * `method` {String}: RPC method name.

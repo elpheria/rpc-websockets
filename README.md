@@ -4,7 +4,7 @@
   </a>
   <br>
   <p>
-    WebSockets for <a href="http://nodejs.org">Node.js</a> and <a href="https://en.wikipedia.org/wiki/JavaScript">JavaScript</a> with <a href="https://www.jsonrpc.org/specification">JSON RPC 2.0</a> support on top.  </p>
+    WebSockets for <a href="http://nodejs.org">Node.js</a> and <a href="https://en.wikipedia.org/wiki/JavaScript">JavaScript</a>/<a href="https://en.wikipedia.org/wiki/TypeScript">TypeScript</a> with <a href="https://www.jsonrpc.org/specification">JSON RPC 2.0</a> support on top.  </p>
   <a href="https://www.npmjs.com/package/rpc-websockets">
                 <img src="https://img.shields.io/npm/v/rpc-websockets.svg">
   </a>
@@ -22,7 +22,7 @@
 
 ## About
 
-The **rpc-websockets** library enables developers to easily implement their business logic that includes messaging between users, machines or any devices. It provides a possibility to send and receive JSON data through the WebSocket communication protocol in order to support two-way notification push, running RPC methods and firing any types of event signalling. Both frontend (HTML/JS-based) and backend (Node.js-based) development environments are supported.
+The **rpc-websockets** library enables developers to easily implement their business logic that includes messaging between users, machines or any devices. It provides a possibility to send and receive JSON data through the WebSocket communication protocol in order to support two-way notification push, running RPC methods and firing any types of event signalling. Only clients can call RPC methods and not vice versa at the moment. Both frontend (HTML/JS-based) and backend (Node.js-based) development environments are supported.
 
 **rpc-websockets** is built on Node.js and supports both LTS and Current versions.
 
@@ -85,6 +85,13 @@ ws.on('open', function() {
   // unsubscribe from an event
   ws.unsubscribe('feedUpdated')
 
+  // login your client to be able to use protected methods
+  ws.login({'username': 'confi1', 'password':'foobar'}).then(function() {
+    ws.call('account'),then(function(result) {
+      require('assert').equal(result, ['confi1', 'confi2'])
+    })
+  })
+
   // close a websocket connection
   ws.close()
 })
@@ -92,7 +99,7 @@ ws.on('open', function() {
 
 ## Documentation
 
-Please consult our [API documentation](API.md) for both WebSocket server and client JavaScript classes.
+Please consult our [API documentation](API.md) for both WebSocket server and client JavaScript and TypeScript classes.
 
 ## OSS Features
 
@@ -122,9 +129,12 @@ We offer professional support for **rpc-websockets** and beyond. We have many ye
 <a href="https://scratchbox.io" target="_blank"><img src="https://raw.githubusercontent.com/elpheria/rpc-websockets/master/assets/user-scratchbox.png" alt="Scratchbox" height=50px></a>&emsp;
 <a href="https://loomx.io" target="_blank"><img src="https://raw.githubusercontent.com/elpheria/rpc-websockets/master/assets/user-loom.png" alt="Loom Network" height=50px></a>&emsp;
 <a href="https://www.uniqcast.com" target="_blank"><img src="https://raw.githubusercontent.com/elpheria/rpc-websockets/master/assets/user-uniqcast.png" alt="uniqCast" height=50px></a>&emsp;
-<a href="https://parseclabs.org" target="_blank"><img src="https://raw.githubusercontent.com/elpheria/rpc-websockets/master/assets/user-parsec.png" alt="PARSEC Labs" height=50px></a>&emsp;
+<a href="https://leapdao.org" target="_blank"><img src="https://raw.githubusercontent.com/elpheria/rpc-websockets/master/assets/user-leapdao.png" alt="LeapDAO" height=50px></a>&emsp;
 <a href="https://klika-tech.com" target="_blank"><img src="https://raw.githubusercontent.com/elpheria/rpc-websockets/master/assets/user-klikatech.png" alt="Klika Tech, Inc." height=50px></a>&emsp;
 <a href="https://kodebox.io" target="_blank"><img src="https://raw.githubusercontent.com/elpheria/rpc-websockets/master/assets/user-kodebox.png" alt="Kodebox, Inc." height=50px></a>&emsp;
+<a href="https://hey.network" target="_blank"><img src="https://raw.githubusercontent.com/elpheria/rpc-websockets/master/assets/user-heynetwork.png" alt="Hey-Group S.A./N.V." height=50px></a>&emsp;
+<a href="https://www.hylo.com" target="_blank"><img src="https://raw.githubusercontent.com/elpheria/rpc-websockets/master/assets/user-hylo.png" alt="Hylo, Inc." height=50px></a>&emsp;
+<a href="https://witnet.foundation" target="_blank"><img src="https://raw.githubusercontent.com/elpheria/rpc-websockets/master/assets/user-witnet.png" alt="Witnet Foundation" height=50px></a>&emsp;
 
 ## Sponsors
 Become a sponsor and get your logo on project's README on GitHub with a link to your site. Feel free to [contact us](mailto:info@elpheria.com?subject=Sponsors) for the arrangement!

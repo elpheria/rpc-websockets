@@ -5,8 +5,12 @@
         "browser": true,
         "mocha": true
     },
-    "parser": "babel-eslint",
-    "extends": "eslint:recommended",
+    "parser": "@typescript-eslint/parser",
+    "plugins": ["@typescript-eslint"],
+    "extends": [
+        "eslint:recommended",
+        "plugin:@typescript-eslint/eslint-recommended"
+    ],
     "parserOptions": {
         "sourceType": "module"
     },
@@ -43,6 +47,8 @@
         "arrow-spacing": [ "error" ],
         "no-duplicate-imports": [ "error" ],
         "prefer-const": [ "error" ],
-        "no-cond-assign": 0
+        "no-cond-assign": 0,
+        "no-unused-vars": "off",
+        "@typescript-eslint/no-unused-vars": "error",
     }
 }
