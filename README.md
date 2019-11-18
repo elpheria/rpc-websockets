@@ -140,6 +140,7 @@ We offer professional support for **rpc-websockets** and beyond. We have many ye
 <a href="https://hey.network" target="_blank"><img src="https://raw.githubusercontent.com/elpheria/rpc-websockets/master/assets/user-heynetwork.png" alt="Hey-Group S.A./N.V." height=50px></a>&emsp;
 <a href="https://www.hylo.com" target="_blank"><img src="https://raw.githubusercontent.com/elpheria/rpc-websockets/master/assets/user-hylo.png" alt="Hylo, Inc." height=50px></a>&emsp;
 <a href="https://witnet.foundation" target="_blank"><img src="https://raw.githubusercontent.com/elpheria/rpc-websockets/master/assets/user-witnet.png" alt="Witnet Foundation" height=50px></a>&emsp;
+<a href="https://scaleleap.com" target="_blank"><img src="https://raw.githubusercontent.com/elpheria/rpc-websockets/master/assets/user-scaleleap.png" alt="Scale Leap" height=50px></a>&emsp;
 
 ## Sponsors
 Become a sponsor and get your logo on project's README on GitHub with a link to your site. Feel free to [contact us](mailto:info@elpheria.com?subject=Sponsors) for the arrangement!
