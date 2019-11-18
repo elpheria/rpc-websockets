@@ -318,7 +318,7 @@ export default class Server extends EventEmitter
              * @param {Array} params - event parameters
              * @return {Undefined}
              */
-            emit(event: string, params: Array<string>)
+            emit(event: string, ...params: Array<string>)
             {
                 const socket_ids = [ ...self.namespaces[name].clients.keys() ]
 

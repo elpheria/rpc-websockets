@@ -346,8 +346,12 @@ function (_EventEmitter) {
          * @param {Array} params - event parameters
          * @return {Undefined}
          */
-        emit: function emit(event, params) {
+        emit: function emit(event) {
           var socket_ids = (0, _toConsumableArray2["default"])(self.namespaces[name].clients.keys());
+
+          for (var _len2 = arguments.length, params = new Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
+            params[_key2 - 1] = arguments[_key2];
+          }
 
           for (var i = 0, id; id = socket_ids[i]; ++i) {
             self.namespaces[name].clients.get(id).send(_circularJson["default"].stringify({

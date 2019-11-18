@@ -628,6 +628,29 @@ describe("Client", function()
                 done()
             })
         })
+
+        it("should receive params from an event correctly", function(done)
+        {
+            const ns = server.of("/test")
+            ns.event("test")
+
+            var client = new WebSocket("ws://" + host + ":" + port + "/test")
+
+            client.on("open", function()
+            {
+                client.subscribe("test").then(function ()
+                {
+                    client.on("test", function (...args)
+                    {
+                        args.should.eql(["aaaa", "bbbb", "cccc"])
+                        client.close()
+                        done()
+                    })
+
+                    ns.emit("test", "aaaa", "bbbb", "cccc")
+                })
+            })
+        })
     })
 
     describe(".close", function()

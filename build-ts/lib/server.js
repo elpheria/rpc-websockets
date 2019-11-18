@@ -219,7 +219,7 @@ export default class Server extends EventEmitter {
              * @param {Array} params - event parameters
              * @return {Undefined}
              */
-            emit(event, params) {
+            emit(event, ...params) {
                 const socket_ids = [...self.namespaces[name].clients.keys()];
                 for (var i = 0, id; id = socket_ids[i]; ++i) {
                     self.namespaces[name].clients.get(id).send(CircularJSON.stringify({
