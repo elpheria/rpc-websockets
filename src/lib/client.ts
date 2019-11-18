@@ -196,7 +196,7 @@ export default class CommonClient extends EventEmitter
      * @param {Object} params - optional method parameters
      * @return {Promise}
      */
-    notify(method: string, params: IWSRequestParams)
+    notify(method: string, params?: IWSRequestParams)
     {
         assertArgs(arguments, {
             "method": "string",
@@ -279,7 +279,7 @@ export default class CommonClient extends EventEmitter
      * @param {String} data - optional data to be sent before closing
      * @return {Undefined}
      */
-    close(code: number, data: string)
+    close(code?: number, data?: string)
     {
         this.socket.close(code || 1000, data)
     }

@@ -107,7 +107,7 @@ export default class Server extends EventEmitter {
          * @param {Array} params - event parameters
          * @return {Undefined}
          */
-        emit(event: string, params: string[]): void;
+        emit(event: string, ...params: string[]): void;
         /**
          * Returns a name of this namespace.
          * @inner
