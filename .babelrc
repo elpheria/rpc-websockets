@@ -3,10 +3,8 @@
         ["@babel/preset-env"]
     ],
     "plugins": [
-        "transform-object-rest-spread",
-        "transform-class-properties",
-        "transform-runtime",
-        "add-module-exports",
+        "@babel/plugin-proposal-object-rest-spread",
+        "@babel/plugin-proposal-class-properties",
         "@babel/plugin-transform-runtime"
     ]
 }
