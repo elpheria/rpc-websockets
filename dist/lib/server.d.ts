@@ -2,7 +2,7 @@
  * "Server" wraps the "ws" library providing JSON RPC 2.0 support on top.
  * @module Server
  */
-import EventEmitter from "eventemitter3";
+import { EventEmitter } from "eventemitter3";
 import NodeWebSocket, { Server as WebSocketServer } from "ws";
 interface INamespaceEvent {
     [x: string]: Array<string>;
