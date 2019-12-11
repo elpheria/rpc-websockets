@@ -2,7 +2,7 @@
  * WebSocket implements a browser-side WebSocket specification.
  * @module Client
  */
-import { EventEmitter } from "eventemitter3";
+import EventEmitter from "eventemitter3";
 import { BrowserWebSocketType, NodeWebSocketType, IWSClientAdditionalOptions } from "./client.types";
 declare class WebSocketBrowserImpl extends EventEmitter {
     socket: BrowserWebSocketType;
