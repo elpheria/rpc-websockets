@@ -80,7 +80,7 @@ export default class CommonClient extends EventEmitter
         this.rpc_id = 0
 
         this.address = address
-        this.options = arguments[1]
+        this.options = arguments[2]
         this.autoconnect = autoconnect
         this.ready = false
         this.reconnect = reconnect
