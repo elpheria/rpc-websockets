@@ -68,7 +68,7 @@ function (_EventEmitter) {
     _this.queue = {};
     _this.rpc_id = 0;
     _this.address = address;
-    _this.options = arguments[1];
+    _this.options = arguments[2];
     _this.autoconnect = autoconnect;
     _this.ready = false;
     _this.reconnect = reconnect;
