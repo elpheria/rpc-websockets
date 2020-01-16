@@ -57,5 +57,9 @@
   "bugs": {
     "url": "https://github.com/elpheria/rpc-websockets/issues"
   },
-  "homepage": "https://github.com/elpheria/rpc-websockets#readme"
+  "homepage": "https://github.com/elpheria/rpc-websockets#readme",
+  "funding": {
+    "type": "paypal",
+    "url": "https://paypal.me/kozjak"
+  }
 }
