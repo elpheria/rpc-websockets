@@ -21,7 +21,7 @@ var _getPrototypeOf2 = _interopRequireDefault(require("@babel/runtime/helpers/ge
 
 var _inherits2 = _interopRequireDefault(require("@babel/runtime/helpers/inherits"));
 
-var _eventemitter = _interopRequireDefault(require("eventemitter3"));
+var _eventemitter = require("eventemitter3");
 
 var WebSocketBrowserImpl =
 /*#__PURE__*/
@@ -103,7 +103,7 @@ function (_EventEmitter) {
     }
   }]);
   return WebSocketBrowserImpl;
-}(_eventemitter["default"]);
+}(_eventemitter.EventEmitter);
 /**
  * factory method for common WebSocket instance
  * @method

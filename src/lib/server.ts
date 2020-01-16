@@ -7,7 +7,7 @@
 
 // @ts-ignore
 import assertArgs from "assert-args"
-import EventEmitter from "eventemitter3"
+import { EventEmitter } from "eventemitter3"
 import NodeWebSocket, { Server as WebSocketServer } from "ws"
 import uuid from "uuid"
 import url from "url"

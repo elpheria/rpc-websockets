@@ -33,7 +33,7 @@ var _inherits2 = _interopRequireDefault(require("@babel/runtime/helpers/inherits
 
 var _assertArgs = _interopRequireDefault(require("assert-args"));
 
-var _eventemitter = _interopRequireDefault(require("eventemitter3"));
+var _eventemitter = require("eventemitter3");
 
 var _ws = require("ws");
 
@@ -1070,6 +1070,6 @@ function (_EventEmitter) {
     }
   }]);
   return Server;
-}(_eventemitter["default"]);
+}(_eventemitter.EventEmitter);
 
 exports["default"] = Server;

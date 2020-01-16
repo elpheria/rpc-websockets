@@ -3,7 +3,7 @@
  * according to the environment providing JSON RPC 2.0 support on top.
  * @module Client
  */
-import EventEmitter from "eventemitter3";
+import { EventEmitter } from "eventemitter3";
 import { NodeWebSocketType, ICommonWebSocketFactory } from "./client/client.types";
 interface IQueueElement {
     promise: [Parameters<ConstructorParameters<typeof Promise>[0]>[0], Parameters<ConstructorParameters<typeof Promise>[0]>[1]];

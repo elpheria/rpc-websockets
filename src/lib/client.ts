@@ -9,7 +9,7 @@
 import NodeWebSocket from "ws"
 // @ts-ignore
 import assertArgs from "assert-args"
-import EventEmitter from "eventemitter3"
+import { EventEmitter } from "eventemitter3"
 import CircularJSON from "circular-json"
 import {
     ICommonWebSocket,

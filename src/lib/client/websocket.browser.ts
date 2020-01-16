@@ -5,7 +5,7 @@
 
 "use strict"
 
-import EventEmitter from "eventemitter3"
+import { EventEmitter } from "eventemitter3"
 import { BrowserWebSocketType, NodeWebSocketType, IWSClientAdditionalOptions } from "./client.types"
 
 class WebSocketBrowserImpl extends EventEmitter

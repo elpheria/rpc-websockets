@@ -3,7 +3,7 @@
  * @module Client
  */
 "use strict";
-import EventEmitter from "eventemitter3";
+import { EventEmitter } from "eventemitter3";
 class WebSocketBrowserImpl extends EventEmitter {
     /** Instantiate a WebSocket class
      * @constructor
