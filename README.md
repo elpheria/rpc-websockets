@@ -149,4 +149,4 @@ Become a sponsor and get your logo on project's README on GitHub with a link to 
 
 ## License
 
-  [MIT](LICENSE)
+This library is licensed under LGPLv3. Please see [LICENSE] for licensing details.
