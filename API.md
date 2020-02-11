@@ -762,7 +762,7 @@ Returns list of registered internal methods names (methods with "rpc." prefix)
 
 ### namespace.getClient(id) -> JSONRpcSocket | null
 
-Returns instance of connected JSON RPC socket by it's ID
+Returns instance of connected JSON RPC socket by its ID
 
 Parameters:
 * `id` {String|Number}: ID of connected socket
