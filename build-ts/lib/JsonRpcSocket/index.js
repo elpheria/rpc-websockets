@@ -399,6 +399,9 @@ export default class JsonRPCSocket extends EventEmitter {
             !(data instanceof Buffer)) {
             data = CircularJSON.stringify(data);
         }
+        if (!cb) {
+            cb = function () { };
+        }
         // @ts-ignore
         return this._socket.send(data, options, cb);
     }

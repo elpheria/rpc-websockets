@@ -6,4 +6,4 @@ export class Client extends CommonClient {
         super(WebSocket, address, options, generate_request_id);
     }
 }
-export { default as Server } from "./lib/server";
+export { default as Server } from "./lib/Server";

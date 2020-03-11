@@ -34,7 +34,7 @@ function (_CommonClient) {
 }(_client["default"]);
 
 exports.Client = Client;
-},{"./lib/client":4,"./lib/client/websocket.browser":5,"@babel/runtime/helpers/classCallCheck":16,"@babel/runtime/helpers/getPrototypeOf":19,"@babel/runtime/helpers/inherits":20,"@babel/runtime/helpers/interopRequireDefault":21,"@babel/runtime/helpers/possibleConstructorReturn":25}],2:[function(require,module,exports){
+},{"./lib/client":4,"./lib/client/websocket.browser":5,"@babel/runtime/helpers/classCallCheck":16,"@babel/runtime/helpers/getPrototypeOf":20,"@babel/runtime/helpers/inherits":21,"@babel/runtime/helpers/interopRequireDefault":22,"@babel/runtime/helpers/possibleConstructorReturn":27}],2:[function(require,module,exports){
 (function (Buffer){
 "use strict";
 
@@ -43,23 +43,25 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.RPCServerError = RPCServerError;
-exports.TimeoutError = TimeoutError;
-exports["default"] = exports.RPC_ERRORS = void 0;
+exports["default"] = exports.TimeoutError = exports.RPCServerError = exports.RPC_ERRORS = void 0;
 
 var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 
-var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime/helpers/classCallCheck"));
-
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
+
+var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime/helpers/classCallCheck"));
 
 var _possibleConstructorReturn2 = _interopRequireDefault(require("@babel/runtime/helpers/possibleConstructorReturn"));
 
 var _getPrototypeOf2 = _interopRequireDefault(require("@babel/runtime/helpers/getPrototypeOf"));
 
+var _assertThisInitialized2 = _interopRequireDefault(require("@babel/runtime/helpers/assertThisInitialized"));
+
 var _inherits2 = _interopRequireDefault(require("@babel/runtime/helpers/inherits"));
+
+var _wrapNativeSuper2 = _interopRequireDefault(require("@babel/runtime/helpers/wrapNativeSuper"));
 
 var _jsonRpcMsg = _interopRequireDefault(require("json-rpc-msg"));
 
@@ -68,6 +70,8 @@ var _v = _interopRequireDefault(require("uuid/v1"));
 var _eventemitter = _interopRequireDefault(require("eventemitter3"));
 
 var _circularJson = _interopRequireDefault(require("circular-json"));
+
+// @ts-ignore
 
 /**
  * List additional JSON RPC errors
@@ -90,16 +94,25 @@ var RPC_ERRORS = Object.assign(Object.assign({}, _jsonRpcMsg["default"].ERRORS),
 
 exports.RPC_ERRORS = RPC_ERRORS;
 
-function RPCServerError(error) {
-  this.message = error.message;
-  this.name = this.constructor.name;
-  this.code = error.code;
-  this.data = error.data;
-  if (Error.captureStackTrace) Error.captureStackTrace(this, this.constructor);else this.stack = new Error().stack;
-}
+var RPCServerError =
+/*#__PURE__*/
+function (_Error) {
+  (0, _inherits2["default"])(RPCServerError, _Error);
 
-RPCServerError.prototype = Object.create(Error.prototype);
-RPCServerError.prototype.constructor = RPCServerError;
+  function RPCServerError(error) {
+    var _this;
+
+    (0, _classCallCheck2["default"])(this, RPCServerError);
+    _this = (0, _possibleConstructorReturn2["default"])(this, (0, _getPrototypeOf2["default"])(RPCServerError).call(this));
+    _this.message = error.message;
+    _this.code = error.code;
+    _this.data = error.data;
+    if (Error.captureStackTrace) Error.captureStackTrace((0, _assertThisInitialized2["default"])(_this), _this.constructor);else _this.stack = new Error().stack;
+    return _this;
+  }
+
+  return RPCServerError;
+}((0, _wrapNativeSuper2["default"])(Error));
 /**
  * Constructor of error object, that should be thrown if response was not received in given time
  * @constructor
@@ -107,17 +120,32 @@ RPCServerError.prototype.constructor = RPCServerError;
  * @param {object} request - failed request object
  */
 
-function TimeoutError(request) {
-  this.message = "Request to method \"".concat(request.method, "\" timed out");
-  this.name = this.constructor.name;
-  if (Error.captureStackTrace) Error.captureStackTrace(this, this.constructor);else this.stack = new Error().stack;
-}
 
-TimeoutError.prototype = Object.create(Error.prototype);
-TimeoutError.prototype.constructor = TimeoutError;
+exports.RPCServerError = RPCServerError;
+
+var TimeoutError =
+/*#__PURE__*/
+function (_Error2) {
+  (0, _inherits2["default"])(TimeoutError, _Error2);
+
+  function TimeoutError(request) {
+    var _this2;
+
+    (0, _classCallCheck2["default"])(this, TimeoutError);
+    _this2 = (0, _possibleConstructorReturn2["default"])(this, (0, _getPrototypeOf2["default"])(TimeoutError).call(this));
+    _this2.message = "Request to method \"".concat(request.method, "\" timed out");
+    if (Error.captureStackTrace) Error.captureStackTrace((0, _assertThisInitialized2["default"])(_this2), _this2.constructor);else _this2.stack = new Error().stack;
+    return _this2;
+  }
+
+  return TimeoutError;
+}((0, _wrapNativeSuper2["default"])(Error));
 /**
  * Wrapper for WebSockets
  */
+
+
+exports.TimeoutError = TimeoutError;
 
 var JsonRPCSocket =
 /*#__PURE__*/
@@ -125,49 +153,51 @@ function (_EventEmitter) {
   (0, _inherits2["default"])(JsonRPCSocket, _EventEmitter);
 
   function JsonRPCSocket(socket, id) {
-    var _this;
+    var _this3;
 
     var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
     (0, _classCallCheck2["default"])(this, JsonRPCSocket);
-    _this = (0, _possibleConstructorReturn2["default"])(this, (0, _getPrototypeOf2["default"])(JsonRPCSocket).call(this));
-    _this.options = {
-      generate_request_id: options.generate_request_id || _v["default"]
+    _this3 = (0, _possibleConstructorReturn2["default"])(this, (0, _getPrototypeOf2["default"])(JsonRPCSocket).call(this));
+    _this3.options = {
+      generate_request_id: options.generate_request_id || function () {
+        return (0, _v["default"])();
+      }
     };
-    _this._pendingRequests = new Map();
-    _this._id = id;
-    _this._socket = socket;
+    _this3._pendingRequests = new Map();
+    _this3._id = id;
+    _this3._socket = socket;
 
-    _this._socket.on("open", function () {
-      var _this2;
+    _this3._socket.on("open", function () {
+      var _this4;
 
       for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
         args[_key] = arguments[_key];
       }
 
-      return (_this2 = _this).emit.apply(_this2, ["open"].concat(args));
+      return (_this4 = _this3).emit.apply(_this4, ["open"].concat(args));
     });
 
-    _this._socket.on("message", function (data) {
-      _this.emit("message", data);
+    _this3._socket.on("message", function (data) {
+      _this3.emit("message", data);
 
-      _this._handleRpcMessage(data);
+      _this3._handleRpcMessage(data);
     });
 
-    _this._socket.on("close", function (code, reason) {
-      return _this.emit("close", code, reason);
+    _this3._socket.on("close", function (code, reason) {
+      return _this3.emit("close", code, reason);
     });
 
-    _this._socket.on("error", function () {
-      var _this3;
+    _this3._socket.on("error", function () {
+      var _this5;
 
       for (var _len2 = arguments.length, args = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
         args[_key2] = arguments[_key2];
       }
 
-      return (_this3 = _this).emit.apply(_this3, ["error"].concat(args));
+      return (_this5 = _this3).emit.apply(_this5, ["error"].concat(args));
     });
 
-    return _this;
+    return _this3;
   }
   /**
    * RPC message handler
@@ -180,14 +210,16 @@ function (_EventEmitter) {
   (0, _createClass2["default"])(JsonRPCSocket, [{
     key: "_handleRpcMessage",
     value: function _handleRpcMessage(data) {
-      var _this4 = this;
+      var _this6 = this;
 
       var msg_options, message, rpcError, result, batch, results;
       return _regenerator["default"].async(function _handleRpcMessage$(_context) {
         while (1) {
           switch (_context.prev = _context.next) {
             case 0:
-              msg_options = {}; // Convert binary messages to string:
+              msg_options = {
+                binary: false
+              }; // Convert binary messages to string:
 
               if (data instanceof Buffer || data instanceof ArrayBuffer) {
                 msg_options.binary = true;
@@ -270,14 +302,14 @@ function (_EventEmitter) {
 
 
                 if (msg.type === _jsonRpcMsg["default"].MESSAGE_TYPES.NOTIFICATION || msg.type === _jsonRpcMsg["default"].MESSAGE_TYPES.INTERNAL_NOTIFICATION) {
-                  _this4._handleIncomingNotification(msg);
+                  _this6._handleIncomingNotification(msg);
 
                   return;
                 } // If current item of batch is not a request - do nothing with it:
                 else if (msg.type === _jsonRpcMsg["default"].MESSAGE_TYPES.REQUEST || msg.type === _jsonRpcMsg["default"].MESSAGE_TYPES.INTERNAL_REQUEST) {
-                    return _this4._handleIncomingRequest(msg);
+                    return _this6._handleIncomingRequest(msg);
                   } else if (msg.type === _jsonRpcMsg["default"].MESSAGE_TYPES.ERROR || msg.type === _jsonRpcMsg["default"].MESSAGE_TYPES.RESPONSE) {
-                    _this4._handleRPCResponse(msg.payload);
+                    _this6._handleRPCResponse(msg.payload);
                   } else throw new Error("Unknown type of message in batch: \"".concat(msg.type, "\""));
               })));
 
@@ -324,14 +356,14 @@ function (_EventEmitter) {
   }, {
     key: "_handleIncomingRequest",
     value: function _handleIncomingRequest(message) {
-      var _this5 = this;
+      var _this7 = this;
 
       var eventName, waitForResponse;
       return _regenerator["default"].async(function _handleIncomingRequest$(_context2) {
         while (1) {
           switch (_context2.prev = _context2.next) {
             case 0:
-              eventName = null;
+              eventName = "";
 
               if (!(message.type === _jsonRpcMsg["default"].MESSAGE_TYPES.REQUEST)) {
                 _context2.next = 5;
@@ -382,7 +414,7 @@ function (_EventEmitter) {
                   }
                 };
 
-                var hasListeners = _this5.emit(eventName, message.payload, res, _this5);
+                var hasListeners = _this7.emit(eventName, message.payload, res, _this7);
 
                 if (!hasListeners) res["throw"](RPC_ERRORS.METHOD_NOT_FOUND);
               }); // Parse response results and convert it to RPC message:
@@ -421,7 +453,7 @@ function (_EventEmitter) {
   }, {
     key: "_callMethod",
     value: function _callMethod(isInternal, method, params) {
-      var _this6 = this;
+      var _this8 = this;
 
       var waitTime,
           wsOptions,
@@ -434,7 +466,7 @@ function (_EventEmitter) {
               wsOptions = _args3.length > 4 ? _args3[4] : undefined;
               return _context3.abrupt("return", new Promise(function (_resolve, _reject) {
                 // Generate request id:
-                var id = _this6.options.generate_request_id(); // Build temporary request signature to help resolve and reject request and control
+                var id = _this8.options.generate_request_id(method, params); // Build temporary request signature to help resolve and reject request and control
                 // it's life time:
 
 
@@ -449,22 +481,22 @@ function (_EventEmitter) {
                     resolve: function resolve(data) {
                       _resolve(data);
 
-                      _this6._pendingRequests["delete"](id);
+                      _this8._pendingRequests["delete"](id);
                     },
                     reject: function reject(err) {
                       _reject(err);
 
-                      _this6._pendingRequests["delete"](id);
+                      _this8._pendingRequests["delete"](id);
                     }
                   }
                 }; // Send request:
 
                 var requestObj = isInternal ? _jsonRpcMsg["default"].createInternalRequest(id, method, params) : _jsonRpcMsg["default"].createRequest(id, method, params);
 
-                _this6.send(requestObj, wsOptions, function (error) {
+                _this8.send(requestObj, wsOptions, function (error) {
                   if (error) return request.promise.reject(error); // Store request in "pending requests" registry:
 
-                  _this6._pendingRequests.set(id, request);
+                  _this8._pendingRequests.set(id, request);
                 });
               }));
 
@@ -478,6 +510,7 @@ function (_EventEmitter) {
     /**
      * Handle response from server
      *
+     * @param {object} responseData - response data
      * @param {string|number} id - request ID
      * @param {*} result - result if response successful
      * @param {{code: number, message: string, data: (array|object)}} error - error
@@ -489,10 +522,10 @@ function (_EventEmitter) {
 
   }, {
     key: "_handleRPCResponse",
-    value: function _handleRPCResponse(_ref) {
-      var id = _ref.id,
-          result = _ref.result,
-          error = _ref.error;
+    value: function _handleRPCResponse(responseData) {
+      var id = responseData.id,
+          result = responseData.result,
+          error = responseData.error;
 
       var pendingRequest = this._pendingRequests.get(id);
 
@@ -643,7 +676,7 @@ function (_EventEmitter) {
   }, {
     key: "sendNotification",
     value: function sendNotification(method, params) {
-      var _this7 = this;
+      var _this9 = this;
 
       var notificationObject;
       return _regenerator["default"].async(function sendNotification$(_context8) {
@@ -652,7 +685,7 @@ function (_EventEmitter) {
             case 0:
               notificationObject = _jsonRpcMsg["default"].createNotification(method, params);
               return _context8.abrupt("return", new Promise(function (resolve, reject) {
-                _this7.send(notificationObject, function (error) {
+                _this9.send(notificationObject, function (error) {
                   if (error) reject(error);
                   resolve();
                 });
@@ -677,7 +710,7 @@ function (_EventEmitter) {
   }, {
     key: "sendInternalNotification",
     value: function sendInternalNotification(method, params) {
-      var _this8 = this;
+      var _this10 = this;
 
       var notificationObject;
       return _regenerator["default"].async(function sendInternalNotification$(_context9) {
@@ -686,7 +719,7 @@ function (_EventEmitter) {
             case 0:
               notificationObject = _jsonRpcMsg["default"].createInternalNotification(method, params);
               return _context9.abrupt("return", new Promise(function (resolve, reject) {
-                _this8.send(notificationObject, function (error) {
+                _this10.send(notificationObject, function (error) {
                   if (error) reject(error);
                   resolve();
                 });
@@ -716,6 +749,11 @@ function (_EventEmitter) {
         data = _circularJson["default"].stringify(data);
       }
 
+      if (!cb) {
+        cb = function cb() {};
+      } // @ts-ignore
+
+
       return this._socket.send(data, options, cb);
     }
   }]);
@@ -727,7 +765,7 @@ JsonRPCSocket.TimeoutError = TimeoutError;
 JsonRPCSocket.RPCServerError = RPCServerError;
 JsonRPCSocket.RPC_ERRORS = RPC_ERRORS;
 }).call(this,require("buffer").Buffer)
-},{"@babel/runtime/helpers/classCallCheck":16,"@babel/runtime/helpers/createClass":17,"@babel/runtime/helpers/getPrototypeOf":19,"@babel/runtime/helpers/inherits":20,"@babel/runtime/helpers/interopRequireDefault":21,"@babel/runtime/helpers/possibleConstructorReturn":25,"@babel/runtime/helpers/typeof":28,"@babel/runtime/regenerator":30,"buffer":40,"circular-json":41,"eventemitter3":45,"json-rpc-msg":49,"uuid/v1":54}],3:[function(require,module,exports){
+},{"@babel/runtime/helpers/assertThisInitialized":15,"@babel/runtime/helpers/classCallCheck":16,"@babel/runtime/helpers/createClass":18,"@babel/runtime/helpers/getPrototypeOf":20,"@babel/runtime/helpers/inherits":21,"@babel/runtime/helpers/interopRequireDefault":22,"@babel/runtime/helpers/possibleConstructorReturn":27,"@babel/runtime/helpers/typeof":30,"@babel/runtime/helpers/wrapNativeSuper":31,"@babel/runtime/regenerator":33,"buffer":43,"circular-json":44,"eventemitter3":48,"json-rpc-msg":52,"uuid/v1":57}],3:[function(require,module,exports){
 "use strict";
 
 var _interopRequireWildcard = require("@babel/runtime/helpers/interopRequireWildcard");
@@ -761,11 +799,11 @@ var _assertThisInitialized2 = _interopRequireDefault(require("@babel/runtime/hel
 
 var _inherits2 = _interopRequireDefault(require("@babel/runtime/helpers/inherits"));
 
-var _JsonRpcSocket = _interopRequireWildcard(require("./JsonRpcSocket"));
+var _JsonRpcSocket = _interopRequireWildcard(require("../JsonRpcSocket"));
 
 var _eventemitter = _interopRequireDefault(require("eventemitter3"));
 
-var _helpers = require("./helpers");
+var _helpers = require("../helpers");
 
 /**
  * Function that validates namespace name
@@ -885,7 +923,7 @@ function (_EventEmitter) {
       try {
         for (var _iterator = this.getClients()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
           var socket = _step.value;
-          socket.close();
+          socket.close(1000, "Namespace is closing");
         }
       } catch (err) {
         _didIteratorError = true;
@@ -1584,8 +1622,8 @@ function (_EventEmitter) {
     value: function _unregisterMethods(isInternal, methods) {
       var _this7 = this;
 
-      if (methods && !Array.isArray(methods)) methods = [methods];
-      methods.forEach(function (method) {
+      var methodsList = Array.isArray(methods) ? methods : [methods];
+      methodsList.forEach(function (method) {
         if (!isInternal && method.startsWith("rpc.")) throw new Error("\".rpc\" prefix should be used only for internal methods");
         if (isInternal && !method.startsWith("rpc.")) method = "rpc.".concat(method);
 
@@ -1609,7 +1647,7 @@ function (_EventEmitter) {
     /**
      * Unregister a handler for method with given name or given hash of methods
      *
-     * @param {object|string} methods - method name or map of method => handler
+     * @param {Array<string>|string} methods - method name or map of method => handler
      *
      * @returns {void}
      */
@@ -1778,7 +1816,7 @@ function (_EventEmitter) {
 }(_eventemitter["default"]);
 
 exports["default"] = Namespace;
-},{"./JsonRpcSocket":2,"./helpers":6,"@babel/runtime/helpers/assertThisInitialized":15,"@babel/runtime/helpers/classCallCheck":16,"@babel/runtime/helpers/createClass":17,"@babel/runtime/helpers/defineProperty":18,"@babel/runtime/helpers/getPrototypeOf":19,"@babel/runtime/helpers/inherits":20,"@babel/runtime/helpers/interopRequireDefault":21,"@babel/runtime/helpers/interopRequireWildcard":22,"@babel/runtime/helpers/possibleConstructorReturn":25,"@babel/runtime/helpers/slicedToArray":27,"@babel/runtime/helpers/typeof":28,"@babel/runtime/regenerator":30,"eventemitter3":45}],4:[function(require,module,exports){
+},{"../JsonRpcSocket":2,"../helpers":6,"@babel/runtime/helpers/assertThisInitialized":15,"@babel/runtime/helpers/classCallCheck":16,"@babel/runtime/helpers/createClass":18,"@babel/runtime/helpers/defineProperty":19,"@babel/runtime/helpers/getPrototypeOf":20,"@babel/runtime/helpers/inherits":21,"@babel/runtime/helpers/interopRequireDefault":22,"@babel/runtime/helpers/interopRequireWildcard":23,"@babel/runtime/helpers/possibleConstructorReturn":27,"@babel/runtime/helpers/slicedToArray":29,"@babel/runtime/helpers/typeof":30,"@babel/runtime/regenerator":33,"eventemitter3":48}],4:[function(require,module,exports){
 /**
  * "Client" wraps "ws" or a browser-implemented "WebSocket" library
  * according to the environment providing JSON RPC 2.0 support on top.
@@ -1811,9 +1849,9 @@ var _assertArgs = _interopRequireDefault(require("assert-args"));
 
 var _eventemitter = _interopRequireDefault(require("eventemitter3"));
 
-var _Namespace = _interopRequireDefault(require("./Namespace"));
+var _Namespace = _interopRequireDefault(require("../Namespace"));
 
-var _JsonRpcSocket = _interopRequireWildcard(require("./JsonRpcSocket"));
+var _JsonRpcSocket = _interopRequireWildcard(require("../JsonRpcSocket"));
 
 var CommonClient =
 /*#__PURE__*/
@@ -1862,10 +1900,8 @@ function (_EventEmitter) {
     _this._webSocketFactory = webSocketFactory;
     _this._ready = false;
     _this._currentReconnects = 0;
-    _this._socket = null;
     _this._rpcSocket = null;
     _this._namespace = new _Namespace["default"]("/", {
-      strict_subscriptions: strict_subscriptions,
       // Client namespace should never use strict notifications, so client's events will
       // always be delivered to server:
       strict_notifications: false
@@ -1912,7 +1948,6 @@ function (_EventEmitter) {
           return _this2._connect(address, options);
         }, _this2.options.reconnect_interval);
       });
-      this._socket = socket;
       this._rpcSocket = rpcSocket; // Add socket to namespace:
 
       this._namespace.addClient(rpcSocket);
@@ -2434,7 +2469,6 @@ function (_EventEmitter) {
      *
      * @param {string} name - method name
      * @param {function} fn - method handler
-     * @param {string} ns? - namespace name to register
      *
      * @returns {void}
      */
@@ -2448,16 +2482,14 @@ function (_EventEmitter) {
      * Registers an internal RPC method
      *
      * @param {string} name - method name
-     * @param {function} fn - method handler
-     * @param {string} ns? - namespace name to register
      *
      * @returns {void}
      */
 
   }, {
     key: "unregisterInternalMethod",
-    value: function unregisterInternalMethod(name, fn) {
-      return this._namespace.unregisterInternalMethod(name, fn);
+    value: function unregisterInternalMethod(name) {
+      return this._namespace.unregisterInternalMethod(name);
     }
     /**
      * Returns list of registered internal methods
@@ -2594,7 +2626,7 @@ function (_EventEmitter) {
 exports["default"] = CommonClient;
 CommonClient.RPCResponseTimeoutError = _JsonRpcSocket.TimeoutError;
 CommonClient.RPCServerError = _JsonRpcSocket.RPCServerError;
-},{"./JsonRpcSocket":2,"./Namespace":3,"@babel/runtime/helpers/classCallCheck":16,"@babel/runtime/helpers/createClass":17,"@babel/runtime/helpers/getPrototypeOf":19,"@babel/runtime/helpers/inherits":20,"@babel/runtime/helpers/interopRequireDefault":21,"@babel/runtime/helpers/interopRequireWildcard":22,"@babel/runtime/helpers/possibleConstructorReturn":25,"@babel/runtime/regenerator":30,"assert-args":31,"eventemitter3":45}],5:[function(require,module,exports){
+},{"../JsonRpcSocket":2,"../Namespace":3,"@babel/runtime/helpers/classCallCheck":16,"@babel/runtime/helpers/createClass":18,"@babel/runtime/helpers/getPrototypeOf":20,"@babel/runtime/helpers/inherits":21,"@babel/runtime/helpers/interopRequireDefault":22,"@babel/runtime/helpers/interopRequireWildcard":23,"@babel/runtime/helpers/possibleConstructorReturn":27,"@babel/runtime/regenerator":33,"assert-args":34,"eventemitter3":48}],5:[function(require,module,exports){
 /**
  * WebSocket implements a browser-side WebSocket specification.
  * @module Client
@@ -2715,7 +2747,7 @@ function _default(address, options) {
   //       have different API then WS.Socket instance:
   return new WebSocketBrowserImpl(address, options);
 }
-},{"@babel/runtime/helpers/classCallCheck":16,"@babel/runtime/helpers/createClass":17,"@babel/runtime/helpers/getPrototypeOf":19,"@babel/runtime/helpers/inherits":20,"@babel/runtime/helpers/interopRequireDefault":21,"@babel/runtime/helpers/possibleConstructorReturn":25,"eventemitter3":45}],6:[function(require,module,exports){
+},{"@babel/runtime/helpers/classCallCheck":16,"@babel/runtime/helpers/createClass":18,"@babel/runtime/helpers/getPrototypeOf":20,"@babel/runtime/helpers/inherits":21,"@babel/runtime/helpers/interopRequireDefault":22,"@babel/runtime/helpers/possibleConstructorReturn":27,"eventemitter3":48}],6:[function(require,module,exports){
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
@@ -2735,7 +2767,7 @@ var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
 function getType(object) {
   return object === null ? "null" : (0, _typeof2["default"])(object);
 }
-},{"@babel/runtime/helpers/interopRequireDefault":21,"@babel/runtime/helpers/typeof":28}],7:[function(require,module,exports){
+},{"@babel/runtime/helpers/interopRequireDefault":22,"@babel/runtime/helpers/typeof":30}],7:[function(require,module,exports){
 /**
  * @module {function} 101/exists
  * @type {function}
@@ -2908,6 +2940,40 @@ function _classCallCheck(instance, Constructor) {
 
 module.exports = _classCallCheck;
 },{}],17:[function(require,module,exports){
+var setPrototypeOf = require("./setPrototypeOf");
+
+function isNativeReflectConstruct() {
+  if (typeof Reflect === "undefined" || !Reflect.construct) return false;
+  if (Reflect.construct.sham) return false;
+  if (typeof Proxy === "function") return true;
+
+  try {
+    Date.prototype.toString.call(Reflect.construct(Date, [], function () {}));
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+function _construct(Parent, args, Class) {
+  if (isNativeReflectConstruct()) {
+    module.exports = _construct = Reflect.construct;
+  } else {
+    module.exports = _construct = function _construct(Parent, args, Class) {
+      var a = [null];
+      a.push.apply(a, args);
+      var Constructor = Function.bind.apply(Parent, a);
+      var instance = new Constructor();
+      if (Class) setPrototypeOf(instance, Class.prototype);
+      return instance;
+    };
+  }
+
+  return _construct.apply(null, arguments);
+}
+
+module.exports = _construct;
+},{"./setPrototypeOf":28}],18:[function(require,module,exports){
 function _defineProperties(target, props) {
   for (var i = 0; i < props.length; i++) {
     var descriptor = props[i];
@@ -2925,7 +2991,7 @@ function _createClass(Constructor, protoProps, staticProps) {
 }
 
 module.exports = _createClass;
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 function _defineProperty(obj, key, value) {
   if (key in obj) {
     Object.defineProperty(obj, key, {
@@ -2942,7 +3008,7 @@ function _defineProperty(obj, key, value) {
 }
 
 module.exports = _defineProperty;
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 function _getPrototypeOf(o) {
   module.exports = _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
     return o.__proto__ || Object.getPrototypeOf(o);
@@ -2951,7 +3017,7 @@ function _getPrototypeOf(o) {
 }
 
 module.exports = _getPrototypeOf;
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 var setPrototypeOf = require("./setPrototypeOf");
 
 function _inherits(subClass, superClass) {
@@ -2970,7 +3036,7 @@ function _inherits(subClass, superClass) {
 }
 
 module.exports = _inherits;
-},{"./setPrototypeOf":26}],21:[function(require,module,exports){
+},{"./setPrototypeOf":28}],22:[function(require,module,exports){
 function _interopRequireDefault(obj) {
   return obj && obj.__esModule ? obj : {
     "default": obj
@@ -2978,7 +3044,7 @@ function _interopRequireDefault(obj) {
 }
 
 module.exports = _interopRequireDefault;
-},{}],22:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 var _typeof = require("../helpers/typeof");
 
 function _getRequireWildcardCache() {
@@ -3034,7 +3100,13 @@ function _interopRequireWildcard(obj) {
 }
 
 module.exports = _interopRequireWildcard;
-},{"../helpers/typeof":28}],23:[function(require,module,exports){
+},{"../helpers/typeof":30}],24:[function(require,module,exports){
+function _isNativeFunction(fn) {
+  return Function.toString.call(fn).indexOf("[native code]") !== -1;
+}
+
+module.exports = _isNativeFunction;
+},{}],25:[function(require,module,exports){
 function _iterableToArrayLimit(arr, i) {
   if (!(Symbol.iterator in Object(arr) || Object.prototype.toString.call(arr) === "[object Arguments]")) {
     return;
@@ -3066,13 +3138,13 @@ function _iterableToArrayLimit(arr, i) {
 }
 
 module.exports = _iterableToArrayLimit;
-},{}],24:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 function _nonIterableRest() {
   throw new TypeError("Invalid attempt to destructure non-iterable instance");
 }
 
 module.exports = _nonIterableRest;
-},{}],25:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 var _typeof = require("../helpers/typeof");
 
 var assertThisInitialized = require("./assertThisInitialized");
@@ -3086,7 +3158,7 @@ function _possibleConstructorReturn(self, call) {
 }
 
 module.exports = _possibleConstructorReturn;
-},{"../helpers/typeof":28,"./assertThisInitialized":15}],26:[function(require,module,exports){
+},{"../helpers/typeof":30,"./assertThisInitialized":15}],28:[function(require,module,exports){
 function _setPrototypeOf(o, p) {
   module.exports = _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
     o.__proto__ = p;
@@ -3097,7 +3169,7 @@ function _setPrototypeOf(o, p) {
 }
 
 module.exports = _setPrototypeOf;
-},{}],27:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 var arrayWithHoles = require("./arrayWithHoles");
 
 var iterableToArrayLimit = require("./iterableToArrayLimit");
@@ -3109,7 +3181,7 @@ function _slicedToArray(arr, i) {
 }
 
 module.exports = _slicedToArray;
-},{"./arrayWithHoles":14,"./iterableToArrayLimit":23,"./nonIterableRest":24}],28:[function(require,module,exports){
+},{"./arrayWithHoles":14,"./iterableToArrayLimit":25,"./nonIterableRest":26}],30:[function(require,module,exports){
 function _typeof2(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof2 = function _typeof2(obj) { return typeof obj; }; } else { _typeof2 = function _typeof2(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof2(obj); }
 
 function _typeof(obj) {
@@ -3127,7 +3199,51 @@ function _typeof(obj) {
 }
 
 module.exports = _typeof;
-},{}],29:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
+var getPrototypeOf = require("./getPrototypeOf");
+
+var setPrototypeOf = require("./setPrototypeOf");
+
+var isNativeFunction = require("./isNativeFunction");
+
+var construct = require("./construct");
+
+function _wrapNativeSuper(Class) {
+  var _cache = typeof Map === "function" ? new Map() : undefined;
+
+  module.exports = _wrapNativeSuper = function _wrapNativeSuper(Class) {
+    if (Class === null || !isNativeFunction(Class)) return Class;
+
+    if (typeof Class !== "function") {
+      throw new TypeError("Super expression must either be null or a function");
+    }
+
+    if (typeof _cache !== "undefined") {
+      if (_cache.has(Class)) return _cache.get(Class);
+
+      _cache.set(Class, Wrapper);
+    }
+
+    function Wrapper() {
+      return construct(Class, arguments, getPrototypeOf(this).constructor);
+    }
+
+    Wrapper.prototype = Object.create(Class.prototype, {
+      constructor: {
+        value: Wrapper,
+        enumerable: false,
+        writable: true,
+        configurable: true
+      }
+    });
+    return setPrototypeOf(Wrapper, Class);
+  };
+
+  return _wrapNativeSuper(Class);
+}
+
+module.exports = _wrapNativeSuper;
+},{"./construct":17,"./getPrototypeOf":20,"./isNativeFunction":24,"./setPrototypeOf":28}],32:[function(require,module,exports){
 /**
  * Copyright (c) 2014-present, Facebook, Inc.
  *
@@ -3855,10 +3971,10 @@ try {
   Function("r", "regeneratorRuntime = r")(runtime);
 }
 
-},{}],30:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 module.exports = require("regenerator-runtime");
 
-},{"regenerator-runtime":29}],31:[function(require,module,exports){
+},{"regenerator-runtime":32}],34:[function(require,module,exports){
 var debug = require('debug')('assert-args')
 var exists = require('101/exists')
 var isObject = require('101/is-object')
@@ -4041,7 +4157,7 @@ function assertArgs (args, validation) {
   return ret
 }
 
-},{"./lib/is-optional-key.js":34,"./lib/is-spread-key.js":35,"./lib/validate.js":38,"101/exists":7,"101/is-object":11,"101/not":13,"debug":43}],32:[function(require,module,exports){
+},{"./lib/is-optional-key.js":37,"./lib/is-spread-key.js":38,"./lib/validate.js":41,"101/exists":7,"101/is-object":11,"101/not":13,"debug":46}],35:[function(require,module,exports){
 module.exports = assertType
 
 function assertType (bool, message) {
@@ -4050,7 +4166,7 @@ function assertType (bool, message) {
   }
 }
 
-},{}],33:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 var isCapitalized = require('is-capitalized')
 var isClassStrict = require('is-class')
 var isFunction = require('101/is-function')
@@ -4062,14 +4178,14 @@ function isClass (fn) {
   (isFunction(fn) && isCapitalized(fn.name))
 }
 
-},{"101/is-function":9,"is-capitalized":47,"is-class":48}],34:[function(require,module,exports){
+},{"101/is-function":9,"is-capitalized":50,"is-class":51}],37:[function(require,module,exports){
 module.exports = isOptionalKey
 
 function isOptionalKey (key) {
   return /^\[.+\]$/.test(key)
 }
 
-},{}],35:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 module.exports = isSpreadKey
 
 function isSpreadKey (key) {
@@ -4077,7 +4193,7 @@ function isSpreadKey (key) {
   /^\[[.]{3}[^\]]+\]$/.test(key)
 }
 
-},{}],36:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 var compoundSubject = require('compound-subject')
 var isEmpty = require('101/is-empty')
 var isString = require('101/is-string')
@@ -4130,14 +4246,14 @@ function multiValidate (key, arg, validators) {
   }
 }
 
-},{"./assert-type":32,"./is-class.js":33,"./starts-with-vowel.js":37,"./validate.js":38,"101/is-empty":8,"101/is-function":9,"101/is-string":12,"compound-subject":42}],37:[function(require,module,exports){
+},{"./assert-type":35,"./is-class.js":36,"./starts-with-vowel.js":40,"./validate.js":41,"101/is-empty":8,"101/is-function":9,"101/is-string":12,"compound-subject":45}],40:[function(require,module,exports){
 module.exports = startsWithVowel
 
 function startsWithVowel (str) {
   return /^[aeiou]/i.test(str)
 }
 
-},{}],38:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 var isFunction = require('101/is-function')
 var isInteger = require('101/is-integer')
 var isObject = require('101/is-object')
@@ -4216,7 +4332,7 @@ function validate (key, arg, validator, _plural) {
   }
 }
 
-},{"./assert-type.js":32,"./is-class.js":33,"./multi-validate.js":36,"./starts-with-vowel.js":37,"101/is-function":9,"101/is-integer":10,"101/is-object":11,"101/is-string":12}],39:[function(require,module,exports){
+},{"./assert-type.js":35,"./is-class.js":36,"./multi-validate.js":39,"./starts-with-vowel.js":40,"101/is-function":9,"101/is-integer":10,"101/is-object":11,"101/is-string":12}],42:[function(require,module,exports){
 'use strict'
 
 exports.byteLength = byteLength
@@ -4370,7 +4486,7 @@ function fromByteArray (uint8) {
   return parts.join('')
 }
 
-},{}],40:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 (function (Buffer){
 /*!
  * The buffer module from node.js, for the browser.
@@ -6173,7 +6289,7 @@ var hexSliceLookupTable = (function () {
 })()
 
 }).call(this,require("buffer").Buffer)
-},{"base64-js":39,"buffer":40,"ieee754":46}],41:[function(require,module,exports){
+},{"base64-js":42,"buffer":43,"ieee754":49}],44:[function(require,module,exports){
 /*!
 Copyright (C) 2013-2017 by Andrea Giammarchi - @WebReflection
 
@@ -6382,7 +6498,7 @@ var CircularJSON = {
 
 module.exports = CircularJSON;
 
-},{}],42:[function(require,module,exports){
+},{}],45:[function(require,module,exports){
 (function () {
 
 
@@ -6491,7 +6607,7 @@ module.exports = CircularJSON;
 
 })();
 
-},{}],43:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
 (function (process){
 /**
  * This is the web browser implementation of `debug()`.
@@ -6680,7 +6796,7 @@ function localstorage() {
 }
 
 }).call(this,require('_process'))
-},{"./debug":44,"_process":51}],44:[function(require,module,exports){
+},{"./debug":47,"_process":54}],47:[function(require,module,exports){
 
 /**
  * This is the common logic for both the Node.js and web browser
@@ -6884,7 +7000,7 @@ function coerce(val) {
   return val;
 }
 
-},{"ms":50}],45:[function(require,module,exports){
+},{"ms":53}],48:[function(require,module,exports){
 'use strict';
 
 var has = Object.prototype.hasOwnProperty
@@ -7222,7 +7338,7 @@ if ('undefined' !== typeof module) {
   module.exports = EventEmitter;
 }
 
-},{}],46:[function(require,module,exports){
+},{}],49:[function(require,module,exports){
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   var e, m
   var eLen = (nBytes * 8) - mLen - 1
@@ -7308,7 +7424,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128
 }
 
-},{}],47:[function(require,module,exports){
+},{}],50:[function(require,module,exports){
 var capitalized = /^[A-Z]/
 var strictCapitalilized = /^[A-Z]([a-z]|$)/
 
@@ -7320,7 +7436,7 @@ function isCapitalized (str, strict) {
     : capitalized.test(str)
 }
 
-},{}],48:[function(require,module,exports){
+},{}],51:[function(require,module,exports){
 (function(root) {
   var toString = Function.prototype.toString;
 
@@ -7351,7 +7467,7 @@ function isCapitalized (str, strict) {
 })(this);
 
 
-},{}],49:[function(require,module,exports){
+},{}],52:[function(require,module,exports){
 ((factory) => {
     // Define as CommonJS export:
     if (typeof require === 'function' && typeof exports === 'object') {
@@ -7839,7 +7955,7 @@ function isCapitalized (str, strict) {
     };
 });
 
-},{}],50:[function(require,module,exports){
+},{}],53:[function(require,module,exports){
 /**
  * Helpers.
  */
@@ -7993,7 +8109,7 @@ function plural(ms, n, name) {
   return Math.ceil(ms / n) + ' ' + name + 's';
 }
 
-},{}],51:[function(require,module,exports){
+},{}],54:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -8179,7 +8295,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],52:[function(require,module,exports){
+},{}],55:[function(require,module,exports){
 /**
  * Convert array of 16 byte values to UUID string format of the form:
  * XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
@@ -8205,7 +8321,7 @@ function bytesToUuid(buf, offset) {
 
 module.exports = bytesToUuid;
 
-},{}],53:[function(require,module,exports){
+},{}],56:[function(require,module,exports){
 // Unique ID creation requires a high quality random # generator.  In the
 // browser this is a little complicated due to unknown quality of Math.random()
 // and inconsistent support for the `crypto` API.  We do the best we can via
@@ -8241,7 +8357,7 @@ if (getRandomValues) {
   };
 }
 
-},{}],54:[function(require,module,exports){
+},{}],57:[function(require,module,exports){
 var rng = require('./lib/rng');
 var bytesToUuid = require('./lib/bytesToUuid');
 
@@ -8352,5 +8468,5 @@ function v1(options, buf, offset) {
 
 module.exports = v1;
 
-},{"./lib/bytesToUuid":52,"./lib/rng":53}]},{},[1])(1)
+},{"./lib/bytesToUuid":55,"./lib/rng":56}]},{},[1])(1)
 });
