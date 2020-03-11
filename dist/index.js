@@ -8,7 +8,7 @@ Object.defineProperty(exports, "__esModule", {
 Object.defineProperty(exports, "Server", {
   enumerable: true,
   get: function get() {
-    return _server["default"];
+    return _Server["default"];
   }
 });
 exports.Client = void 0;
@@ -25,7 +25,7 @@ var _websocket = _interopRequireDefault(require("./lib/client/websocket"));
 
 var _client = _interopRequireDefault(require("./lib/client"));
 
-var _server = _interopRequireDefault(require("./lib/server"));
+var _Server = _interopRequireDefault(require("./lib/Server"));
 
 var Client =
 /*#__PURE__*/

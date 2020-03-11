@@ -586,6 +586,10 @@ export default class JsonRPCSocket extends EventEmitter implements IJsonRpcSocke
         {
             data = CircularJSON.stringify(data)
         }
+        if (!cb)
+        {
+            cb = function() {}
+        }
         // @ts-ignore
         return this._socket.send(data, options, cb)
     }

@@ -709,6 +709,10 @@ function (_EventEmitter) {
     value: function send(data, options, cb) {
       if (data && (0, _typeof2["default"])(data) === "object" && !(data instanceof ArrayBuffer) && !(data instanceof Buffer)) {
         data = _circularJson["default"].stringify(data);
+      }
+
+      if (!cb) {
+        cb = function cb() {};
       } // @ts-ignore
 
 
