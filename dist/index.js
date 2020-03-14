@@ -27,9 +27,7 @@ var _client = _interopRequireDefault(require("./lib/client"));
 
 var _server = _interopRequireDefault(require("./lib/server"));
 
-var Client =
-/*#__PURE__*/
-function (_CommonClient) {
+var Client = /*#__PURE__*/function (_CommonClient) {
   (0, _inherits2["default"])(Client, _CommonClient);
 
   function Client() {

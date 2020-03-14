@@ -23,9 +23,7 @@ var _inherits2 = _interopRequireDefault(require("@babel/runtime/helpers/inherits
 
 var _eventemitter = require("eventemitter3");
 
-var WebSocketBrowserImpl =
-/*#__PURE__*/
-function (_EventEmitter) {
+var WebSocketBrowserImpl = /*#__PURE__*/function (_EventEmitter) {
   (0, _inherits2["default"])(WebSocketBrowserImpl, _EventEmitter);
 
   /** Instantiate a WebSocket class

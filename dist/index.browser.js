@@ -19,9 +19,7 @@ var _websocket = _interopRequireDefault(require("./lib/client/websocket.browser"
 
 var _client = _interopRequireDefault(require("./lib/client"));
 
-var Client =
-/*#__PURE__*/
-function (_CommonClient) {
+var Client = /*#__PURE__*/function (_CommonClient) {
   (0, _inherits2["default"])(Client, _CommonClient);
 
   function Client() {

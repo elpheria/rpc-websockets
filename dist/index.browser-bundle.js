@@ -20,9 +20,7 @@ var _websocket = _interopRequireDefault(require("./lib/client/websocket.browser"
 
 var _client = _interopRequireDefault(require("./lib/client"));
 
-var Client =
-/*#__PURE__*/
-function (_CommonClient) {
+var Client = /*#__PURE__*/function (_CommonClient) {
   (0, _inherits2["default"])(Client, _CommonClient);
 
   function Client() {
@@ -52,7 +50,7 @@ function (_CommonClient) {
 }(_client["default"]);
 
 exports.Client = Client;
-},{"./lib/client":2,"./lib/client/websocket.browser":3,"@babel/runtime/helpers/classCallCheck":12,"@babel/runtime/helpers/getPrototypeOf":14,"@babel/runtime/helpers/inherits":15,"@babel/runtime/helpers/interopRequireDefault":16,"@babel/runtime/helpers/possibleConstructorReturn":17}],2:[function(require,module,exports){
+},{"./lib/client":2,"./lib/client/websocket.browser":3,"@babel/runtime/helpers/classCallCheck":13,"@babel/runtime/helpers/getPrototypeOf":15,"@babel/runtime/helpers/inherits":16,"@babel/runtime/helpers/interopRequireDefault":17,"@babel/runtime/helpers/possibleConstructorReturn":18}],2:[function(require,module,exports){
 (function (Buffer){
 /**
  * "Client" wraps "ws" or a browser-implemented "WebSocket" library
@@ -69,6 +67,8 @@ Object.defineProperty(exports, "__esModule", {
 exports["default"] = void 0;
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
+
+var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 
 var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
 
@@ -88,9 +88,7 @@ var _eventemitter = require("eventemitter3");
 
 var _circularJson = _interopRequireDefault(require("circular-json"));
 
-var CommonClient =
-/*#__PURE__*/
-function (_EventEmitter) {
+var CommonClient = /*#__PURE__*/function (_EventEmitter) {
   (0, _inherits2["default"])(CommonClient, _EventEmitter);
 
   /**
@@ -216,24 +214,32 @@ function (_EventEmitter) {
 
   }, {
     key: "login",
-    value: function login(params) {
-      return _regenerator["default"].async(function login$(_context) {
-        while (1) {
-          switch (_context.prev = _context.next) {
-            case 0:
-              _context.next = 2;
-              return _regenerator["default"].awrap(this.call("rpc.login", params));
+    value: function () {
+      var _login = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(params) {
+        return _regenerator["default"].wrap(function _callee$(_context) {
+          while (1) {
+            switch (_context.prev = _context.next) {
+              case 0:
+                _context.next = 2;
+                return this.call("rpc.login", params);
 
-            case 2:
-              return _context.abrupt("return", _context.sent);
+              case 2:
+                return _context.abrupt("return", _context.sent);
 
-            case 3:
-            case "end":
-              return _context.stop();
+              case 3:
+              case "end":
+                return _context.stop();
+            }
           }
-        }
-      }, null, this);
-    }
+        }, _callee, this);
+      }));
+
+      function login(_x) {
+        return _login.apply(this, arguments);
+      }
+
+      return login;
+    }()
     /**
      * Fetches a list of client's methods registered on server.
      * @method
@@ -242,24 +248,32 @@ function (_EventEmitter) {
 
   }, {
     key: "listMethods",
-    value: function listMethods() {
-      return _regenerator["default"].async(function listMethods$(_context2) {
-        while (1) {
-          switch (_context2.prev = _context2.next) {
-            case 0:
-              _context2.next = 2;
-              return _regenerator["default"].awrap(this.call("__listMethods"));
+    value: function () {
+      var _listMethods = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2() {
+        return _regenerator["default"].wrap(function _callee2$(_context2) {
+          while (1) {
+            switch (_context2.prev = _context2.next) {
+              case 0:
+                _context2.next = 2;
+                return this.call("__listMethods");
 
-            case 2:
-              return _context2.abrupt("return", _context2.sent);
+              case 2:
+                return _context2.abrupt("return", _context2.sent);
 
-            case 3:
-            case "end":
-              return _context2.stop();
+              case 3:
+              case "end":
+                return _context2.stop();
+            }
           }
-        }
-      }, null, this);
-    }
+        }, _callee2, this);
+      }));
+
+      function listMethods() {
+        return _listMethods.apply(this, arguments);
+      }
+
+      return listMethods;
+    }()
     /**
      * Sends a JSON-RPC 2.0 notification to server.
      * @method
@@ -301,40 +315,48 @@ function (_EventEmitter) {
 
   }, {
     key: "subscribe",
-    value: function subscribe(event) {
-      var result,
-          _args3 = arguments;
-      return _regenerator["default"].async(function subscribe$(_context3) {
-        while (1) {
-          switch (_context3.prev = _context3.next) {
-            case 0:
-              (0, _assertArgs["default"])(_args3, {
-                event: ["string", Array]
-              });
-              if (typeof event === "string") event = [event];
-              _context3.next = 4;
-              return _regenerator["default"].awrap(this.call("rpc.on", event));
+    value: function () {
+      var _subscribe = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3(event) {
+        var result,
+            _args3 = arguments;
+        return _regenerator["default"].wrap(function _callee3$(_context3) {
+          while (1) {
+            switch (_context3.prev = _context3.next) {
+              case 0:
+                (0, _assertArgs["default"])(_args3, {
+                  event: ["string", Array]
+                });
+                if (typeof event === "string") event = [event];
+                _context3.next = 4;
+                return this.call("rpc.on", event);
 
-            case 4:
-              result = _context3.sent;
+              case 4:
+                result = _context3.sent;
 
-              if (!(typeof event === "string" && result[event] !== "ok")) {
-                _context3.next = 7;
-                break;
-              }
+                if (!(typeof event === "string" && result[event] !== "ok")) {
+                  _context3.next = 7;
+                  break;
+                }
 
-              throw new Error("Failed subscribing to an event '" + event + "' with: " + result[event]);
+                throw new Error("Failed subscribing to an event '" + event + "' with: " + result[event]);
 
-            case 7:
-              return _context3.abrupt("return", result);
+              case 7:
+                return _context3.abrupt("return", result);
 
-            case 8:
-            case "end":
-              return _context3.stop();
+              case 8:
+              case "end":
+                return _context3.stop();
+            }
           }
-        }
-      }, null, this);
-    }
+        }, _callee3, this);
+      }));
+
+      function subscribe(_x2) {
+        return _subscribe.apply(this, arguments);
+      }
+
+      return subscribe;
+    }()
     /**
      * Unsubscribes from a defined event.
      * @method
@@ -345,40 +367,48 @@ function (_EventEmitter) {
 
   }, {
     key: "unsubscribe",
-    value: function unsubscribe(event) {
-      var result,
-          _args4 = arguments;
-      return _regenerator["default"].async(function unsubscribe$(_context4) {
-        while (1) {
-          switch (_context4.prev = _context4.next) {
-            case 0:
-              (0, _assertArgs["default"])(_args4, {
-                event: ["string", Array]
-              });
-              if (typeof event === "string") event = [event];
-              _context4.next = 4;
-              return _regenerator["default"].awrap(this.call("rpc.off", event));
+    value: function () {
+      var _unsubscribe = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee4(event) {
+        var result,
+            _args4 = arguments;
+        return _regenerator["default"].wrap(function _callee4$(_context4) {
+          while (1) {
+            switch (_context4.prev = _context4.next) {
+              case 0:
+                (0, _assertArgs["default"])(_args4, {
+                  event: ["string", Array]
+                });
+                if (typeof event === "string") event = [event];
+                _context4.next = 4;
+                return this.call("rpc.off", event);
 
-            case 4:
-              result = _context4.sent;
+              case 4:
+                result = _context4.sent;
 
-              if (!(typeof event === "string" && result[event] !== "ok")) {
-                _context4.next = 7;
-                break;
-              }
+                if (!(typeof event === "string" && result[event] !== "ok")) {
+                  _context4.next = 7;
+                  break;
+                }
 
-              throw new Error("Failed unsubscribing from an event with: " + result);
+                throw new Error("Failed unsubscribing from an event with: " + result);
 
-            case 7:
-              return _context4.abrupt("return", result);
+              case 7:
+                return _context4.abrupt("return", result);
 
-            case 8:
-            case "end":
-              return _context4.stop();
+              case 8:
+              case "end":
+                return _context4.stop();
+            }
           }
-        }
-      }, null, this);
-    }
+        }, _callee4, this);
+      }));
+
+      function unsubscribe(_x3) {
+        return _unsubscribe.apply(this, arguments);
+      }
+
+      return unsubscribe;
+    }()
     /**
      * Closes a WebSocket connection gracefully.
      * @method
@@ -465,7 +495,7 @@ function (_EventEmitter) {
 
 exports["default"] = CommonClient;
 }).call(this,require("buffer").Buffer)
-},{"@babel/runtime/helpers/classCallCheck":12,"@babel/runtime/helpers/createClass":13,"@babel/runtime/helpers/getPrototypeOf":14,"@babel/runtime/helpers/inherits":15,"@babel/runtime/helpers/interopRequireDefault":16,"@babel/runtime/helpers/possibleConstructorReturn":17,"@babel/runtime/helpers/typeof":19,"@babel/runtime/regenerator":20,"assert-args":21,"buffer":33,"circular-json":34,"eventemitter3":36}],3:[function(require,module,exports){
+},{"@babel/runtime/helpers/asyncToGenerator":12,"@babel/runtime/helpers/classCallCheck":13,"@babel/runtime/helpers/createClass":14,"@babel/runtime/helpers/getPrototypeOf":15,"@babel/runtime/helpers/inherits":16,"@babel/runtime/helpers/interopRequireDefault":17,"@babel/runtime/helpers/possibleConstructorReturn":18,"@babel/runtime/helpers/typeof":20,"@babel/runtime/regenerator":21,"assert-args":22,"buffer":34,"circular-json":35,"eventemitter3":37}],3:[function(require,module,exports){
 /**
  * WebSocket implements a browser-side WebSocket specification.
  * @module Client
@@ -491,9 +521,7 @@ var _inherits2 = _interopRequireDefault(require("@babel/runtime/helpers/inherits
 
 var _eventemitter = require("eventemitter3");
 
-var WebSocketBrowserImpl =
-/*#__PURE__*/
-function (_EventEmitter) {
+var WebSocketBrowserImpl = /*#__PURE__*/function (_EventEmitter) {
   (0, _inherits2["default"])(WebSocketBrowserImpl, _EventEmitter);
 
   /** Instantiate a WebSocket class
@@ -584,7 +612,7 @@ function (_EventEmitter) {
 function _default(address, options) {
   return new WebSocketBrowserImpl(address, options);
 }
-},{"@babel/runtime/helpers/classCallCheck":12,"@babel/runtime/helpers/createClass":13,"@babel/runtime/helpers/getPrototypeOf":14,"@babel/runtime/helpers/inherits":15,"@babel/runtime/helpers/interopRequireDefault":16,"@babel/runtime/helpers/possibleConstructorReturn":17,"eventemitter3":36}],4:[function(require,module,exports){
+},{"@babel/runtime/helpers/classCallCheck":13,"@babel/runtime/helpers/createClass":14,"@babel/runtime/helpers/getPrototypeOf":15,"@babel/runtime/helpers/inherits":16,"@babel/runtime/helpers/interopRequireDefault":17,"@babel/runtime/helpers/possibleConstructorReturn":18,"eventemitter3":37}],4:[function(require,module,exports){
 /**
  * @module {function} 101/exists
  * @type {function}
@@ -743,6 +771,44 @@ function _assertThisInitialized(self) {
 
 module.exports = _assertThisInitialized;
 },{}],12:[function(require,module,exports){
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
+  try {
+    var info = gen[key](arg);
+    var value = info.value;
+  } catch (error) {
+    reject(error);
+    return;
+  }
+
+  if (info.done) {
+    resolve(value);
+  } else {
+    Promise.resolve(value).then(_next, _throw);
+  }
+}
+
+function _asyncToGenerator(fn) {
+  return function () {
+    var self = this,
+        args = arguments;
+    return new Promise(function (resolve, reject) {
+      var gen = fn.apply(self, args);
+
+      function _next(value) {
+        asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);
+      }
+
+      function _throw(err) {
+        asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);
+      }
+
+      _next(undefined);
+    });
+  };
+}
+
+module.exports = _asyncToGenerator;
+},{}],13:[function(require,module,exports){
 function _classCallCheck(instance, Constructor) {
   if (!(instance instanceof Constructor)) {
     throw new TypeError("Cannot call a class as a function");
@@ -750,7 +816,7 @@ function _classCallCheck(instance, Constructor) {
 }
 
 module.exports = _classCallCheck;
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 function _defineProperties(target, props) {
   for (var i = 0; i < props.length; i++) {
     var descriptor = props[i];
@@ -768,7 +834,7 @@ function _createClass(Constructor, protoProps, staticProps) {
 }
 
 module.exports = _createClass;
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 function _getPrototypeOf(o) {
   module.exports = _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
     return o.__proto__ || Object.getPrototypeOf(o);
@@ -777,7 +843,7 @@ function _getPrototypeOf(o) {
 }
 
 module.exports = _getPrototypeOf;
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 var setPrototypeOf = require("./setPrototypeOf");
 
 function _inherits(subClass, superClass) {
@@ -796,7 +862,7 @@ function _inherits(subClass, superClass) {
 }
 
 module.exports = _inherits;
-},{"./setPrototypeOf":18}],16:[function(require,module,exports){
+},{"./setPrototypeOf":19}],17:[function(require,module,exports){
 function _interopRequireDefault(obj) {
   return obj && obj.__esModule ? obj : {
     "default": obj
@@ -804,7 +870,7 @@ function _interopRequireDefault(obj) {
 }
 
 module.exports = _interopRequireDefault;
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 var _typeof = require("../helpers/typeof");
 
 var assertThisInitialized = require("./assertThisInitialized");
@@ -818,7 +884,7 @@ function _possibleConstructorReturn(self, call) {
 }
 
 module.exports = _possibleConstructorReturn;
-},{"../helpers/typeof":19,"./assertThisInitialized":11}],18:[function(require,module,exports){
+},{"../helpers/typeof":20,"./assertThisInitialized":11}],19:[function(require,module,exports){
 function _setPrototypeOf(o, p) {
   module.exports = _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
     o.__proto__ = p;
@@ -829,17 +895,17 @@ function _setPrototypeOf(o, p) {
 }
 
 module.exports = _setPrototypeOf;
-},{}],19:[function(require,module,exports){
-function _typeof2(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof2 = function _typeof2(obj) { return typeof obj; }; } else { _typeof2 = function _typeof2(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof2(obj); }
-
+},{}],20:[function(require,module,exports){
 function _typeof(obj) {
-  if (typeof Symbol === "function" && _typeof2(Symbol.iterator) === "symbol") {
+  "@babel/helpers - typeof";
+
+  if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
     module.exports = _typeof = function _typeof(obj) {
-      return _typeof2(obj);
+      return typeof obj;
     };
   } else {
     module.exports = _typeof = function _typeof(obj) {
-      return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : _typeof2(obj);
+      return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
     };
   }
 
@@ -847,10 +913,10 @@ function _typeof(obj) {
 }
 
 module.exports = _typeof;
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 module.exports = require("regenerator-runtime");
 
-},{"regenerator-runtime":41}],21:[function(require,module,exports){
+},{"regenerator-runtime":42}],22:[function(require,module,exports){
 var debug = require('debug')('assert-args')
 var exists = require('101/exists')
 var isObject = require('101/is-object')
@@ -1033,7 +1099,7 @@ function assertArgs (args, validation) {
   return ret
 }
 
-},{"./lib/is-optional-key.js":24,"./lib/is-spread-key.js":25,"./lib/validate.js":28,"101/exists":4,"101/is-object":8,"101/not":10,"debug":29}],22:[function(require,module,exports){
+},{"./lib/is-optional-key.js":25,"./lib/is-spread-key.js":26,"./lib/validate.js":29,"101/exists":4,"101/is-object":8,"101/not":10,"debug":30}],23:[function(require,module,exports){
 module.exports = assertType
 
 function assertType (bool, message) {
@@ -1042,7 +1108,7 @@ function assertType (bool, message) {
   }
 }
 
-},{}],23:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 var isCapitalized = require('is-capitalized')
 var isClassStrict = require('is-class')
 var isFunction = require('101/is-function')
@@ -1054,14 +1120,14 @@ function isClass (fn) {
   (isFunction(fn) && isCapitalized(fn.name))
 }
 
-},{"101/is-function":6,"is-capitalized":38,"is-class":39}],24:[function(require,module,exports){
+},{"101/is-function":6,"is-capitalized":39,"is-class":40}],25:[function(require,module,exports){
 module.exports = isOptionalKey
 
 function isOptionalKey (key) {
   return /^\[.+\]$/.test(key)
 }
 
-},{}],25:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 module.exports = isSpreadKey
 
 function isSpreadKey (key) {
@@ -1069,7 +1135,7 @@ function isSpreadKey (key) {
   /^\[[.]{3}[^\]]+\]$/.test(key)
 }
 
-},{}],26:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 var compoundSubject = require('compound-subject')
 var isEmpty = require('101/is-empty')
 var isString = require('101/is-string')
@@ -1122,14 +1188,14 @@ function multiValidate (key, arg, validators) {
   }
 }
 
-},{"./assert-type":22,"./is-class.js":23,"./starts-with-vowel.js":27,"./validate.js":28,"101/is-empty":5,"101/is-function":6,"101/is-string":9,"compound-subject":35}],27:[function(require,module,exports){
+},{"./assert-type":23,"./is-class.js":24,"./starts-with-vowel.js":28,"./validate.js":29,"101/is-empty":5,"101/is-function":6,"101/is-string":9,"compound-subject":36}],28:[function(require,module,exports){
 module.exports = startsWithVowel
 
 function startsWithVowel (str) {
   return /^[aeiou]/i.test(str)
 }
 
-},{}],28:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 var isFunction = require('101/is-function')
 var isInteger = require('101/is-integer')
 var isObject = require('101/is-object')
@@ -1208,7 +1274,7 @@ function validate (key, arg, validator, _plural) {
   }
 }
 
-},{"./assert-type.js":22,"./is-class.js":23,"./multi-validate.js":26,"./starts-with-vowel.js":27,"101/is-function":6,"101/is-integer":7,"101/is-object":8,"101/is-string":9}],29:[function(require,module,exports){
+},{"./assert-type.js":23,"./is-class.js":24,"./multi-validate.js":27,"./starts-with-vowel.js":28,"101/is-function":6,"101/is-integer":7,"101/is-object":8,"101/is-string":9}],30:[function(require,module,exports){
 (function (process){
 /**
  * This is the web browser implementation of `debug()`.
@@ -1397,7 +1463,7 @@ function localstorage() {
 }
 
 }).call(this,require('_process'))
-},{"./debug":30,"_process":40}],30:[function(require,module,exports){
+},{"./debug":31,"_process":41}],31:[function(require,module,exports){
 
 /**
  * This is the common logic for both the Node.js and web browser
@@ -1601,7 +1667,7 @@ function coerce(val) {
   return val;
 }
 
-},{"ms":31}],31:[function(require,module,exports){
+},{"ms":32}],32:[function(require,module,exports){
 /**
  * Helpers.
  */
@@ -1755,7 +1821,7 @@ function plural(ms, n, name) {
   return Math.ceil(ms / n) + ' ' + name + 's';
 }
 
-},{}],32:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 'use strict'
 
 exports.byteLength = byteLength
@@ -1909,7 +1975,7 @@ function fromByteArray (uint8) {
   return parts.join('')
 }
 
-},{}],33:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
 (function (Buffer){
 /*!
  * The buffer module from node.js, for the browser.
@@ -3712,7 +3778,7 @@ var hexSliceLookupTable = (function () {
 })()
 
 }).call(this,require("buffer").Buffer)
-},{"base64-js":32,"buffer":33,"ieee754":37}],34:[function(require,module,exports){
+},{"base64-js":33,"buffer":34,"ieee754":38}],35:[function(require,module,exports){
 /*!
 Copyright (C) 2013-2017 by Andrea Giammarchi - @WebReflection
 
@@ -3921,7 +3987,7 @@ var CircularJSON = {
 
 module.exports = CircularJSON;
 
-},{}],35:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 (function () {
 
 
@@ -4030,7 +4096,7 @@ module.exports = CircularJSON;
 
 })();
 
-},{}],36:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 'use strict';
 
 var has = Object.prototype.hasOwnProperty
@@ -4368,7 +4434,7 @@ if ('undefined' !== typeof module) {
   module.exports = EventEmitter;
 }
 
-},{}],37:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   var e, m
   var eLen = (nBytes * 8) - mLen - 1
@@ -4454,7 +4520,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128
 }
 
-},{}],38:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 var capitalized = /^[A-Z]/
 var strictCapitalilized = /^[A-Z]([a-z]|$)/
 
@@ -4466,7 +4532,7 @@ function isCapitalized (str, strict) {
     : capitalized.test(str)
 }
 
-},{}],39:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 (function(root) {
   var toString = Function.prototype.toString;
 
@@ -4497,7 +4563,7 @@ function isCapitalized (str, strict) {
 })(this);
 
 
-},{}],40:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -4683,7 +4749,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],41:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 /**
  * Copyright (c) 2014-present, Facebook, Inc.
  *
@@ -4816,7 +4882,7 @@ var runtime = (function (exports) {
     return { __await: arg };
   };
 
-  function AsyncIterator(generator) {
+  function AsyncIterator(generator, PromiseImpl) {
     function invoke(method, arg, resolve, reject) {
       var record = tryCatch(generator[method], generator, arg);
       if (record.type === "throw") {
@@ -4827,14 +4893,14 @@ var runtime = (function (exports) {
         if (value &&
             typeof value === "object" &&
             hasOwn.call(value, "__await")) {
-          return Promise.resolve(value.__await).then(function(value) {
+          return PromiseImpl.resolve(value.__await).then(function(value) {
             invoke("next", value, resolve, reject);
           }, function(err) {
             invoke("throw", err, resolve, reject);
           });
         }
 
-        return Promise.resolve(value).then(function(unwrapped) {
+        return PromiseImpl.resolve(value).then(function(unwrapped) {
           // When a yielded Promise is resolved, its final value becomes
           // the .value of the Promise<{value,done}> result for the
           // current iteration.
@@ -4852,7 +4918,7 @@ var runtime = (function (exports) {
 
     function enqueue(method, arg) {
       function callInvokeWithMethodAndArg() {
-        return new Promise(function(resolve, reject) {
+        return new PromiseImpl(function(resolve, reject) {
           invoke(method, arg, resolve, reject);
         });
       }
@@ -4892,9 +4958,12 @@ var runtime = (function (exports) {
   // Note that simple async functions are implemented on top of
   // AsyncIterator objects; they just return a Promise for the value of
   // the final result produced by the iterator.
-  exports.async = function(innerFn, outerFn, self, tryLocsList) {
+  exports.async = function(innerFn, outerFn, self, tryLocsList, PromiseImpl) {
+    if (PromiseImpl === void 0) PromiseImpl = Promise;
+
     var iter = new AsyncIterator(
-      wrap(innerFn, outerFn, self, tryLocsList)
+      wrap(innerFn, outerFn, self, tryLocsList),
+      PromiseImpl
     );
 
     return exports.isGeneratorFunction(outerFn)

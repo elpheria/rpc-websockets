@@ -14,6 +14,8 @@ exports["default"] = void 0;
 
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 
+var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
+
 var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
 
 var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime/helpers/classCallCheck"));
@@ -32,9 +34,7 @@ var _eventemitter = require("eventemitter3");
 
 var _circularJson = _interopRequireDefault(require("circular-json"));
 
-var CommonClient =
-/*#__PURE__*/
-function (_EventEmitter) {
+var CommonClient = /*#__PURE__*/function (_EventEmitter) {
   (0, _inherits2["default"])(CommonClient, _EventEmitter);
 
   /**
@@ -160,24 +160,32 @@ function (_EventEmitter) {
 
   }, {
     key: "login",
-    value: function login(params) {
-      return _regenerator["default"].async(function login$(_context) {
-        while (1) {
-          switch (_context.prev = _context.next) {
-            case 0:
-              _context.next = 2;
-              return _regenerator["default"].awrap(this.call("rpc.login", params));
+    value: function () {
+      var _login = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(params) {
+        return _regenerator["default"].wrap(function _callee$(_context) {
+          while (1) {
+            switch (_context.prev = _context.next) {
+              case 0:
+                _context.next = 2;
+                return this.call("rpc.login", params);
 
-            case 2:
-              return _context.abrupt("return", _context.sent);
+              case 2:
+                return _context.abrupt("return", _context.sent);
 
-            case 3:
-            case "end":
-              return _context.stop();
+              case 3:
+              case "end":
+                return _context.stop();
+            }
           }
-        }
-      }, null, this);
-    }
+        }, _callee, this);
+      }));
+
+      function login(_x) {
+        return _login.apply(this, arguments);
+      }
+
+      return login;
+    }()
     /**
      * Fetches a list of client's methods registered on server.
      * @method
@@ -186,24 +194,32 @@ function (_EventEmitter) {
 
   }, {
     key: "listMethods",
-    value: function listMethods() {
-      return _regenerator["default"].async(function listMethods$(_context2) {
-        while (1) {
-          switch (_context2.prev = _context2.next) {
-            case 0:
-              _context2.next = 2;
-              return _regenerator["default"].awrap(this.call("__listMethods"));
+    value: function () {
+      var _listMethods = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2() {
+        return _regenerator["default"].wrap(function _callee2$(_context2) {
+          while (1) {
+            switch (_context2.prev = _context2.next) {
+              case 0:
+                _context2.next = 2;
+                return this.call("__listMethods");
 
-            case 2:
-              return _context2.abrupt("return", _context2.sent);
+              case 2:
+                return _context2.abrupt("return", _context2.sent);
 
-            case 3:
-            case "end":
-              return _context2.stop();
+              case 3:
+              case "end":
+                return _context2.stop();
+            }
           }
-        }
-      }, null, this);
-    }
+        }, _callee2, this);
+      }));
+
+      function listMethods() {
+        return _listMethods.apply(this, arguments);
+      }
+
+      return listMethods;
+    }()
     /**
      * Sends a JSON-RPC 2.0 notification to server.
      * @method
@@ -245,40 +261,48 @@ function (_EventEmitter) {
 
   }, {
     key: "subscribe",
-    value: function subscribe(event) {
-      var result,
-          _args3 = arguments;
-      return _regenerator["default"].async(function subscribe$(_context3) {
-        while (1) {
-          switch (_context3.prev = _context3.next) {
-            case 0:
-              (0, _assertArgs["default"])(_args3, {
-                event: ["string", Array]
-              });
-              if (typeof event === "string") event = [event];
-              _context3.next = 4;
-              return _regenerator["default"].awrap(this.call("rpc.on", event));
+    value: function () {
+      var _subscribe = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3(event) {
+        var result,
+            _args3 = arguments;
+        return _regenerator["default"].wrap(function _callee3$(_context3) {
+          while (1) {
+            switch (_context3.prev = _context3.next) {
+              case 0:
+                (0, _assertArgs["default"])(_args3, {
+                  event: ["string", Array]
+                });
+                if (typeof event === "string") event = [event];
+                _context3.next = 4;
+                return this.call("rpc.on", event);
 
-            case 4:
-              result = _context3.sent;
+              case 4:
+                result = _context3.sent;
 
-              if (!(typeof event === "string" && result[event] !== "ok")) {
-                _context3.next = 7;
-                break;
-              }
+                if (!(typeof event === "string" && result[event] !== "ok")) {
+                  _context3.next = 7;
+                  break;
+                }
 
-              throw new Error("Failed subscribing to an event '" + event + "' with: " + result[event]);
+                throw new Error("Failed subscribing to an event '" + event + "' with: " + result[event]);
 
-            case 7:
-              return _context3.abrupt("return", result);
+              case 7:
+                return _context3.abrupt("return", result);
 
-            case 8:
-            case "end":
-              return _context3.stop();
+              case 8:
+              case "end":
+                return _context3.stop();
+            }
           }
-        }
-      }, null, this);
-    }
+        }, _callee3, this);
+      }));
+
+      function subscribe(_x2) {
+        return _subscribe.apply(this, arguments);
+      }
+
+      return subscribe;
+    }()
     /**
      * Unsubscribes from a defined event.
      * @method
@@ -289,40 +313,48 @@ function (_EventEmitter) {
 
   }, {
     key: "unsubscribe",
-    value: function unsubscribe(event) {
-      var result,
-          _args4 = arguments;
-      return _regenerator["default"].async(function unsubscribe$(_context4) {
-        while (1) {
-          switch (_context4.prev = _context4.next) {
-            case 0:
-              (0, _assertArgs["default"])(_args4, {
-                event: ["string", Array]
-              });
-              if (typeof event === "string") event = [event];
-              _context4.next = 4;
-              return _regenerator["default"].awrap(this.call("rpc.off", event));
+    value: function () {
+      var _unsubscribe = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee4(event) {
+        var result,
+            _args4 = arguments;
+        return _regenerator["default"].wrap(function _callee4$(_context4) {
+          while (1) {
+            switch (_context4.prev = _context4.next) {
+              case 0:
+                (0, _assertArgs["default"])(_args4, {
+                  event: ["string", Array]
+                });
+                if (typeof event === "string") event = [event];
+                _context4.next = 4;
+                return this.call("rpc.off", event);
 
-            case 4:
-              result = _context4.sent;
+              case 4:
+                result = _context4.sent;
 
-              if (!(typeof event === "string" && result[event] !== "ok")) {
-                _context4.next = 7;
-                break;
-              }
+                if (!(typeof event === "string" && result[event] !== "ok")) {
+                  _context4.next = 7;
+                  break;
+                }
 
-              throw new Error("Failed unsubscribing from an event with: " + result);
+                throw new Error("Failed unsubscribing from an event with: " + result);
 
-            case 7:
-              return _context4.abrupt("return", result);
+              case 7:
+                return _context4.abrupt("return", result);
 
-            case 8:
-            case "end":
-              return _context4.stop();
+              case 8:
+              case "end":
+                return _context4.stop();
+            }
           }
-        }
-      }, null, this);
-    }
+        }, _callee4, this);
+      }));
+
+      function unsubscribe(_x3) {
+        return _unsubscribe.apply(this, arguments);
+      }
+
+      return unsubscribe;
+    }()
     /**
      * Closes a WebSocket connection gracefully.
      * @method
