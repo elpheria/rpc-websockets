@@ -12,7 +12,8 @@ export class Client extends CommonClient
             autoconnect = true,
             reconnect = true,
             reconnect_interval = 1000,
-            max_reconnects = 5
+            max_reconnects = 5,
+            ...rest_options
         }: IWSClientAdditionalOptions & NodeWebSocketTypeOptions = {},
         generate_request_id?: (method: string, params: object | Array<any>) => number
     )
@@ -24,7 +25,8 @@ export class Client extends CommonClient
                 autoconnect,
                 reconnect,
                 reconnect_interval,
-                max_reconnects
+                max_reconnects,
+                ...rest_options
             },
             generate_request_id
         )
