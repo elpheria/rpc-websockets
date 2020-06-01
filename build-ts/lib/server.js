@@ -32,7 +32,6 @@ export default class Server extends EventEmitter {
          * @param {Object} namespaces.events
          */
         this.namespaces = {};
-        this.authenticated = false;
         this.wss = new WebSocketServer(options);
         this.wss.on("listening", () => this.emit("listening"));
         this.wss.on("connection", (socket, request) => {
@@ -42,6 +41,8 @@ export default class Server extends EventEmitter {
                 socket._id = u.query.socket_id;
             else
                 socket._id = uuid.v1();
+            // unauthenticated by default
+            socket["_authenticated"] = false;
             // cleanup after the socket gets disconnected
             socket.on("close", () => {
                 this.namespaces[ns].clients.delete(socket._id);
@@ -473,7 +474,7 @@ export default class Server extends EventEmitter {
         let response = null;
         // reject request if method is protected and if client is not authenticated
         if (this.namespaces[ns].rpc_methods[message.method].protected === true &&
-            this.authenticated === false) {
+            this.namespaces[ns].clients.get(socket_id)["_authenticated"] === false) {
             return {
                 jsonrpc: "2.0",
                 error: utils.createError(-32605),
@@ -507,8 +508,11 @@ export default class Server extends EventEmitter {
         if (!message.id)
             return;
         // if login middleware returned true, set connection as authenticated
-        if (message.method === "rpc.login" && response === true)
-            this.authenticated = true;
+        if (message.method === "rpc.login" && response === true) {
+            const s = this.namespaces[ns].clients.get(socket_id);
+            s["_authenticated"] = true;
+            this.namespaces[ns].clients.set(socket_id, s);
+        }
         return {
             jsonrpc: "2.0",
             result: response,

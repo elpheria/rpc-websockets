@@ -86,7 +86,6 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
      */
 
     _this.namespaces = {};
-    _this.authenticated = false;
     _this.wss = new _ws.Server(options);
 
     _this.wss.on("listening", function () {
@@ -97,7 +96,9 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
       var u = _url["default"].parse(request.url, true);
 
       var ns = u.pathname;
-      if (u.query.socket_id) socket._id = u.query.socket_id;else socket._id = _uuid["default"].v1(); // cleanup after the socket gets disconnected
+      if (u.query.socket_id) socket._id = u.query.socket_id;else socket._id = _uuid["default"].v1(); // unauthenticated by default
+
+      socket["_authenticated"] = false; // cleanup after the socket gets disconnected
 
       socket.on("close", function () {
         _this.namespaces[ns].clients["delete"](socket._id);
@@ -632,6 +633,7 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
             _name,
             _index,
             response,
+            s,
             _args2 = arguments;
 
         return _regenerator["default"].wrap(function _callee2$(_context2) {
@@ -901,7 +903,7 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
               case 81:
                 response = null; // reject request if method is protected and if client is not authenticated
 
-                if (!(this.namespaces[ns].rpc_methods[message.method]["protected"] === true && this.authenticated === false)) {
+                if (!(this.namespaces[ns].rpc_methods[message.method]["protected"] === true && this.namespaces[ns].clients.get(socket_id)["_authenticated"] === false)) {
                   _context2.next = 84;
                   break;
                 }
@@ -966,7 +968,12 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
 
               case 99:
                 // if login middleware returned true, set connection as authenticated
-                if (message.method === "rpc.login" && response === true) this.authenticated = true;
+                if (message.method === "rpc.login" && response === true) {
+                  s = this.namespaces[ns].clients.get(socket_id);
+                  s["_authenticated"] = true;
+                  this.namespaces[ns].clients.set(socket_id, s);
+                }
+
                 return _context2.abrupt("return", {
                   jsonrpc: "2.0",
                   result: response,

@@ -16,12 +16,12 @@ interface IRPCMethod {
         protected: boolean;
     };
 }
-interface IWebSocketWithId extends NodeWebSocket {
+interface IClientWebSocket extends NodeWebSocket {
     _id: string;
+    _authenticated: boolean;
 }
 export default class Server extends EventEmitter {
     private namespaces;
-    private authenticated;
     wss: InstanceType<typeof WebSocketServer>;
     /**
      * Instantiate a Server class.
@@ -131,7 +131,7 @@ export default class Server extends EventEmitter {
          */
         clients(): {
             rpc_methods: IRPCMethod;
-            clients: Map<string, IWebSocketWithId>;
+            clients: Map<string, IClientWebSocket>;
             events: INamespaceEvent;
         };
     };

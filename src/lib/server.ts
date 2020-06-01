@@ -33,13 +33,14 @@ interface IRPCMethod {
 interface INamespace {
     [x: string]: {
         rpc_methods: IRPCMethod;
-        clients: Map<string, IWebSocketWithId>;
+        clients: Map<string, IClientWebSocket>;
         events: INamespaceEvent;
     };
 }
 
-interface IWebSocketWithId extends NodeWebSocket {
+interface IClientWebSocket extends NodeWebSocket {
     _id: string;
+    _authenticated: boolean;
 }
 
 interface IRPCResult {
@@ -49,7 +50,6 @@ interface IRPCResult {
 export default class Server extends EventEmitter
 {
     private namespaces: INamespace;
-    private authenticated: boolean;
     wss: InstanceType<typeof WebSocketServer>;
 
     /**
@@ -74,13 +74,12 @@ export default class Server extends EventEmitter
          * @param {Object} namespaces.events
          */
         this.namespaces = {}
-        this.authenticated = false
 
         this.wss = new WebSocketServer(options)
 
         this.wss.on("listening", () => this.emit("listening"))
 
-        this.wss.on("connection", (socket: IWebSocketWithId, request) =>
+        this.wss.on("connection", (socket: IClientWebSocket, request) =>
         {
             const u = url.parse(request.url, true)
             const ns = u.pathname
@@ -89,6 +88,9 @@ export default class Server extends EventEmitter
                 socket._id = u.query.socket_id as string
             else
                 socket._id = uuid.v1()
+
+            // unauthenticated by default
+            socket["_authenticated"] = false
 
             // cleanup after the socket gets disconnected
             socket.on("close", () =>
@@ -439,7 +441,7 @@ export default class Server extends EventEmitter
      * @param {String} ns - namespaces identifier
      * @return {Undefined}
      */
-    private _handleRPC(socket: IWebSocketWithId, ns = "/")
+    private _handleRPC(socket: IClientWebSocket, ns = "/")
     {
         socket.on("message", async(data) =>
         {
@@ -647,7 +649,7 @@ export default class Server extends EventEmitter
 
         // reject request if method is protected and if client is not authenticated
         if (this.namespaces[ns].rpc_methods[message.method].protected === true &&
-            this.authenticated === false)
+            this.namespaces[ns].clients.get(socket_id)["_authenticated"] === false)
         {
             return {
                 jsonrpc: "2.0",
@@ -691,7 +693,11 @@ export default class Server extends EventEmitter
 
         // if login middleware returned true, set connection as authenticated
         if (message.method === "rpc.login" && response === true)
-            this.authenticated = true
+        {
+            const s = this.namespaces[ns].clients.get(socket_id)
+            s["_authenticated"] = true
+            this.namespaces[ns].clients.set(socket_id, s)
+        }
 
         return {
             jsonrpc: "2.0",
