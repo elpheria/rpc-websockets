@@ -481,7 +481,8 @@ export default class Server extends EventEmitter {
             };
         }
         try {
-            response = await this.namespaces[ns].rpc_methods[message.method].fn(message.params);
+            response = await this.namespaces[ns].rpc_methods[message.method]
+                .fn(message.params, socket_id);
         }
         catch (error) {
             if (!message.id)

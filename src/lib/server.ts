@@ -25,7 +25,7 @@ interface IRPCMethodParams {
 
 interface IRPCMethod {
     [x: string]: {
-        fn: (params: IRPCMethodParams) => any;
+        fn: (params: IRPCMethodParams, socket_id: string) => any;
         protected: boolean;
     };
 }
@@ -126,7 +126,7 @@ export default class Server extends EventEmitter
      * @throws {TypeError}
      * @return {Object} - returns the RPCMethod object
      */
-    register(name: string, fn: (params: IRPCMethodParams) => void, ns = "/")
+    register(name: string, fn: (params: IRPCMethodParams, socket_id: string) => void, ns = "/")
     {
         assertArgs(arguments, {
             name: "string",
@@ -656,7 +656,11 @@ export default class Server extends EventEmitter
             }
         }
 
-        try { response = await this.namespaces[ns].rpc_methods[message.method].fn(message.params) }
+        try
+        {
+            response = await this.namespaces[ns].rpc_methods[message.method]
+                .fn(message.params, socket_id)
+        }
 
         catch (error)
         {

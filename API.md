@@ -181,7 +181,7 @@ Registers an RPC method and returns the RPCMethod object to manage method permis
 
 Parameters:
 * `method` {String}: RPC method name.
-* `handler` {Function}: RPC function that will be fired with a possible parameter object once the method is called.
+* `handler` {Function}: RPC function that will be fired with a signature of `([params[, socket_id]])` once the method is called.
 * `namespace` {String}: Namespace identifier. Defaults to ```/```.
 
 ### server.setAuth(handler[, namespace])

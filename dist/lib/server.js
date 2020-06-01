@@ -984,7 +984,7 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
               case 102:
                 _context2.prev = 102;
                 _context2.next = 105;
-                return this.namespaces[ns].rpc_methods[message.method].fn(message.params);
+                return this.namespaces[ns].rpc_methods[message.method].fn(message.params, socket_id);
 
               case 105:
                 response = _context2.sent;
