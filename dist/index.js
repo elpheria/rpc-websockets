@@ -15,17 +15,21 @@ exports.Client = void 0;
 
 var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime/helpers/classCallCheck"));
 
+var _inherits2 = _interopRequireDefault(require("@babel/runtime/helpers/inherits"));
+
 var _possibleConstructorReturn2 = _interopRequireDefault(require("@babel/runtime/helpers/possibleConstructorReturn"));
 
 var _getPrototypeOf2 = _interopRequireDefault(require("@babel/runtime/helpers/getPrototypeOf"));
-
-var _inherits2 = _interopRequireDefault(require("@babel/runtime/helpers/inherits"));
 
 var _websocket = _interopRequireDefault(require("./lib/client/websocket"));
 
 var _client = _interopRequireDefault(require("./lib/client"));
 
 var _server = _interopRequireDefault(require("./lib/server"));
+
+function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = (0, _getPrototypeOf2["default"])(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = (0, _getPrototypeOf2["default"])(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return (0, _possibleConstructorReturn2["default"])(this, result); }; }
+
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
 
 var __rest = void 0 && (void 0).__rest || function (s, e) {
   var t = {};
@@ -42,6 +46,8 @@ var __rest = void 0 && (void 0).__rest || function (s, e) {
 
 var Client = /*#__PURE__*/function (_CommonClient) {
   (0, _inherits2["default"])(Client, _CommonClient);
+
+  var _super = _createSuper(Client);
 
   function Client() {
     var address = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "ws://localhost:8080";
@@ -61,12 +67,12 @@ var Client = /*#__PURE__*/function (_CommonClient) {
         max_reconnects = _a$max_reconnects === void 0 ? 5 : _a$max_reconnects,
         rest_options = __rest(_a, ["autoconnect", "reconnect", "reconnect_interval", "max_reconnects"]);
 
-    return (0, _possibleConstructorReturn2["default"])(this, (0, _getPrototypeOf2["default"])(Client).call(this, _websocket["default"], address, Object.assign({
+    return _super.call(this, _websocket["default"], address, Object.assign({
       autoconnect: autoconnect,
       reconnect: reconnect,
       reconnect_interval: reconnect_interval,
       max_reconnects: max_reconnects
-    }, rest_options), generate_request_id));
+    }, rest_options), generate_request_id);
   }
 
   return Client;
