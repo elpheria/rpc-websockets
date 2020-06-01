@@ -82,8 +82,6 @@ export default class Server extends EventEmitter
 
         this.wss.on("connection", (socket: IWebSocketWithId, request) =>
         {
-            this.emit("connection", socket, request)
-
             const u = url.parse(request.url, true)
             const ns = u.pathname
 
@@ -110,6 +108,8 @@ export default class Server extends EventEmitter
 
             // store socket and method
             this.namespaces[ns].clients.set(socket._id, socket)
+
+            this.emit("connection", socket, request)
 
             return this._handleRPC(socket, ns)
         })

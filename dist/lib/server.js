@@ -82,8 +82,6 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
     });
 
     _this.wss.on("connection", function (socket, request) {
-      _this.emit("connection", socket, request);
-
       var u = _url["default"].parse(request.url, true);
 
       var ns = u.pathname;
@@ -103,6 +101,8 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
       if (!_this.namespaces[ns]) _this._generateNamespace(ns); // store socket and method
 
       _this.namespaces[ns].clients.set(socket._id, socket);
+
+      _this.emit("connection", socket, request);
 
       return _this._handleRPC(socket, ns);
     });
