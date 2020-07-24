@@ -92,7 +92,7 @@ ws.on('open', function() {
 
   // login your client to be able to use protected methods
   ws.login({'username': 'confi1', 'password':'foobar'}).then(function() {
-    ws.call('account'),then(function(result) {
+    ws.call('account').then(function(result) {
       require('assert').equal(result, ['confi1', 'confi2'])
     })
   })
