@@ -612,6 +612,17 @@ export default class Server extends EventEmitter
                     continue
                 }
 
+                // reject request if event is protected and if client is not authenticated
+                if (namespace.events[event_names[index]].protected === true &&
+                    namespace.clients.get(socket_id)["_authenticated"] === false)
+                {
+                    return {
+                        jsonrpc: "2.0",
+                        error: utils.createError(-32606),
+                        id: message.id || null
+                    }
+                }
+
                 const socket_index = namespace.events[event_names[index]].sockets.indexOf(socket_id)
                 if (socket_index >= 0)
                 {
