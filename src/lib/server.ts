@@ -22,6 +22,11 @@ interface INamespaceEvent {
     };
 }
 
+interface IAuthorisation {
+    public: () => void;
+    protected: () => void;
+}
+
 interface IRPCMethodParams {
     [x: string]: any;
 }
@@ -129,9 +134,9 @@ export default class Server extends EventEmitter
      * @param {Function} fn - a callee function
      * @param {String} ns - namespace identifier
      * @throws {TypeError}
-     * @return {Object} - returns the RPCMethod object
+     * @return {Object} - returns the authorisation interface
      */
-    register(name: string, fn: (params: IRPCMethodParams, socket_id: string) => void, ns = "/")
+    register(name: string, fn: (params: IRPCMethodParams, socket_id: string) => void, ns = "/"): IAuthorisation
     {
         assertArgs(arguments, {
             name: "string",
@@ -147,8 +152,8 @@ export default class Server extends EventEmitter
         }
 
         return {
-            protected: () => this._makeProtected(name, ns),
-            public: () => this._makePublic(name, ns)
+            protected: () => this._makeProtectedMethod(name, ns),
+            public: () => this._makePublicMethod(name, ns)
         }
     }
 
@@ -172,7 +177,7 @@ export default class Server extends EventEmitter
      * @param {String} ns - namespace identifier
      * @return {Undefined}
      */
-    private _makeProtected(name: string, ns = "/")
+    private _makeProtectedMethod(name: string, ns = "/")
     {
         this.namespaces[ns].rpc_methods[name].protected = true
     }
@@ -184,9 +189,33 @@ export default class Server extends EventEmitter
      * @param {String} ns - namespace identifier
      * @return {Undefined}
      */
-    private _makePublic(name: string, ns = "/")
+    private _makePublicMethod(name: string, ns = "/")
     {
         this.namespaces[ns].rpc_methods[name].protected = false
+    }
+
+    /**
+     * Marks an event as protected.
+     * @method
+     * @param {String} name - event name
+     * @param {String} ns - namespace identifier
+     * @return {Undefined}
+     */
+    private _makeProtectedEvent(name: string, ns = "/")
+    {
+        this.namespaces[ns].events[name].protected = true
+    }
+
+    /**
+     * Marks an event as public.
+     * @method
+     * @param {String} name - event name
+     * @param {String} ns - namespace identifier
+     * @return {Undefined}
+     */
+    private _makePublicEvent(name: string, ns = "/")
+    {
+        this.namespaces[ns].events[name].protected = false
     }
 
     /**
@@ -222,9 +251,9 @@ export default class Server extends EventEmitter
      * @param {String} name - event name
      * @param {String} ns - namespace identifier
      * @throws {TypeError}
-     * @return {Undefined}
+     * @return {Object} - returns the authorisation interface
      */
-    event(name: string, ns = "/")
+    event(name: string, ns = "/"): IAuthorisation
     {
         assertArgs(arguments, {
             "name": "string",
@@ -265,6 +294,11 @@ export default class Server extends EventEmitter
                 }))
             }
         })
+
+        return {
+            protected: () => this._makeProtectedEvent(name, ns),
+            public: () => this._makePublicEvent(name, ns)
+        }
     }
 
     /**
@@ -309,7 +343,7 @@ export default class Server extends EventEmitter
                 if (typeof ev_name !== "string")
                     throw new Error("name must be a string")
 
-                self.event(ev_name, name)
+                return self.event(ev_name, name)
             },
 
             // self.eventList convenience method
