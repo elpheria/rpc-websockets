@@ -16,7 +16,10 @@ import CircularJSON from "circular-json"
 import * as utils from "./utils"
 
 interface INamespaceEvent {
-    [x: string]: Array<string>;
+    [x: string]: {
+        sockets: Array<string>;
+        protected: boolean;
+    };
 }
 
 interface IRPCMethodParams {
@@ -99,10 +102,10 @@ export default class Server extends EventEmitter
 
                 for (const event of Object.keys(this.namespaces[ns].events))
                 {
-                    const index = this.namespaces[ns].events[event].indexOf(socket._id)
+                    const index = this.namespaces[ns].events[event].sockets.indexOf(socket._id)
 
                     if (index >= 0)
-                        this.namespaces[ns].events[event].splice(index, 1)
+                        this.namespaces[ns].events[event].sockets.splice(index, 1)
                 }
             })
 
@@ -237,7 +240,10 @@ export default class Server extends EventEmitter
                 throw new Error(`Already registered event ${ns}${name}`)
         }
 
-        this.namespaces[ns].events[name] = []
+        this.namespaces[ns].events[name] = {
+            sockets: [],
+            protected: false
+        }
 
         // forward emitted event to subscribers
         this.on(name, (...params) =>
@@ -246,7 +252,7 @@ export default class Server extends EventEmitter
             if (params.length === 1 && params[0] instanceof Object)
                 params = params[0]
 
-            for (const socket_id of this.namespaces[ns].events[name])
+            for (const socket_id of this.namespaces[ns].events[name].sockets)
             {
                 const socket = this.namespaces[ns].clients.get(socket_id)
 
@@ -572,13 +578,13 @@ export default class Server extends EventEmitter
                     continue
                 }
 
-                const socket_index = namespace.events[event_names[index]].indexOf(socket_id)
+                const socket_index = namespace.events[event_names[index]].sockets.indexOf(socket_id)
                 if (socket_index >= 0)
                 {
                     results[name] = "socket has already been subscribed to event"
                     continue
                 }
-                namespace.events[event_names[index]].push(socket_id)
+                namespace.events[event_names[index]].sockets.push(socket_id)
 
                 results[name] = "ok"
             }
@@ -608,7 +614,7 @@ export default class Server extends EventEmitter
                     continue
                 }
 
-                const index = this.namespaces[ns].events[name].indexOf(socket_id)
+                const index = this.namespaces[ns].events[name].sockets.indexOf(socket_id)
 
                 if (index === -1)
                 {
@@ -616,7 +622,7 @@ export default class Server extends EventEmitter
                     continue
                 }
 
-                this.namespaces[ns].events[name].splice(index, 1)
+                this.namespaces[ns].events[name].sockets.splice(index, 1)
                 results[name] = "ok"
             }
 
