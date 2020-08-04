@@ -134,7 +134,7 @@ export default class Server extends EventEmitter
      * @param {Function} fn - a callee function
      * @param {String} ns - namespace identifier
      * @throws {TypeError}
-     * @return {Object} - returns the authorisation interface
+     * @return {Object} - returns the RPCMethod object
      */
     register(name: string, fn: (params: IRPCMethodParams, socket_id: string) => void, ns = "/"): IAuthorisation
     {
@@ -251,7 +251,7 @@ export default class Server extends EventEmitter
      * @param {String} name - event name
      * @param {String} ns - namespace identifier
      * @throws {TypeError}
-     * @return {Object} - returns the authorisation interface
+     * @return {Object} - returns the RPCMethod object
      */
     event(name: string, ns = "/"): IAuthorisation
     {
