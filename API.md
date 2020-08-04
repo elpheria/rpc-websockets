@@ -30,6 +30,9 @@ This is a JavaScript classes documentation which describes both client and serve
     * [close](#serverclose---promise)
     * [event:listening](#event-listening)
     * [event:connection](#event-connection)
+    * [event:disconnection](#event-disconnection)
+    * [event:close](#event-close-1)
+    * [event:socket-error](#event-socket-error)
     * [event:error](#event-error-1)
 * [RPCMethod](#rpcmethod)
     * [protected](#rpcmethodprotected)
@@ -252,6 +255,23 @@ Emits when the server has started listening for requests.
 * `request` &lt;http.IncomingMessage&gt;
 
 Emits when the client has connected.
+
+### Event: 'disconnection'
+
+* `socket` &lt;ws.WebSocket&gt;
+
+Emits when the client has disconnected.
+
+### Event: 'close'
+
+Emits when the server has closed.
+
+### Event: 'socket-error'
+
+* `socket` &lt;ws.WebSocket&gt;
+* &lt;Error&gt;
+
+Emits when a websocket error is raised.
 
 ### Event: 'error'
 

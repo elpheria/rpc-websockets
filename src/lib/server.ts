@@ -92,6 +92,9 @@ export default class Server extends EventEmitter
             // unauthenticated by default
             socket["_authenticated"] = false
 
+            // propagate socket errors
+            socket.on("error", (error) => this.emit("socket-error", socket, error));
+
             // cleanup after the socket gets disconnected
             socket.on("close", () =>
             {
@@ -104,6 +107,8 @@ export default class Server extends EventEmitter
                     if (index >= 0)
                         this.namespaces[ns].events[event].splice(index, 1)
                 }
+
+                this.emit("disconnection", socket);
             })
 
             if (!this.namespaces[ns]) this._generateNamespace(ns)
@@ -427,6 +432,7 @@ export default class Server extends EventEmitter
             try
             {
                 this.wss.close()
+                this.emit("close");
                 resolve()
             }
 
