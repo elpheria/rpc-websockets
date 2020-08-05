@@ -22,7 +22,12 @@ interface INamespaceEvent {
     };
 }
 
-interface IAuthorisation {
+interface IMethod {
+    public: () => void;
+    protected: () => void;
+}
+
+interface IEvent {
     public: () => void;
     protected: () => void;
 }
@@ -134,9 +139,9 @@ export default class Server extends EventEmitter
      * @param {Function} fn - a callee function
      * @param {String} ns - namespace identifier
      * @throws {TypeError}
-     * @return {Object} - returns the RPCMethod object
+     * @return {Object} - returns an IMethod object
      */
-    register(name: string, fn: (params: IRPCMethodParams, socket_id: string) => void, ns = "/"): IAuthorisation
+    register(name: string, fn: (params: IRPCMethodParams, socket_id: string) => void, ns = "/")
     {
         assertArgs(arguments, {
             name: "string",
@@ -154,7 +159,7 @@ export default class Server extends EventEmitter
         return {
             protected: () => this._makeProtectedMethod(name, ns),
             public: () => this._makePublicMethod(name, ns)
-        }
+        } as IMethod
     }
 
     /**
@@ -251,9 +256,9 @@ export default class Server extends EventEmitter
      * @param {String} name - event name
      * @param {String} ns - namespace identifier
      * @throws {TypeError}
-     * @return {Object} - returns the RPCMethod object
+     * @return {Object} - returns an IEvent object
      */
-    event(name: string, ns = "/"): IAuthorisation
+    event(name: string, ns = "/"): IEvent
     {
         assertArgs(arguments, {
             "name": "string",
@@ -320,7 +325,7 @@ export default class Server extends EventEmitter
 
         return {
             // self.register convenience method
-            register(fn_name: string, fn: (params: IRPCMethodParams) => void)
+            register(fn_name: string, fn: (params: IRPCMethodParams) => void): IMethod
             {
                 if (arguments.length !== 2)
                     throw new Error("must provide exactly two arguments")
@@ -335,7 +340,7 @@ export default class Server extends EventEmitter
             },
 
             // self.event convenience method
-            event(ev_name: string)
+            event(ev_name: string): IEvent
             {
                 if (arguments.length !== 1)
                     throw new Error("must provide exactly one argument")

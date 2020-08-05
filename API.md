@@ -259,17 +259,29 @@ Emits when the client has connected.
 
 Emits when a server error is raised.
 
-## RPCMethod
+## IMethod
 
-An object which is returned by .register and .event. Includes functions that can require client authentication.
+An object which is returned by .register. Includes functions that can require client authentication.
 
-### rpcmethod.protected()
+### IMethod.protected()
 
-Marks an RPC method or event as protected. The method will only be reachable if the client has successfully authenticated with .login.
+Marks an RPC method as protected. The method will only be reachable if the client has successfully authenticated with .login.
 
-### rpcmethod.public()
+### IMethod.public()
 
-Marks an RPC method or event as public. All clients, both authenticated and anonymous will be able to use the method. This is set by default on .register and .event.
+Marks an RPC method as public. All clients, both authenticated and anonymous will be able to use the method. This is set by default on .register.
+
+## IEvent
+
+An object which is returned by .event. Includes functions that can require client authentication.
+
+### IEvent.protected()
+
+Marks an event as protected. The method will only be reachable if the client has successfully authenticated with .login.
+
+### IEvent.public()
+
+Marks an event as public. All clients, both authenticated and anonymous will be able to subscribe to the event. This is set by default on .event.
 
 ## Namespaces
 
