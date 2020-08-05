@@ -43,14 +43,17 @@ export default class Server extends EventEmitter {
                 socket._id = uuid.v1();
             // unauthenticated by default
             socket["_authenticated"] = false;
+            // propagate socket errors
+            socket.on("error", (error) => this.emit("socket-error", socket, error));
             // cleanup after the socket gets disconnected
             socket.on("close", () => {
                 this.namespaces[ns].clients.delete(socket._id);
                 for (const event of Object.keys(this.namespaces[ns].events)) {
-                    const index = this.namespaces[ns].events[event].indexOf(socket._id);
+                    const index = this.namespaces[ns].events[event].sockets.indexOf(socket._id);
                     if (index >= 0)
-                        this.namespaces[ns].events[event].splice(index, 1);
+                        this.namespaces[ns].events[event].sockets.splice(index, 1);
                 }
+                this.emit("disconnection", socket);
             });
             if (!this.namespaces[ns])
                 this._generateNamespace(ns);
@@ -68,7 +71,7 @@ export default class Server extends EventEmitter {
      * @param {Function} fn - a callee function
      * @param {String} ns - namespace identifier
      * @throws {TypeError}
-     * @return {Object} - returns the RPCMethod object
+     * @return {Object} - returns an IMethod object
      */
     register(name, fn, ns = "/") {
         assertArgs(arguments, {
@@ -83,8 +86,8 @@ export default class Server extends EventEmitter {
             protected: false
         };
         return {
-            protected: () => this._makeProtected(name, ns),
-            public: () => this._makePublic(name, ns)
+            protected: () => this._makeProtectedMethod(name, ns),
+            public: () => this._makePublicMethod(name, ns)
         };
     }
     /**
@@ -105,7 +108,7 @@ export default class Server extends EventEmitter {
      * @param {String} ns - namespace identifier
      * @return {Undefined}
      */
-    _makeProtected(name, ns = "/") {
+    _makeProtectedMethod(name, ns = "/") {
         this.namespaces[ns].rpc_methods[name].protected = true;
     }
     /**
@@ -115,8 +118,28 @@ export default class Server extends EventEmitter {
      * @param {String} ns - namespace identifier
      * @return {Undefined}
      */
-    _makePublic(name, ns = "/") {
+    _makePublicMethod(name, ns = "/") {
         this.namespaces[ns].rpc_methods[name].protected = false;
+    }
+    /**
+     * Marks an event as protected.
+     * @method
+     * @param {String} name - event name
+     * @param {String} ns - namespace identifier
+     * @return {Undefined}
+     */
+    _makeProtectedEvent(name, ns = "/") {
+        this.namespaces[ns].events[name].protected = true;
+    }
+    /**
+     * Marks an event as public.
+     * @method
+     * @param {String} name - event name
+     * @param {String} ns - namespace identifier
+     * @return {Undefined}
+     */
+    _makePublicEvent(name, ns = "/") {
+        this.namespaces[ns].events[name].protected = false;
     }
     /**
      * Removes a namespace and closes all connections
@@ -144,7 +167,7 @@ export default class Server extends EventEmitter {
      * @param {String} name - event name
      * @param {String} ns - namespace identifier
      * @throws {TypeError}
-     * @return {Undefined}
+     * @return {Object} - returns an IEvent object
      */
     event(name, ns = "/") {
         assertArgs(arguments, {
@@ -158,13 +181,16 @@ export default class Server extends EventEmitter {
             if (index !== undefined)
                 throw new Error(`Already registered event ${ns}${name}`);
         }
-        this.namespaces[ns].events[name] = [];
+        this.namespaces[ns].events[name] = {
+            sockets: [],
+            protected: false
+        };
         // forward emitted event to subscribers
         this.on(name, (...params) => {
             // flatten an object if no spreading is wanted
             if (params.length === 1 && params[0] instanceof Object)
                 params = params[0];
-            for (const socket_id of this.namespaces[ns].events[name]) {
+            for (const socket_id of this.namespaces[ns].events[name].sockets) {
                 const socket = this.namespaces[ns].clients.get(socket_id);
                 if (!socket)
                     continue;
@@ -174,6 +200,10 @@ export default class Server extends EventEmitter {
                 }));
             }
         });
+        return {
+            protected: () => this._makeProtectedEvent(name, ns),
+            public: () => this._makePublicEvent(name, ns)
+        };
     }
     /**
      * Returns a requested namespace object
@@ -206,7 +236,7 @@ export default class Server extends EventEmitter {
                     throw new Error("must provide exactly one argument");
                 if (typeof ev_name !== "string")
                     throw new Error("name must be a string");
-                self.event(ev_name, name);
+                return self.event(ev_name, name);
             },
             // self.eventList convenience method
             get eventList() {
@@ -304,6 +334,7 @@ export default class Server extends EventEmitter {
         return new Promise((resolve, reject) => {
             try {
                 this.wss.close();
+                this.emit("close");
                 resolve();
             }
             catch (error) {
@@ -415,12 +446,21 @@ export default class Server extends EventEmitter {
                     results[name] = "provided event invalid";
                     continue;
                 }
-                const socket_index = namespace.events[event_names[index]].indexOf(socket_id);
+                // reject request if event is protected and if client is not authenticated
+                if (namespace.events[event_names[index]].protected === true &&
+                    namespace.clients.get(socket_id)["_authenticated"] === false) {
+                    return {
+                        jsonrpc: "2.0",
+                        error: utils.createError(-32606),
+                        id: message.id || null
+                    };
+                }
+                const socket_index = namespace.events[event_names[index]].sockets.indexOf(socket_id);
                 if (socket_index >= 0) {
                     results[name] = "socket has already been subscribed to event";
                     continue;
                 }
-                namespace.events[event_names[index]].push(socket_id);
+                namespace.events[event_names[index]].sockets.push(socket_id);
                 results[name] = "ok";
             }
             return {
@@ -442,12 +482,12 @@ export default class Server extends EventEmitter {
                     results[name] = "provided event invalid";
                     continue;
                 }
-                const index = this.namespaces[ns].events[name].indexOf(socket_id);
+                const index = this.namespaces[ns].events[name].sockets.indexOf(socket_id);
                 if (index === -1) {
                     results[name] = "not subscribed";
                     continue;
                 }
-                this.namespaces[ns].events[name].splice(index, 1);
+                this.namespaces[ns].events[name].sockets.splice(index, 1);
                 results[name] = "ok";
             }
             return {

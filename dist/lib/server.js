@@ -98,7 +98,11 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
       var ns = u.pathname;
       if (u.query.socket_id) socket._id = u.query.socket_id;else socket._id = _uuid["default"].v1(); // unauthenticated by default
 
-      socket["_authenticated"] = false; // cleanup after the socket gets disconnected
+      socket["_authenticated"] = false; // propagate socket errors
+
+      socket.on("error", function (error) {
+        return _this.emit("socket-error", socket, error);
+      }); // cleanup after the socket gets disconnected
 
       socket.on("close", function () {
         _this.namespaces[ns].clients["delete"](socket._id);
@@ -106,10 +110,12 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
         for (var _i = 0, _Object$keys = Object.keys(_this.namespaces[ns].events); _i < _Object$keys.length; _i++) {
           var event = _Object$keys[_i];
 
-          var index = _this.namespaces[ns].events[event].indexOf(socket._id);
+          var index = _this.namespaces[ns].events[event].sockets.indexOf(socket._id);
 
-          if (index >= 0) _this.namespaces[ns].events[event].splice(index, 1);
+          if (index >= 0) _this.namespaces[ns].events[event].sockets.splice(index, 1);
         }
+
+        _this.emit("disconnection", socket);
       });
       if (!_this.namespaces[ns]) _this._generateNamespace(ns); // store socket and method
 
@@ -133,7 +139,7 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
    * @param {Function} fn - a callee function
    * @param {String} ns - namespace identifier
    * @throws {TypeError}
-   * @return {Object} - returns the RPCMethod object
+   * @return {Object} - returns an IMethod object
    */
 
 
@@ -155,10 +161,10 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
       };
       return {
         "protected": function _protected() {
-          return _this2._makeProtected(name, ns);
+          return _this2._makeProtectedMethod(name, ns);
         },
         "public": function _public() {
-          return _this2._makePublic(name, ns);
+          return _this2._makePublicMethod(name, ns);
         }
       };
     }
@@ -186,8 +192,8 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
      */
 
   }, {
-    key: "_makeProtected",
-    value: function _makeProtected(name) {
+    key: "_makeProtectedMethod",
+    value: function _makeProtectedMethod(name) {
       var ns = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "/";
       this.namespaces[ns].rpc_methods[name]["protected"] = true;
     }
@@ -200,10 +206,38 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
      */
 
   }, {
-    key: "_makePublic",
-    value: function _makePublic(name) {
+    key: "_makePublicMethod",
+    value: function _makePublicMethod(name) {
       var ns = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "/";
       this.namespaces[ns].rpc_methods[name]["protected"] = false;
+    }
+    /**
+     * Marks an event as protected.
+     * @method
+     * @param {String} name - event name
+     * @param {String} ns - namespace identifier
+     * @return {Undefined}
+     */
+
+  }, {
+    key: "_makeProtectedEvent",
+    value: function _makeProtectedEvent(name) {
+      var ns = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "/";
+      this.namespaces[ns].events[name]["protected"] = true;
+    }
+    /**
+     * Marks an event as public.
+     * @method
+     * @param {String} name - event name
+     * @param {String} ns - namespace identifier
+     * @return {Undefined}
+     */
+
+  }, {
+    key: "_makePublicEvent",
+    value: function _makePublicEvent(name) {
+      var ns = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "/";
+      this.namespaces[ns].events[name]["protected"] = false;
     }
     /**
      * Removes a namespace and closes all connections
@@ -248,7 +282,7 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
      * @param {String} name - event name
      * @param {String} ns - namespace identifier
      * @throws {TypeError}
-     * @return {Undefined}
+     * @return {Object} - returns an IEvent object
      */
 
   }, {
@@ -265,7 +299,10 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
         var index = this.namespaces[ns].events[name];
         if (index !== undefined) throw new Error("Already registered event ".concat(ns).concat(name));
       }
-      this.namespaces[ns].events[name] = []; // forward emitted event to subscribers
+      this.namespaces[ns].events[name] = {
+        sockets: [],
+        "protected": false
+      }; // forward emitted event to subscribers
 
       this.on(name, function () {
         for (var _len = arguments.length, params = new Array(_len), _key = 0; _key < _len; _key++) {
@@ -275,7 +312,7 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
         // flatten an object if no spreading is wanted
         if (params.length === 1 && params[0] instanceof Object) params = params[0];
 
-        var _iterator2 = _createForOfIteratorHelper(_this3.namespaces[ns].events[name]),
+        var _iterator2 = _createForOfIteratorHelper(_this3.namespaces[ns].events[name].sockets),
             _step2;
 
         try {
@@ -296,6 +333,14 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
           _iterator2.f();
         }
       });
+      return {
+        "protected": function _protected() {
+          return _this3._makeProtectedEvent(name, ns);
+        },
+        "public": function _public() {
+          return _this3._makePublicEvent(name, ns);
+        }
+      };
     }
     /**
      * Returns a requested namespace object
@@ -325,7 +370,7 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
         event: function event(ev_name) {
           if (arguments.length !== 1) throw new Error("must provide exactly one argument");
           if (typeof ev_name !== "string") throw new Error("name must be a string");
-          self.event(ev_name, name);
+          return self.event(ev_name, name);
         },
 
         // self.eventList convenience method
@@ -446,6 +491,8 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
       return new Promise(function (resolve, reject) {
         try {
           _this4.wss.close();
+
+          _this4.emit("close");
 
           resolve();
         } catch (error) {
@@ -703,7 +750,7 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
 
               case 11:
                 if (!(message.method === "rpc.on")) {
-                  _context2.next = 45;
+                  _context2.next = 47;
                   break;
                 }
 
@@ -728,7 +775,7 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
 
               case 19:
                 if ((_step4 = _iterator4.n()).done) {
-                  _context2.next = 34;
+                  _context2.next = 36;
                   break;
                 }
 
@@ -742,59 +789,71 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
                 }
 
                 results[name] = "provided event invalid";
-                return _context2.abrupt("continue", 32);
+                return _context2.abrupt("continue", 34);
 
               case 26:
-                socket_index = namespace.events[event_names[index]].indexOf(socket_id);
+                if (!(namespace.events[event_names[index]]["protected"] === true && namespace.clients.get(socket_id)["_authenticated"] === false)) {
+                  _context2.next = 28;
+                  break;
+                }
+
+                return _context2.abrupt("return", {
+                  jsonrpc: "2.0",
+                  error: utils.createError(-32606),
+                  id: message.id || null
+                });
+
+              case 28:
+                socket_index = namespace.events[event_names[index]].sockets.indexOf(socket_id);
 
                 if (!(socket_index >= 0)) {
-                  _context2.next = 30;
+                  _context2.next = 32;
                   break;
                 }
 
                 results[name] = "socket has already been subscribed to event";
-                return _context2.abrupt("continue", 32);
-
-              case 30:
-                namespace.events[event_names[index]].push(socket_id);
-                results[name] = "ok";
+                return _context2.abrupt("continue", 34);
 
               case 32:
+                namespace.events[event_names[index]].sockets.push(socket_id);
+                results[name] = "ok";
+
+              case 34:
                 _context2.next = 19;
                 break;
 
-              case 34:
-                _context2.next = 39;
+              case 36:
+                _context2.next = 41;
                 break;
 
-              case 36:
-                _context2.prev = 36;
+              case 38:
+                _context2.prev = 38;
                 _context2.t0 = _context2["catch"](17);
 
                 _iterator4.e(_context2.t0);
 
-              case 39:
-                _context2.prev = 39;
+              case 41:
+                _context2.prev = 41;
 
                 _iterator4.f();
 
-                return _context2.finish(39);
+                return _context2.finish(41);
 
-              case 42:
+              case 44:
                 return _context2.abrupt("return", {
                   jsonrpc: "2.0",
                   result: results,
                   id: message.id || null
                 });
 
-              case 45:
+              case 47:
                 if (!(message.method === "rpc.off")) {
-                  _context2.next = 76;
+                  _context2.next = 78;
                   break;
                 }
 
                 if (message.params) {
-                  _context2.next = 48;
+                  _context2.next = 50;
                   break;
                 }
 
@@ -804,81 +863,81 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
                   id: message.id || null
                 });
 
-              case 48:
+              case 50:
                 _results = {};
                 _iterator5 = _createForOfIteratorHelper(message.params);
-                _context2.prev = 50;
+                _context2.prev = 52;
 
                 _iterator5.s();
 
-              case 52:
+              case 54:
                 if ((_step5 = _iterator5.n()).done) {
-                  _context2.next = 65;
+                  _context2.next = 67;
                   break;
                 }
 
                 _name = _step5.value;
 
                 if (this.namespaces[ns].events[_name]) {
-                  _context2.next = 57;
+                  _context2.next = 59;
                   break;
                 }
 
                 _results[_name] = "provided event invalid";
-                return _context2.abrupt("continue", 63);
+                return _context2.abrupt("continue", 65);
 
-              case 57:
-                _index = this.namespaces[ns].events[_name].indexOf(socket_id);
+              case 59:
+                _index = this.namespaces[ns].events[_name].sockets.indexOf(socket_id);
 
                 if (!(_index === -1)) {
-                  _context2.next = 61;
+                  _context2.next = 63;
                   break;
                 }
 
                 _results[_name] = "not subscribed";
-                return _context2.abrupt("continue", 63);
+                return _context2.abrupt("continue", 65);
 
-              case 61:
-                this.namespaces[ns].events[_name].splice(_index, 1);
+              case 63:
+                this.namespaces[ns].events[_name].sockets.splice(_index, 1);
 
                 _results[_name] = "ok";
 
-              case 63:
-                _context2.next = 52;
-                break;
-
               case 65:
-                _context2.next = 70;
+                _context2.next = 54;
                 break;
 
               case 67:
-                _context2.prev = 67;
-                _context2.t1 = _context2["catch"](50);
+                _context2.next = 72;
+                break;
+
+              case 69:
+                _context2.prev = 69;
+                _context2.t1 = _context2["catch"](52);
 
                 _iterator5.e(_context2.t1);
 
-              case 70:
-                _context2.prev = 70;
+              case 72:
+                _context2.prev = 72;
 
                 _iterator5.f();
 
-                return _context2.finish(70);
+                return _context2.finish(72);
 
-              case 73:
+              case 75:
                 return _context2.abrupt("return", {
                   jsonrpc: "2.0",
                   result: _results,
                   id: message.id || null
                 });
 
-              case 76:
+              case 78:
                 if (!(message.method === "rpc.login")) {
-                  _context2.next = 79;
+                  _context2.next = 81;
                   break;
                 }
 
                 if (message.params) {
-                  _context2.next = 79;
+                  _context2.next = 81;
                   break;
                 }
 
@@ -888,9 +947,9 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
                   id: message.id || null
                 });
 
-              case 79:
+              case 81:
                 if (this.namespaces[ns].rpc_methods[message.method]) {
-                  _context2.next = 81;
+                  _context2.next = 83;
                   break;
                 }
 
@@ -900,11 +959,11 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
                   id: message.id || null
                 });
 
-              case 81:
+              case 83:
                 response = null; // reject request if method is protected and if client is not authenticated
 
                 if (!(this.namespaces[ns].rpc_methods[message.method]["protected"] === true && this.namespaces[ns].clients.get(socket_id)["_authenticated"] === false)) {
-                  _context2.next = 84;
+                  _context2.next = 86;
                   break;
                 }
 
@@ -914,30 +973,30 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
                   id: message.id || null
                 });
 
-              case 84:
-                _context2.prev = 84;
-                _context2.next = 87;
+              case 86:
+                _context2.prev = 86;
+                _context2.next = 89;
                 return this.namespaces[ns].rpc_methods[message.method].fn(message.params, socket_id);
 
-              case 87:
+              case 89:
                 response = _context2.sent;
-                _context2.next = 97;
+                _context2.next = 99;
                 break;
 
-              case 90:
-                _context2.prev = 90;
-                _context2.t2 = _context2["catch"](84);
+              case 92:
+                _context2.prev = 92;
+                _context2.t2 = _context2["catch"](86);
 
                 if (message.id) {
-                  _context2.next = 94;
+                  _context2.next = 96;
                   break;
                 }
 
                 return _context2.abrupt("return");
 
-              case 94:
+              case 96:
                 if (!(_context2.t2 instanceof Error)) {
-                  _context2.next = 96;
+                  _context2.next = 98;
                   break;
                 }
 
@@ -951,22 +1010,22 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
                   id: message.id
                 });
 
-              case 96:
+              case 98:
                 return _context2.abrupt("return", {
                   jsonrpc: "2.0",
                   error: _context2.t2,
                   id: message.id
                 });
 
-              case 97:
+              case 99:
                 if (message.id) {
-                  _context2.next = 99;
+                  _context2.next = 101;
                   break;
                 }
 
                 return _context2.abrupt("return");
 
-              case 99:
+              case 101:
                 // if login middleware returned true, set connection as authenticated
                 if (message.method === "rpc.login" && response === true) {
                   s = this.namespaces[ns].clients.get(socket_id);
@@ -980,12 +1039,12 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
                   id: message.id
                 });
 
-              case 101:
+              case 103:
               case "end":
                 return _context2.stop();
             }
           }
-        }, _callee2, this, [[17, 36, 39, 42], [50, 67, 70, 73], [84, 90]]);
+        }, _callee2, this, [[17, 38, 41, 44], [52, 69, 72, 75], [86, 92]]);
       }));
 
       function _runMethod(_x2, _x3) {

@@ -5,7 +5,18 @@
 import { EventEmitter } from "eventemitter3";
 import NodeWebSocket, { Server as WebSocketServer } from "ws";
 interface INamespaceEvent {
-    [x: string]: Array<string>;
+    [x: string]: {
+        sockets: Array<string>;
+        protected: boolean;
+    };
+}
+interface IMethod {
+    public: () => void;
+    protected: () => void;
+}
+interface IEvent {
+    public: () => void;
+    protected: () => void;
 }
 interface IRPCMethodParams {
     [x: string]: any;
@@ -37,12 +48,9 @@ export default class Server extends EventEmitter {
      * @param {Function} fn - a callee function
      * @param {String} ns - namespace identifier
      * @throws {TypeError}
-     * @return {Object} - returns the RPCMethod object
+     * @return {Object} - returns an IMethod object
      */
-    register(name: string, fn: (params: IRPCMethodParams, socket_id: string) => void, ns?: string): {
-        protected: () => void;
-        public: () => void;
-    };
+    register(name: string, fn: (params: IRPCMethodParams, socket_id: string) => void, ns?: string): IMethod;
     /**
      * Sets an auth method.
      * @method
@@ -59,7 +67,7 @@ export default class Server extends EventEmitter {
      * @param {String} ns - namespace identifier
      * @return {Undefined}
      */
-    private _makeProtected;
+    private _makeProtectedMethod;
     /**
      * Marks an RPC method as public.
      * @method
@@ -67,7 +75,23 @@ export default class Server extends EventEmitter {
      * @param {String} ns - namespace identifier
      * @return {Undefined}
      */
-    private _makePublic;
+    private _makePublicMethod;
+    /**
+     * Marks an event as protected.
+     * @method
+     * @param {String} name - event name
+     * @param {String} ns - namespace identifier
+     * @return {Undefined}
+     */
+    private _makeProtectedEvent;
+    /**
+     * Marks an event as public.
+     * @method
+     * @param {String} name - event name
+     * @param {String} ns - namespace identifier
+     * @return {Undefined}
+     */
+    private _makePublicEvent;
     /**
      * Removes a namespace and closes all connections
      * @method
@@ -82,9 +106,9 @@ export default class Server extends EventEmitter {
      * @param {String} name - event name
      * @param {String} ns - namespace identifier
      * @throws {TypeError}
-     * @return {Undefined}
+     * @return {Object} - returns an IEvent object
      */
-    event(name: string, ns?: string): void;
+    event(name: string, ns?: string): IEvent;
     /**
      * Returns a requested namespace object
      * @method
@@ -93,11 +117,8 @@ export default class Server extends EventEmitter {
      * @return {Object} - namespace object
      */
     of(name: string): {
-        register(fn_name: string, fn: (params: IRPCMethodParams) => void): {
-            protected: () => void;
-            public: () => void;
-        };
-        event(ev_name: string): void;
+        register(fn_name: string, fn: (params: IRPCMethodParams) => void): IMethod;
+        event(ev_name: string): IEvent;
         readonly eventList: string[];
         /**
          * Emits a specified event to this namespace.
