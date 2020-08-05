@@ -16,7 +16,20 @@ import CircularJSON from "circular-json"
 import * as utils from "./utils"
 
 interface INamespaceEvent {
-    [x: string]: Array<string>;
+    [x: string]: {
+        sockets: Array<string>;
+        protected: boolean;
+    };
+}
+
+interface IMethod {
+    public: () => void;
+    protected: () => void;
+}
+
+interface IEvent {
+    public: () => void;
+    protected: () => void;
 }
 
 interface IRPCMethodParams {
@@ -102,10 +115,10 @@ export default class Server extends EventEmitter
 
                 for (const event of Object.keys(this.namespaces[ns].events))
                 {
-                    const index = this.namespaces[ns].events[event].indexOf(socket._id)
+                    const index = this.namespaces[ns].events[event].sockets.indexOf(socket._id)
 
                     if (index >= 0)
-                        this.namespaces[ns].events[event].splice(index, 1)
+                        this.namespaces[ns].events[event].sockets.splice(index, 1)
                 }
 
                 this.emit("disconnection", socket);
@@ -131,7 +144,7 @@ export default class Server extends EventEmitter
      * @param {Function} fn - a callee function
      * @param {String} ns - namespace identifier
      * @throws {TypeError}
-     * @return {Object} - returns the RPCMethod object
+     * @return {Object} - returns an IMethod object
      */
     register(name: string, fn: (params: IRPCMethodParams, socket_id: string) => void, ns = "/")
     {
@@ -149,9 +162,9 @@ export default class Server extends EventEmitter
         }
 
         return {
-            protected: () => this._makeProtected(name, ns),
-            public: () => this._makePublic(name, ns)
-        }
+            protected: () => this._makeProtectedMethod(name, ns),
+            public: () => this._makePublicMethod(name, ns)
+        } as IMethod
     }
 
     /**
@@ -174,7 +187,7 @@ export default class Server extends EventEmitter
      * @param {String} ns - namespace identifier
      * @return {Undefined}
      */
-    private _makeProtected(name: string, ns = "/")
+    private _makeProtectedMethod(name: string, ns = "/")
     {
         this.namespaces[ns].rpc_methods[name].protected = true
     }
@@ -186,9 +199,33 @@ export default class Server extends EventEmitter
      * @param {String} ns - namespace identifier
      * @return {Undefined}
      */
-    private _makePublic(name: string, ns = "/")
+    private _makePublicMethod(name: string, ns = "/")
     {
         this.namespaces[ns].rpc_methods[name].protected = false
+    }
+
+    /**
+     * Marks an event as protected.
+     * @method
+     * @param {String} name - event name
+     * @param {String} ns - namespace identifier
+     * @return {Undefined}
+     */
+    private _makeProtectedEvent(name: string, ns = "/")
+    {
+        this.namespaces[ns].events[name].protected = true
+    }
+
+    /**
+     * Marks an event as public.
+     * @method
+     * @param {String} name - event name
+     * @param {String} ns - namespace identifier
+     * @return {Undefined}
+     */
+    private _makePublicEvent(name: string, ns = "/")
+    {
+        this.namespaces[ns].events[name].protected = false
     }
 
     /**
@@ -224,9 +261,9 @@ export default class Server extends EventEmitter
      * @param {String} name - event name
      * @param {String} ns - namespace identifier
      * @throws {TypeError}
-     * @return {Undefined}
+     * @return {Object} - returns an IEvent object
      */
-    event(name: string, ns = "/")
+    event(name: string, ns = "/"): IEvent
     {
         assertArgs(arguments, {
             "name": "string",
@@ -242,7 +279,10 @@ export default class Server extends EventEmitter
                 throw new Error(`Already registered event ${ns}${name}`)
         }
 
-        this.namespaces[ns].events[name] = []
+        this.namespaces[ns].events[name] = {
+            sockets: [],
+            protected: false
+        }
 
         // forward emitted event to subscribers
         this.on(name, (...params) =>
@@ -251,7 +291,7 @@ export default class Server extends EventEmitter
             if (params.length === 1 && params[0] instanceof Object)
                 params = params[0]
 
-            for (const socket_id of this.namespaces[ns].events[name])
+            for (const socket_id of this.namespaces[ns].events[name].sockets)
             {
                 const socket = this.namespaces[ns].clients.get(socket_id)
 
@@ -264,6 +304,11 @@ export default class Server extends EventEmitter
                 }))
             }
         })
+
+        return {
+            protected: () => this._makeProtectedEvent(name, ns),
+            public: () => this._makePublicEvent(name, ns)
+        }
     }
 
     /**
@@ -285,7 +330,7 @@ export default class Server extends EventEmitter
 
         return {
             // self.register convenience method
-            register(fn_name: string, fn: (params: IRPCMethodParams) => void)
+            register(fn_name: string, fn: (params: IRPCMethodParams) => void): IMethod
             {
                 if (arguments.length !== 2)
                     throw new Error("must provide exactly two arguments")
@@ -300,7 +345,7 @@ export default class Server extends EventEmitter
             },
 
             // self.event convenience method
-            event(ev_name: string)
+            event(ev_name: string): IEvent
             {
                 if (arguments.length !== 1)
                     throw new Error("must provide exactly one argument")
@@ -308,7 +353,7 @@ export default class Server extends EventEmitter
                 if (typeof ev_name !== "string")
                     throw new Error("name must be a string")
 
-                self.event(ev_name, name)
+                return self.event(ev_name, name)
             },
 
             // self.eventList convenience method
@@ -578,13 +623,24 @@ export default class Server extends EventEmitter
                     continue
                 }
 
-                const socket_index = namespace.events[event_names[index]].indexOf(socket_id)
+                // reject request if event is protected and if client is not authenticated
+                if (namespace.events[event_names[index]].protected === true &&
+                    namespace.clients.get(socket_id)["_authenticated"] === false)
+                {
+                    return {
+                        jsonrpc: "2.0",
+                        error: utils.createError(-32606),
+                        id: message.id || null
+                    }
+                }
+
+                const socket_index = namespace.events[event_names[index]].sockets.indexOf(socket_id)
                 if (socket_index >= 0)
                 {
                     results[name] = "socket has already been subscribed to event"
                     continue
                 }
-                namespace.events[event_names[index]].push(socket_id)
+                namespace.events[event_names[index]].sockets.push(socket_id)
 
                 results[name] = "ok"
             }
@@ -614,7 +670,7 @@ export default class Server extends EventEmitter
                     continue
                 }
 
-                const index = this.namespaces[ns].events[name].indexOf(socket_id)
+                const index = this.namespaces[ns].events[name].sockets.indexOf(socket_id)
 
                 if (index === -1)
                 {
@@ -622,7 +678,7 @@ export default class Server extends EventEmitter
                     continue
                 }
 
-                this.namespaces[ns].events[name].splice(index, 1)
+                this.namespaces[ns].events[name].sockets.splice(index, 1)
                 results[name] = "ok"
             }
 

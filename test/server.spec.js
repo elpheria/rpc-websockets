@@ -129,6 +129,40 @@ describe("Server", function()
         })
     })
 
+    it(".event.protected", function()
+    {
+        let exception = false
+
+        getInstance().then((server) =>
+        {
+            try { server.event("foo").protected() }
+
+            catch (error) { exception = true }
+
+            server.close().then(function()
+            {
+                exception.should.be.false
+            })
+        })
+    })
+
+    it(".event.public", function()
+    {
+        let exception = false
+
+        getInstance().then((server) =>
+        {
+            try { server.event("foo").public }
+
+            catch (error) { exception = true }
+
+            server.close().then(function()
+            {
+                exception.should.be.false
+            })
+        })
+    })
+
     it(".eventList", function()
     {
         let exception = false

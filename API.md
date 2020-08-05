@@ -195,9 +195,9 @@ Parameters:
 * `handler` {Function}: An auth function that will be used when the client calls the `login` method. Must return boolean true on auth success and boolean false on auth failure.
 * `namespace` {String}: Namespace identifier. Defaults to ```/```.
 
-### server.event(name[, namespace])
+### server.event(name[, namespace]) -> RPCMethod
 
-Creates a new event that can be emitted to clients.
+Creates a new event that can be emitted to clients and returns the RPCMethod object to manage method permissions.
 
 Parameters:
 * `name` {String}: Name of the event.
@@ -279,19 +279,32 @@ Emits when a websocket error is raised.
 
 Emits when a server error is raised.
 
-## RPCMethod
+## IMethod
 
-An object which is returned by .register. Includes functions that can modify method's permissions.
+An object which is returned by .register. Includes functions that can require client authentication.
 
-### rpcmethod.protected()
+### IMethod.protected()
 
 Marks an RPC method as protected. The method will only be reachable if the client has successfully authenticated with .login.
 
-### rpcmethod.public()
+### IMethod.public()
 
 Marks an RPC method as public. All clients, both authenticated and anonymous will be able to use the method. This is set by default on .register.
 
+## IEvent
+
+An object which is returned by .event. Includes functions that can require client authentication.
+
+### IEvent.protected()
+
+Marks an event as protected. The method will only be reachable if the client has successfully authenticated with .login.
+
+### IEvent.public()
+
+Marks an event as public. All clients, both authenticated and anonymous will be able to subscribe to the event. This is set by default on .event.
+
 ## Namespaces
+
 Namespace represents a pool of sockets connected under a given scope identified by a pathname (eg: ```/chat```). Basically borrows ideas from ```socket.io```.
 
 ### namespace.register(method, handler) -> RPCMethod
