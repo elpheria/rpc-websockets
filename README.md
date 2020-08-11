@@ -143,6 +143,7 @@ We offer professional support for **rpc-websockets** and beyond. We have many ye
 <a href="https://www.scaleleap.com" target="_blank"><img src="https://raw.githubusercontent.com/elpheria/rpc-websockets/master/assets/user-scaleleap.png" alt="Scale Leap" height=50px></a>&emsp;
 <a href="https://codice.org" target="_blank"><img src="https://raw.githubusercontent.com/elpheria/rpc-websockets/master/assets/user-codice.png" alt="Codice Foundation, Inc." height=50px></a>&emsp;
 <a href="https://holo.host" target="_blank"><img src="https://raw.githubusercontent.com/elpheria/rpc-websockets/master/assets/user-holo.png" alt="Holo Ltd." height=50px></a>&emsp;
+<a href="https://solana.com" target="_blank"><img src="https://raw.githubusercontent.com/elpheria/rpc-websockets/master/assets/user-solana.png" alt="Solana Labs, Inc." height=50px></a>&emsp;
 
 ## Sponsors
 Become a sponsor and get your logo on project's README on GitHub with a link to your site. Feel free to [contact us](mailto:info@elpheria.com?subject=Sponsors) for the arrangement!
