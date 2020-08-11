@@ -94,6 +94,7 @@ Parameters:
 Logins with the other side of the connection.
 
 Parameters are used for authentication with another side of the connection and are user-defined.
+Throws with a detailed message if the login fails.
 
 ### ws.listMethods() -> Promise
 
