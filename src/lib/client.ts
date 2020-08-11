@@ -176,7 +176,10 @@ export default class CommonClient extends EventEmitter
      */
     async login(params: IWSRequestParams)
     {
-        return await this.call("rpc.login", params)
+        const resp = await this.call("rpc.login", params)
+
+        if (!resp)
+            throw new Error("authentication failed")
     }
 
     /**

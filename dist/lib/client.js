@@ -168,6 +168,7 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
     key: "login",
     value: function () {
       var _login = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(params) {
+        var resp;
         return _regenerator["default"].wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
@@ -176,9 +177,16 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
                 return this.call("rpc.login", params);
 
               case 2:
-                return _context.abrupt("return", _context.sent);
+                resp = _context.sent;
 
-              case 3:
+                if (resp) {
+                  _context.next = 5;
+                  break;
+                }
+
+                throw new Error("authentication failed");
+
+              case 5:
               case "end":
                 return _context.stop();
             }

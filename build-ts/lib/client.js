@@ -95,7 +95,9 @@ export default class CommonClient extends EventEmitter {
      * @return {Promise}
      */
     async login(params) {
-        return await this.call("rpc.login", params);
+        const resp = await this.call("rpc.login", params);
+        if (!resp)
+            throw new Error("authentication failed");
     }
     /**
      * Fetches a list of client's methods registered on server.
