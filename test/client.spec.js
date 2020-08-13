@@ -309,7 +309,7 @@ describe("Client", function()
 
     describe(".login", function()
     {
-        it("should return false if wrong credentials were provided", function(done)
+        it("should throw if wrong credentials were provided", function(done)
         {
             const client = new WebSocket("ws://" + host + ":" + port)
 
@@ -318,19 +318,16 @@ describe("Client", function()
                 client.login({
                     username: "fooz",
                     password: "barz"
-                }).then(function(response)
+                }).catch(function(error)
                 {
-                    response.should.equal(false)
+                    expect(error).to.be.an("Error")
+                    expect(error.message).to.equal("authentication failed")
                     done()
-                    client.close()
-                }, function(error)
-                {
-                    done(error)
                 })
             })
         })
 
-        it("should return true if correct credentials were provided", function(done)
+        it("should succeed if correct credentials were provided", function(done)
         {
             const client = new WebSocket("ws://" + host + ":" + port)
 
@@ -341,10 +338,9 @@ describe("Client", function()
                     password: "bar"
                 }).then(function(response)
                 {
-                    response.should.equal(true)
                     done()
                     client.close()
-                }, function(error)
+                }).catch(function(error)
                 {
                     done(error)
                 })

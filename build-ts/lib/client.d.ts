@@ -67,7 +67,7 @@ export default class CommonClient extends EventEmitter {
      * @param {Object} params - Login credentials object
      * @return {Promise}
      */
-    login(params: IWSRequestParams): Promise<unknown>;
+    login(params: IWSRequestParams): Promise<void>;
     /**
      * Fetches a list of client's methods registered on server.
      * @method

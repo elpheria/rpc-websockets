@@ -95,6 +95,8 @@ ws.on('open', function() {
     ws.call('account').then(function(result) {
       require('assert').equal(result, ['confi1', 'confi2'])
     })
+  }).catch(function(error) {
+    console.log('auth failed')
   })
 
   // close a websocket connection
