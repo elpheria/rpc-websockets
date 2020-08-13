@@ -50,6 +50,10 @@ This is a JavaScript classes documentation which describes both client and serve
 
 Departing from version 2.x, there's been some minor API changes. A breaking change is a server.eventList method, which is not a getter method anymore, because of the inclusion of a namespaces system throughout the library. Other methods will work seamlessly.
 
+## Migrating to 7.x
+
+`client.login` now throws an error in case of failed login. Enclose the code using that method in a `try/catch` block to mitigate unhandled exceptions.
+
 ## Client
 
 ```js
