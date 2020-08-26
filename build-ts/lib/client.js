@@ -8,6 +8,7 @@
 import assertArgs from "assert-args";
 import { EventEmitter } from "eventemitter3";
 import CircularJSON from "circular-json";
+const nextTick = require("next-tick");
 export default class CommonClient extends EventEmitter {
     /**
      * Instantiate a Client class.
@@ -216,18 +217,13 @@ export default class CommonClient extends EventEmitter {
                     for (let i = 0; i < message.params.length; i++)
                         args.push(message.params[i]);
                 // send on next tick so that queue responses can be handled first
-                setTimeout(() => {
-                    this.emit.apply(this, args);
-                }, 0);
-                return;
+                return nextTick(() => { this.emit.apply(this, args); });
             }
             if (!this.queue[message.id]) {
                 // general JSON RPC 2.0 events
                 if (message.method && message.params) {
                     // send on next tick so that queue responses can be handled first
-                    setTimeout(() => {
-                        this.emit(message.method, message.params);
-                    }, 0);
+                    return nextTick(() => { this.emit(message.method, message.params); });
                 }
                 return;
             }

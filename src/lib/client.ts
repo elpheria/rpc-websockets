@@ -11,6 +11,7 @@ import NodeWebSocket from "ws"
 import assertArgs from "assert-args"
 import { EventEmitter } from "eventemitter3"
 import CircularJSON from "circular-json"
+const nextTick = require("next-tick")
 import {
     ICommonWebSocket,
     IWSClientAdditionalOptions,
@@ -334,11 +335,7 @@ export default class CommonClient extends EventEmitter
                         args.push(message.params[i])
 
                 // send on next tick so that queue responses can be handled first
-                setTimeout(() =>
-                {
-                    this.emit.apply(this, args)
-                }, 0)
-                return
+                return nextTick(() => { this.emit.apply(this, args) })
             }
 
             if (!this.queue[message.id])
@@ -347,10 +344,7 @@ export default class CommonClient extends EventEmitter
                 if (message.method && message.params)
                 {
                     // send on next tick so that queue responses can be handled first
-                    setTimeout(() =>
-                    {
-                        this.emit(message.method, message.params)
-                    }, 0)
+                    return nextTick(() => { this.emit(message.method, message.params) })
                 }
                 return
             }
