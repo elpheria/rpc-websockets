@@ -346,6 +346,7 @@ export default class CommonClient extends EventEmitter
                     // send on next tick so that queue responses can be handled first
                     return nextTick(() => { this.emit(message.method, message.params) })
                 }
+
                 return
             }
 
