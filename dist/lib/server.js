@@ -39,7 +39,7 @@ var _eventemitter = require("eventemitter3");
 
 var _ws = require("ws");
 
-var _uuid = _interopRequireDefault(require("uuid"));
+var _uuid = require("uuid");
 
 var _url = _interopRequireDefault(require("url"));
 
@@ -96,7 +96,7 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
       var u = _url["default"].parse(request.url, true);
 
       var ns = u.pathname;
-      if (u.query.socket_id) socket._id = u.query.socket_id;else socket._id = _uuid["default"].v1(); // unauthenticated by default
+      if (u.query.socket_id) socket._id = u.query.socket_id;else socket._id = (0, _uuid.v1)(); // unauthenticated by default
 
       socket["_authenticated"] = false; // propagate socket errors
 

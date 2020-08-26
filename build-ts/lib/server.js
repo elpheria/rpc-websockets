@@ -7,7 +7,7 @@
 import assertArgs from "assert-args";
 import { EventEmitter } from "eventemitter3";
 import { Server as WebSocketServer } from "ws";
-import uuid from "uuid";
+import { v1 as uuidv1 } from "uuid";
 import url from "url";
 import CircularJSON from "circular-json";
 import * as utils from "./utils";
@@ -40,7 +40,7 @@ export default class Server extends EventEmitter {
             if (u.query.socket_id)
                 socket._id = u.query.socket_id;
             else
-                socket._id = uuid.v1();
+                socket._id = uuidv1();
             // unauthenticated by default
             socket["_authenticated"] = false;
             // propagate socket errors
