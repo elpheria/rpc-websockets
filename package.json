@@ -24,6 +24,10 @@
     "uuid": "^3.4.0",
     "ws": "^7.3.1"
   },
+  "optionalDependencies": {
+    "bufferutil": "^4.0.1",
+    "utf-8-validate": "^5.0.2"
+  },
   "devDependencies": {
     "@babel/cli": "^7.10.0",
     "@babel/core": "^7.10.0",
