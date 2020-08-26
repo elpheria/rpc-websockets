@@ -481,13 +481,24 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
           if (message.params.constructor === Object) args.push(message.params);else // using for-loop instead of unshift/spread because performance is better
             for (var i = 0; i < message.params.length; i++) {
               args.push(message.params[i]);
-            }
-          return _this4.emit.apply(_this4, args);
+            } // send on next tick so that queue responses can be handled first
+
+          setTimeout(function () {
+            _this4.emit.apply(_this4, args);
+          }, 0);
+          return;
         }
 
         if (!_this4.queue[message.id]) {
           // general JSON RPC 2.0 events
-          if (message.method && message.params) return _this4.emit(message.method, message.params);else return;
+          if (message.method && message.params) {
+            // send on next tick so that queue responses can be handled first
+            setTimeout(function () {
+              _this4.emit(message.method, message.params);
+            }, 0);
+          }
+
+          return;
         }
 
         if (_this4.queue[message.id].timeout) clearTimeout(_this4.queue[message.id].timeout);
