@@ -22,7 +22,7 @@
     "eventemitter3": "^3.1.2",
     "next-tick": "^1.1.0",
     "uuid": "^3.4.0",
-    "ws": "^5.2.2"
+    "ws": "^7.3.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.10.0",
@@ -31,7 +31,7 @@
     "@babel/preset-env": "^7.10.0",
     "@babel/preset-typescript": "^7.10.0",
     "@types/uuid": "^3.4.8",
-    "@types/ws": "^6.0.4",
+    "@types/ws": "^7.2.6",
     "@typescript-eslint/eslint-plugin": "^2.23.0",
     "@typescript-eslint/parser": "^2.23.0",
     "babel-eslint": "^10.1.0",
