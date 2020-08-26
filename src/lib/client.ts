@@ -11,6 +11,7 @@ import NodeWebSocket from "ws"
 import assertArgs from "assert-args"
 import { EventEmitter } from "eventemitter3"
 import CircularJSON from "circular-json"
+const nextTick = require("next-tick")
 import {
     ICommonWebSocket,
     IWSClientAdditionalOptions,
@@ -333,16 +334,19 @@ export default class CommonClient extends EventEmitter
                     for (let i = 0; i < message.params.length; i++)
                         args.push(message.params[i])
 
-                return this.emit.apply(this, args)
+                // send on next tick so that queue responses can be handled first
+                return nextTick(() => { this.emit.apply(this, args) })
             }
 
             if (!this.queue[message.id])
             {
                 // general JSON RPC 2.0 events
                 if (message.method && message.params)
-                    return this.emit(message.method, message.params)
-                else
-                    return
+                {
+                    // send on next tick so that queue responses can be handled first
+                    return nextTick(() => { this.emit(message.method, message.params) })
+                }
+                return
             }
 
             if (this.queue[message.id].timeout)

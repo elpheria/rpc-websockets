@@ -38,6 +38,8 @@ function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflec
 
 function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
 
+var nextTick = require("next-tick");
+
 var CommonClient = /*#__PURE__*/function (_EventEmitter) {
   (0, _inherits2["default"])(CommonClient, _EventEmitter);
 
@@ -421,13 +423,23 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
           if (message.params.constructor === Object) args.push(message.params);else // using for-loop instead of unshift/spread because performance is better
             for (var i = 0; i < message.params.length; i++) {
               args.push(message.params[i]);
-            }
-          return _this4.emit.apply(_this4, args);
+            } // send on next tick so that queue responses can be handled first
+
+          return nextTick(function () {
+            _this4.emit.apply(_this4, args);
+          });
         }
 
         if (!_this4.queue[message.id]) {
           // general JSON RPC 2.0 events
-          if (message.method && message.params) return _this4.emit(message.method, message.params);else return;
+          if (message.method && message.params) {
+            // send on next tick so that queue responses can be handled first
+            return nextTick(function () {
+              _this4.emit(message.method, message.params);
+            });
+          }
+
+          return;
         }
 
         if (_this4.queue[message.id].timeout) clearTimeout(_this4.queue[message.id].timeout);
