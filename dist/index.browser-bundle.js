@@ -98,6 +98,8 @@ function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflec
 
 function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
 
+var nextTick = require("next-tick");
+
 var CommonClient = /*#__PURE__*/function (_EventEmitter) {
   (0, _inherits2["default"])(CommonClient, _EventEmitter);
 
@@ -483,19 +485,18 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
               args.push(message.params[i]);
             } // send on next tick so that queue responses can be handled first
 
-          setTimeout(function () {
+          return nextTick(function () {
             _this4.emit.apply(_this4, args);
-          }, 0);
-          return;
+          });
         }
 
         if (!_this4.queue[message.id]) {
           // general JSON RPC 2.0 events
           if (message.method && message.params) {
             // send on next tick so that queue responses can be handled first
-            setTimeout(function () {
+            return nextTick(function () {
               _this4.emit(message.method, message.params);
-            }, 0);
+            });
           }
 
           return;
@@ -526,7 +527,7 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
 
 exports["default"] = CommonClient;
 }).call(this,require("buffer").Buffer)
-},{"@babel/runtime/helpers/asyncToGenerator":12,"@babel/runtime/helpers/classCallCheck":13,"@babel/runtime/helpers/createClass":14,"@babel/runtime/helpers/getPrototypeOf":15,"@babel/runtime/helpers/inherits":16,"@babel/runtime/helpers/interopRequireDefault":17,"@babel/runtime/helpers/possibleConstructorReturn":18,"@babel/runtime/helpers/typeof":20,"@babel/runtime/regenerator":21,"assert-args":22,"buffer":34,"circular-json":35,"eventemitter3":37}],3:[function(require,module,exports){
+},{"@babel/runtime/helpers/asyncToGenerator":12,"@babel/runtime/helpers/classCallCheck":13,"@babel/runtime/helpers/createClass":14,"@babel/runtime/helpers/getPrototypeOf":15,"@babel/runtime/helpers/inherits":16,"@babel/runtime/helpers/interopRequireDefault":17,"@babel/runtime/helpers/possibleConstructorReturn":18,"@babel/runtime/helpers/typeof":20,"@babel/runtime/regenerator":21,"assert-args":22,"buffer":34,"circular-json":35,"eventemitter3":37,"next-tick":41}],3:[function(require,module,exports){
 /**
  * WebSocket implements a browser-side WebSocket specification.
  * @module Client
@@ -953,7 +954,7 @@ module.exports = _typeof;
 },{}],21:[function(require,module,exports){
 module.exports = require("regenerator-runtime");
 
-},{"regenerator-runtime":42}],22:[function(require,module,exports){
+},{"regenerator-runtime":43}],22:[function(require,module,exports){
 var debug = require('debug')('assert-args')
 var exists = require('101/exists')
 var isObject = require('101/is-object')
@@ -1500,7 +1501,7 @@ function localstorage() {
 }
 
 }).call(this,require('_process'))
-},{"./debug":31,"_process":41}],31:[function(require,module,exports){
+},{"./debug":31,"_process":42}],31:[function(require,module,exports){
 
 /**
  * This is the common logic for both the Node.js and web browser
@@ -4601,6 +4602,84 @@ function isCapitalized (str, strict) {
 
 
 },{}],41:[function(require,module,exports){
+(function (process,setImmediate){
+'use strict';
+
+var ensureCallable = function (fn) {
+	if (typeof fn !== 'function') throw new TypeError(fn + " is not a function");
+	return fn;
+};
+
+var byObserver = function (Observer) {
+	var node = document.createTextNode(''), queue, currentQueue, i = 0;
+	new Observer(function () {
+		var callback;
+		if (!queue) {
+			if (!currentQueue) return;
+			queue = currentQueue;
+		} else if (currentQueue) {
+			queue = currentQueue.concat(queue);
+		}
+		currentQueue = queue;
+		queue = null;
+		if (typeof currentQueue === 'function') {
+			callback = currentQueue;
+			currentQueue = null;
+			callback();
+			return;
+		}
+		node.data = (i = ++i % 2); // Invoke other batch, to handle leftover callbacks in case of crash
+		while (currentQueue) {
+			callback = currentQueue.shift();
+			if (!currentQueue.length) currentQueue = null;
+			callback();
+		}
+	}).observe(node, { characterData: true });
+	return function (fn) {
+		ensureCallable(fn);
+		if (queue) {
+			if (typeof queue === 'function') queue = [queue, fn];
+			else queue.push(fn);
+			return;
+		}
+		queue = fn;
+		node.data = (i = ++i % 2);
+	};
+};
+
+module.exports = (function () {
+	// Node.js
+	if ((typeof process === 'object') && process && (typeof process.nextTick === 'function')) {
+		return process.nextTick;
+	}
+
+	// queueMicrotask
+	if (typeof queueMicrotask === "function") {
+		return function (cb) { queueMicrotask(ensureCallable(cb)); };
+	}
+
+	// MutationObserver
+	if ((typeof document === 'object') && document) {
+		if (typeof MutationObserver === 'function') return byObserver(MutationObserver);
+		if (typeof WebKitMutationObserver === 'function') return byObserver(WebKitMutationObserver);
+	}
+
+	// W3C Draft
+	// http://dvcs.w3.org/hg/webperf/raw-file/tip/specs/setImmediate/Overview.html
+	if (typeof setImmediate === 'function') {
+		return function (cb) { setImmediate(ensureCallable(cb)); };
+	}
+
+	// Wide available standard
+	if ((typeof setTimeout === 'function') || (typeof setTimeout === 'object')) {
+		return function (cb) { setTimeout(ensureCallable(cb), 0); };
+	}
+
+	return null;
+}());
+
+}).call(this,require('_process'),require("timers").setImmediate)
+},{"_process":42,"timers":44}],42:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -4786,7 +4865,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],42:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 /**
  * Copyright (c) 2014-present, Facebook, Inc.
  *
@@ -5517,5 +5596,84 @@ try {
   Function("r", "regeneratorRuntime = r")(runtime);
 }
 
-},{}]},{},[1])(1)
+},{}],44:[function(require,module,exports){
+(function (setImmediate,clearImmediate){
+var nextTick = require('process/browser.js').nextTick;
+var apply = Function.prototype.apply;
+var slice = Array.prototype.slice;
+var immediateIds = {};
+var nextImmediateId = 0;
+
+// DOM APIs, for completeness
+
+exports.setTimeout = function() {
+  return new Timeout(apply.call(setTimeout, window, arguments), clearTimeout);
+};
+exports.setInterval = function() {
+  return new Timeout(apply.call(setInterval, window, arguments), clearInterval);
+};
+exports.clearTimeout =
+exports.clearInterval = function(timeout) { timeout.close(); };
+
+function Timeout(id, clearFn) {
+  this._id = id;
+  this._clearFn = clearFn;
+}
+Timeout.prototype.unref = Timeout.prototype.ref = function() {};
+Timeout.prototype.close = function() {
+  this._clearFn.call(window, this._id);
+};
+
+// Does not start the time, just sets up the members needed.
+exports.enroll = function(item, msecs) {
+  clearTimeout(item._idleTimeoutId);
+  item._idleTimeout = msecs;
+};
+
+exports.unenroll = function(item) {
+  clearTimeout(item._idleTimeoutId);
+  item._idleTimeout = -1;
+};
+
+exports._unrefActive = exports.active = function(item) {
+  clearTimeout(item._idleTimeoutId);
+
+  var msecs = item._idleTimeout;
+  if (msecs >= 0) {
+    item._idleTimeoutId = setTimeout(function onTimeout() {
+      if (item._onTimeout)
+        item._onTimeout();
+    }, msecs);
+  }
+};
+
+// That's not how node.js implements it but the exposed api is the same.
+exports.setImmediate = typeof setImmediate === "function" ? setImmediate : function(fn) {
+  var id = nextImmediateId++;
+  var args = arguments.length < 2 ? false : slice.call(arguments, 1);
+
+  immediateIds[id] = true;
+
+  nextTick(function onNextTick() {
+    if (immediateIds[id]) {
+      // fn.call() is faster so we optimize for the common use-case
+      // @see http://jsperf.com/call-apply-segu
+      if (args) {
+        fn.apply(null, args);
+      } else {
+        fn.call(null);
+      }
+      // Prevent ids from leaking
+      exports.clearImmediate(id);
+    }
+  });
+
+  return id;
+};
+
+exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate : function(id) {
+  delete immediateIds[id];
+};
+}).call(this,require("timers").setImmediate,require("timers").clearImmediate)
+},{"process/browser.js":42,"timers":44}]},{},[1])(1)
 });
