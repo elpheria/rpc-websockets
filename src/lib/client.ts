@@ -8,7 +8,6 @@
 
 import NodeWebSocket from "ws"
 // @ts-ignore
-import assertArgs from "assert-args"
 import { EventEmitter } from "eventemitter3"
 import CircularJSON from "circular-json"
 const nextTick = require("next-tick")
@@ -81,7 +80,6 @@ export default class CommonClient extends EventEmitter
         this.rpc_id = 0
 
         this.address = address
-        this.options = arguments[2]
         this.autoconnect = autoconnect
         this.ready = false
         this.reconnect = reconnect
@@ -91,7 +89,12 @@ export default class CommonClient extends EventEmitter
         this.generate_request_id = generate_request_id || (() => ++this.rpc_id)
 
         if (this.autoconnect)
-            this._connect(this.address, this.options)
+            this._connect(this.address, {
+                autoconnect: this.autoconnect,
+                reconnect: this.reconnect,
+                reconnect_interval: this.reconnect_interval,
+                max_reconnects: this.max_reconnects
+            })
     }
 
     /**
@@ -104,7 +107,12 @@ export default class CommonClient extends EventEmitter
         if (this.socket)
             return
 
-        this._connect(this.address, this.options)
+        this._connect(this.address, {
+            autoconnect: this.autoconnect,
+            reconnect: this.reconnect,
+            reconnect_interval: this.reconnect_interval,
+            max_reconnects: this.max_reconnects
+        })
     }
 
     /**
@@ -123,13 +131,6 @@ export default class CommonClient extends EventEmitter
         ws_opts?: Parameters<NodeWebSocketType["send"]>[1]
     )
     {
-        assertArgs(arguments, {
-            "method": "string",
-            "[params]": ["object", Array],
-            "[timeout]": "number",
-            "[ws_opts]": "object"
-        })
-
         if (!ws_opts && "object" === typeof timeout)
         {
             ws_opts = timeout
@@ -202,11 +203,6 @@ export default class CommonClient extends EventEmitter
      */
     notify(method: string, params?: IWSRequestParams)
     {
-        assertArgs(arguments, {
-            "method": "string",
-            "[params]": ["object", Array]
-        })
-
         return new Promise((resolve, reject) =>
         {
             if (!this.ready)
@@ -237,10 +233,6 @@ export default class CommonClient extends EventEmitter
      */
     async subscribe(event: string | Array<string>)
     {
-        assertArgs(arguments, {
-            event: [ "string", Array ]
-        })
-
         if (typeof event === "string")
             event = [ event ]
 
@@ -261,10 +253,6 @@ export default class CommonClient extends EventEmitter
      */
     async unsubscribe(event: string | Array<string>)
     {
-        assertArgs(arguments, {
-            event: [ "string", Array ]
-        })
-
         if (typeof event === "string")
             event = [ event ]
 
@@ -335,6 +323,7 @@ export default class CommonClient extends EventEmitter
                         args.push(message.params[i])
 
                 // send on next tick so that queue responses can be handled first
+                // eslint-disable-next-line prefer-spread
                 return nextTick(() => { this.emit.apply(this, args) })
             }
 

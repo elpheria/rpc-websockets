@@ -33,8 +33,6 @@ var _possibleConstructorReturn2 = _interopRequireDefault(require("@babel/runtime
 
 var _getPrototypeOf2 = _interopRequireDefault(require("@babel/runtime/helpers/getPrototypeOf"));
 
-var _assertArgs = _interopRequireDefault(require("assert-args"));
-
 var _eventemitter = require("eventemitter3");
 
 var _ws = require("ws");
@@ -149,11 +147,6 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
       var _this2 = this;
 
       var ns = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "/";
-      (0, _assertArgs["default"])(arguments, {
-        name: "string",
-        fn: "function",
-        "[ns]": "string"
-      });
       if (!this.namespaces[ns]) this._generateNamespace(ns);
       this.namespaces[ns].rpc_methods[name] = {
         fn: fn,
@@ -250,9 +243,6 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "closeNamespace",
     value: function closeNamespace(ns) {
-      (0, _assertArgs["default"])(arguments, {
-        ns: "string"
-      });
       var namespace = this.namespaces[ns];
 
       if (namespace) {
@@ -291,10 +281,6 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
       var _this3 = this;
 
       var ns = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "/";
-      (0, _assertArgs["default"])(arguments, {
-        "name": "string",
-        "[ns]": "string"
-      });
       if (!this.namespaces[ns]) this._generateNamespace(ns);else {
         var index = this.namespaces[ns].events[name];
         if (index !== undefined) throw new Error("Already registered event ".concat(ns).concat(name));
@@ -353,9 +339,6 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "of",
     value: function of(name) {
-      (0, _assertArgs["default"])(arguments, {
-        "name": "string"
-      });
       if (!this.namespaces[name]) this._generateNamespace(name);
       var self = this;
       return {
@@ -448,9 +431,6 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
     key: "eventList",
     value: function eventList() {
       var ns = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "/";
-      (0, _assertArgs["default"])(arguments, {
-        "[ns]": "string"
-      });
       if (!this.namespaces[ns]) return [];
       return Object.keys(this.namespaces[ns].events);
     }
@@ -466,11 +446,6 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
   }, {
     key: "createError",
     value: function createError(code, message, data) {
-      (0, _assertArgs["default"])(arguments, {
-        "code": "number",
-        "message": "string",
-        "[data]": ["string", "object"]
-      });
       return {
         code: code,
         message: message,

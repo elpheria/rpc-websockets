@@ -4,7 +4,6 @@
  */
 "use strict";
 // @ts-ignore
-import assertArgs from "assert-args";
 import { EventEmitter } from "eventemitter3";
 import { Server as WebSocketServer } from "ws";
 import { v1 as uuidv1 } from "uuid";
@@ -74,11 +73,6 @@ export default class Server extends EventEmitter {
      * @return {Object} - returns an IMethod object
      */
     register(name, fn, ns = "/") {
-        assertArgs(arguments, {
-            name: "string",
-            fn: "function",
-            "[ns]": "string"
-        });
         if (!this.namespaces[ns])
             this._generateNamespace(ns);
         this.namespaces[ns].rpc_methods[name] = {
@@ -149,9 +143,6 @@ export default class Server extends EventEmitter {
      * @return {Undefined}
      */
     closeNamespace(ns) {
-        assertArgs(arguments, {
-            ns: "string"
-        });
         const namespace = this.namespaces[ns];
         if (namespace) {
             delete namespace.rpc_methods;
@@ -170,10 +161,6 @@ export default class Server extends EventEmitter {
      * @return {Object} - returns an IEvent object
      */
     event(name, ns = "/") {
-        assertArgs(arguments, {
-            "name": "string",
-            "[ns]": "string"
-        });
         if (!this.namespaces[ns])
             this._generateNamespace(ns);
         else {
@@ -213,9 +200,6 @@ export default class Server extends EventEmitter {
      * @return {Object} - namespace object
      */
     of(name) {
-        assertArgs(arguments, {
-            "name": "string",
-        });
         if (!this.namespaces[name])
             this._generateNamespace(name);
         const self = this;
@@ -252,7 +236,7 @@ export default class Server extends EventEmitter {
              */
             emit(event, ...params) {
                 const socket_ids = [...self.namespaces[name].clients.keys()];
-                for (var i = 0, id; id = socket_ids[i]; ++i) {
+                for (let i = 0, id; id = socket_ids[i]; ++i) {
                     self.namespaces[name].clients.get(id).send(CircularJSON.stringify({
                         notification: event,
                         params: params || []
@@ -298,9 +282,6 @@ export default class Server extends EventEmitter {
      * @return {Array} - returns a list of created events
      */
     eventList(ns = "/") {
-        assertArgs(arguments, {
-            "[ns]": "string",
-        });
         if (!this.namespaces[ns])
             return [];
         return Object.keys(this.namespaces[ns].events);
@@ -314,11 +295,6 @@ export default class Server extends EventEmitter {
      * @return {Object}
      */
     createError(code, message, data) {
-        assertArgs(arguments, {
-            "code": "number",
-            "message": "string",
-            "[data]": ["string", "object"]
-        });
         return {
             code: code,
             message: message,

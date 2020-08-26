@@ -207,16 +207,6 @@ describe("Client", function()
             client.on("error", (error) => console.log(error))
         })
 
-        it("should throw TypeError if method not provided", function()
-        {
-            const client = new WebSocket("ws://" + host + ":" + port)
-
-            client.on("open", function()
-            {
-                expect(client.call.bind(client)).to.throw(TypeError)
-            })
-        })
-
         it("should correctly throw if nonexistent method called", function()
         {
             const client = new WebSocket("ws://" + host + ":" + port)
@@ -364,16 +354,6 @@ describe("Client", function()
                 {
                     done(error)
                 })
-            })
-        })
-
-        it("should throw TypeError if method not provided", function()
-        {
-            const client = new WebSocket("ws://" + host + ":" + port)
-
-            client.on("open", function()
-            {
-                expect(client.notify.bind(client)).to.throw(TypeError)
             })
         })
     })
@@ -565,8 +545,8 @@ describe("Client", function()
         {
             client.unsubscribe().catch(function(error)
             {
-                error.name.should.equal("TypeError")
-                error.message.should.equal("\"event\" is required")
+                error.code.should.equal(-32000)
+                error.message.should.equal("Event not provided")
             })
         })
     })

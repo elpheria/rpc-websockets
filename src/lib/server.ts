@@ -6,7 +6,6 @@
 "use strict"
 
 // @ts-ignore
-import assertArgs from "assert-args"
 import { EventEmitter } from "eventemitter3"
 import NodeWebSocket, { Server as WebSocketServer } from "ws"
 import { v1 as uuidv1 } from "uuid"
@@ -148,12 +147,6 @@ export default class Server extends EventEmitter
      */
     register(name: string, fn: (params: IRPCMethodParams, socket_id: string) => void, ns = "/")
     {
-        assertArgs(arguments, {
-            name: "string",
-            fn: "function",
-            "[ns]": "string"
-        })
-
         if (!this.namespaces[ns]) this._generateNamespace(ns)
 
         this.namespaces[ns].rpc_methods[name] = {
@@ -237,10 +230,6 @@ export default class Server extends EventEmitter
      */
     closeNamespace(ns: string)
     {
-        assertArgs(arguments, {
-            ns: "string"
-        })
-
         const namespace = this.namespaces[ns]
 
         if (namespace)
@@ -265,11 +254,6 @@ export default class Server extends EventEmitter
      */
     event(name: string, ns = "/"): IEvent
     {
-        assertArgs(arguments, {
-            "name": "string",
-            "[ns]": "string"
-        })
-
         if (!this.namespaces[ns]) this._generateNamespace(ns)
         else
         {
@@ -320,10 +304,6 @@ export default class Server extends EventEmitter
      */
     of(name: string)
     {
-        assertArgs(arguments, {
-            "name": "string",
-        })
-
         if (!this.namespaces[name]) this._generateNamespace(name)
 
         const self = this
@@ -374,7 +354,7 @@ export default class Server extends EventEmitter
             {
                 const socket_ids = [ ...self.namespaces[name].clients.keys() ]
 
-                for (var i = 0, id; id = socket_ids[i]; ++i)
+                for (let i = 0, id; id = socket_ids[i]; ++i)
                 {
                     self.namespaces[name].clients.get(id).send(CircularJSON.stringify({
                         notification: event,
@@ -433,10 +413,6 @@ export default class Server extends EventEmitter
      */
     eventList(ns = "/")
     {
-        assertArgs(arguments, {
-            "[ns]": "string",
-        })
-
         if (!this.namespaces[ns]) return []
 
         return Object.keys(this.namespaces[ns].events)
@@ -452,12 +428,6 @@ export default class Server extends EventEmitter
      */
     createError(code: number, message: string, data: string | object)
     {
-        assertArgs(arguments, {
-            "code": "number",
-            "message": "string",
-            "[data]": ["string", "object"]
-        })
-
         return {
             code: code,
             message: message,

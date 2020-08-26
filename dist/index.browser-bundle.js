@@ -56,7 +56,7 @@ var Client = /*#__PURE__*/function (_CommonClient) {
 }(_client["default"]);
 
 exports.Client = Client;
-},{"./lib/client":2,"./lib/client/websocket.browser":3,"@babel/runtime/helpers/classCallCheck":13,"@babel/runtime/helpers/getPrototypeOf":15,"@babel/runtime/helpers/inherits":16,"@babel/runtime/helpers/interopRequireDefault":17,"@babel/runtime/helpers/possibleConstructorReturn":18}],2:[function(require,module,exports){
+},{"./lib/client":2,"./lib/client/websocket.browser":3,"@babel/runtime/helpers/classCallCheck":6,"@babel/runtime/helpers/getPrototypeOf":8,"@babel/runtime/helpers/inherits":9,"@babel/runtime/helpers/interopRequireDefault":10,"@babel/runtime/helpers/possibleConstructorReturn":11}],2:[function(require,module,exports){
 (function (Buffer){
 /**
  * "Client" wraps "ws" or a browser-implemented "WebSocket" library
@@ -87,8 +87,6 @@ var _inherits2 = _interopRequireDefault(require("@babel/runtime/helpers/inherits
 var _possibleConstructorReturn2 = _interopRequireDefault(require("@babel/runtime/helpers/possibleConstructorReturn"));
 
 var _getPrototypeOf2 = _interopRequireDefault(require("@babel/runtime/helpers/getPrototypeOf"));
-
-var _assertArgs = _interopRequireDefault(require("assert-args"));
 
 var _eventemitter = require("eventemitter3");
 
@@ -136,7 +134,6 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
     _this.queue = {};
     _this.rpc_id = 0;
     _this.address = address;
-    _this.options = arguments[2];
     _this.autoconnect = autoconnect;
     _this.ready = false;
     _this.reconnect = reconnect;
@@ -148,7 +145,12 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
       return ++_this.rpc_id;
     };
 
-    if (_this.autoconnect) _this._connect(_this.address, _this.options);
+    if (_this.autoconnect) _this._connect(_this.address, {
+      autoconnect: _this.autoconnect,
+      reconnect: _this.reconnect,
+      reconnect_interval: _this.reconnect_interval,
+      max_reconnects: _this.max_reconnects
+    });
     return _this;
   }
   /**
@@ -163,7 +165,12 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
     value: function connect() {
       if (this.socket) return;
 
-      this._connect(this.address, this.options);
+      this._connect(this.address, {
+        autoconnect: this.autoconnect,
+        reconnect: this.reconnect,
+        reconnect_interval: this.reconnect_interval,
+        max_reconnects: this.max_reconnects
+      });
     }
     /**
      * Calls a registered RPC method on server.
@@ -179,13 +186,6 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
     key: "call",
     value: function call(method, params, timeout, ws_opts) {
       var _this2 = this;
-
-      (0, _assertArgs["default"])(arguments, {
-        "method": "string",
-        "[params]": ["object", Array],
-        "[timeout]": "number",
-        "[ws_opts]": "object"
-      });
 
       if (!ws_opts && "object" === (0, _typeof2["default"])(timeout)) {
         ws_opts = timeout;
@@ -309,10 +309,6 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
     value: function notify(method, params) {
       var _this3 = this;
 
-      (0, _assertArgs["default"])(arguments, {
-        "method": "string",
-        "[params]": ["object", Array]
-      });
       return new Promise(function (resolve, reject) {
         if (!_this3.ready) return reject(new Error("socket not ready"));
         var message = {
@@ -339,33 +335,29 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
     key: "subscribe",
     value: function () {
       var _subscribe = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3(event) {
-        var result,
-            _args3 = arguments;
+        var result;
         return _regenerator["default"].wrap(function _callee3$(_context3) {
           while (1) {
             switch (_context3.prev = _context3.next) {
               case 0:
-                (0, _assertArgs["default"])(_args3, {
-                  event: ["string", Array]
-                });
                 if (typeof event === "string") event = [event];
-                _context3.next = 4;
+                _context3.next = 3;
                 return this.call("rpc.on", event);
 
-              case 4:
+              case 3:
                 result = _context3.sent;
 
                 if (!(typeof event === "string" && result[event] !== "ok")) {
-                  _context3.next = 7;
+                  _context3.next = 6;
                   break;
                 }
 
                 throw new Error("Failed subscribing to an event '" + event + "' with: " + result[event]);
 
-              case 7:
+              case 6:
                 return _context3.abrupt("return", result);
 
-              case 8:
+              case 7:
               case "end":
                 return _context3.stop();
             }
@@ -391,33 +383,29 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
     key: "unsubscribe",
     value: function () {
       var _unsubscribe = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee4(event) {
-        var result,
-            _args4 = arguments;
+        var result;
         return _regenerator["default"].wrap(function _callee4$(_context4) {
           while (1) {
             switch (_context4.prev = _context4.next) {
               case 0:
-                (0, _assertArgs["default"])(_args4, {
-                  event: ["string", Array]
-                });
                 if (typeof event === "string") event = [event];
-                _context4.next = 4;
+                _context4.next = 3;
                 return this.call("rpc.off", event);
 
-              case 4:
+              case 3:
                 result = _context4.sent;
 
                 if (!(typeof event === "string" && result[event] !== "ok")) {
-                  _context4.next = 7;
+                  _context4.next = 6;
                   break;
                 }
 
                 throw new Error("Failed unsubscribing from an event with: " + result);
 
-              case 7:
+              case 6:
                 return _context4.abrupt("return", result);
 
-              case 8:
+              case 7:
               case "end":
                 return _context4.stop();
             }
@@ -484,6 +472,7 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
             for (var i = 0; i < message.params.length; i++) {
               args.push(message.params[i]);
             } // send on next tick so that queue responses can be handled first
+          // eslint-disable-next-line prefer-spread
 
           return nextTick(function () {
             _this4.emit.apply(_this4, args);
@@ -527,7 +516,7 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
 
 exports["default"] = CommonClient;
 }).call(this,require("buffer").Buffer)
-},{"@babel/runtime/helpers/asyncToGenerator":12,"@babel/runtime/helpers/classCallCheck":13,"@babel/runtime/helpers/createClass":14,"@babel/runtime/helpers/getPrototypeOf":15,"@babel/runtime/helpers/inherits":16,"@babel/runtime/helpers/interopRequireDefault":17,"@babel/runtime/helpers/possibleConstructorReturn":18,"@babel/runtime/helpers/typeof":20,"@babel/runtime/regenerator":21,"assert-args":22,"buffer":34,"circular-json":35,"eventemitter3":37,"next-tick":41}],3:[function(require,module,exports){
+},{"@babel/runtime/helpers/asyncToGenerator":5,"@babel/runtime/helpers/classCallCheck":6,"@babel/runtime/helpers/createClass":7,"@babel/runtime/helpers/getPrototypeOf":8,"@babel/runtime/helpers/inherits":9,"@babel/runtime/helpers/interopRequireDefault":10,"@babel/runtime/helpers/possibleConstructorReturn":11,"@babel/runtime/helpers/typeof":13,"@babel/runtime/regenerator":14,"buffer":16,"circular-json":17,"eventemitter3":18,"next-tick":20}],3:[function(require,module,exports){
 /**
  * WebSocket implements a browser-side WebSocket specification.
  * @module Client
@@ -650,155 +639,7 @@ var WebSocketBrowserImpl = /*#__PURE__*/function (_EventEmitter) {
 function _default(address, options) {
   return new WebSocketBrowserImpl(address, options);
 }
-},{"@babel/runtime/helpers/classCallCheck":13,"@babel/runtime/helpers/createClass":14,"@babel/runtime/helpers/getPrototypeOf":15,"@babel/runtime/helpers/inherits":16,"@babel/runtime/helpers/interopRequireDefault":17,"@babel/runtime/helpers/possibleConstructorReturn":18,"eventemitter3":37}],4:[function(require,module,exports){
-/**
- * @module {function} 101/exists
- * @type {function}
- */
-
-/**
- * Returns false for null and undefined, true for everything else.
- * @function module:101/exists
- * @param val {*} - value to be existance checked
- * @return {boolean} whether the value exists or not
- */
-module.exports = exists;
-
-function exists (val) {
-  return val !== undefined && val !== null;
-}
-},{}],5:[function(require,module,exports){
-/**
- * @module 101/is-empty
- */
-
-var isString = require('./is-string');
-var isObject = require('./is-object');
-var isArray = Array.isArray;
-
-/**
- * Functional version of val empty object, array or object
- * @function module:101/is-empty
- * @param {string|array|object} val - value checked to be a empty
- * @return {boolean} Whether the value is an empty or not
- */
-module.exports = isEmpty;
-
-function isEmpty (val) {
-  if (isString(val) || isArray(val)) {
-    return val.length === 0;
-  }
-  else if (isObject(val)) {
-    for (var name in val) {
-      return false;
-    }
-    return true;
-  }
-  else {
-    throw new TypeError('Val must be a string, array or object');
-  }
-}
-
-},{"./is-object":8,"./is-string":9}],6:[function(require,module,exports){
-/**
- * @module 101/is-function
- */
-
-/**
- * Functional version of val typeof 'function'
- * @function module:101/is-function
- * @param {*} val - value checked to be a function
- * @return {boolean} Whether the value is a function or not
- */
-module.exports = isFunction;
-
-function isFunction (v) {
-  return typeof v === 'function';
-}
-},{}],7:[function(require,module,exports){
-/** 
- * @module 101/is-integer
- */ 
-
-/**
- * Returns true if n is an integer.
- * @function module:101/is-integer
- * @param {*} val - value checked to be a string
- * @return {boolean} Whether the value is an integer or not
- */
-
-module.exports = isInteger;
-
-function isInteger (val) {
-  return typeof val === 'number' && isFinite(val) && Math.floor(val) === val;
-}
-
-},{}],8:[function(require,module,exports){
-/**
- * Functional version of a strict object check (Arrays and RegExps are not objects)
- * @module 101/is-object
- */
-
-/**
- * @function module:101/is-object
- * @param {*} val - value checked to be an object
- * @return {boolean} Whether the value is an object or not
- */
-var exists = require('./exists');
-
-module.exports = isObject;
-
-function isObject (val) {
-  return typeof val === 'object' &&
-    exists(val) &&
-    !Array.isArray(val) &&
-    !(val instanceof RegExp) &&
-    !(val instanceof String) &&
-    !(val instanceof Number);
-}
-},{"./exists":4}],9:[function(require,module,exports){
-/**
- * @module 101/is-string
- */
-
-/**
- * Functional version of val typeof 'string'
- * @function module:101/is-string
- * @param {*} val - value checked to be a string
- * @return {boolean} Whether the value is an string or not
- */
-module.exports = isString;
-
-function isString (val) {
-  return typeof val === 'string' || val instanceof String;
-}
-
-},{}],10:[function(require,module,exports){
-/**
- * @module 101/not
- */
-
-var isFunction = require('./is-function');
-
-/**
- * Functional version of !
- * @function module:101/not
- * @param {*} val - value to inverse
- * @return {function} - function whose arguments and context are applied to fn and result is inversed
- */
-module.exports = not;
-
-function not (val) {
-  if (isFunction(val)) {
-    return function (/* args */) {
-      return not(val.apply(this, arguments));
-    };
-  }
-  else {
-    return !val;
-  }
-}
-},{"./is-function":6}],11:[function(require,module,exports){
+},{"@babel/runtime/helpers/classCallCheck":6,"@babel/runtime/helpers/createClass":7,"@babel/runtime/helpers/getPrototypeOf":8,"@babel/runtime/helpers/inherits":9,"@babel/runtime/helpers/interopRequireDefault":10,"@babel/runtime/helpers/possibleConstructorReturn":11,"eventemitter3":18}],4:[function(require,module,exports){
 function _assertThisInitialized(self) {
   if (self === void 0) {
     throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
@@ -808,7 +649,7 @@ function _assertThisInitialized(self) {
 }
 
 module.exports = _assertThisInitialized;
-},{}],12:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
   try {
     var info = gen[key](arg);
@@ -846,7 +687,7 @@ function _asyncToGenerator(fn) {
 }
 
 module.exports = _asyncToGenerator;
-},{}],13:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 function _classCallCheck(instance, Constructor) {
   if (!(instance instanceof Constructor)) {
     throw new TypeError("Cannot call a class as a function");
@@ -854,7 +695,7 @@ function _classCallCheck(instance, Constructor) {
 }
 
 module.exports = _classCallCheck;
-},{}],14:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 function _defineProperties(target, props) {
   for (var i = 0; i < props.length; i++) {
     var descriptor = props[i];
@@ -872,7 +713,7 @@ function _createClass(Constructor, protoProps, staticProps) {
 }
 
 module.exports = _createClass;
-},{}],15:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 function _getPrototypeOf(o) {
   module.exports = _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {
     return o.__proto__ || Object.getPrototypeOf(o);
@@ -881,7 +722,7 @@ function _getPrototypeOf(o) {
 }
 
 module.exports = _getPrototypeOf;
-},{}],16:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 var setPrototypeOf = require("./setPrototypeOf");
 
 function _inherits(subClass, superClass) {
@@ -900,7 +741,7 @@ function _inherits(subClass, superClass) {
 }
 
 module.exports = _inherits;
-},{"./setPrototypeOf":19}],17:[function(require,module,exports){
+},{"./setPrototypeOf":12}],10:[function(require,module,exports){
 function _interopRequireDefault(obj) {
   return obj && obj.__esModule ? obj : {
     "default": obj
@@ -908,7 +749,7 @@ function _interopRequireDefault(obj) {
 }
 
 module.exports = _interopRequireDefault;
-},{}],18:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 var _typeof = require("../helpers/typeof");
 
 var assertThisInitialized = require("./assertThisInitialized");
@@ -922,7 +763,7 @@ function _possibleConstructorReturn(self, call) {
 }
 
 module.exports = _possibleConstructorReturn;
-},{"../helpers/typeof":20,"./assertThisInitialized":11}],19:[function(require,module,exports){
+},{"../helpers/typeof":13,"./assertThisInitialized":4}],12:[function(require,module,exports){
 function _setPrototypeOf(o, p) {
   module.exports = _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
     o.__proto__ = p;
@@ -933,7 +774,7 @@ function _setPrototypeOf(o, p) {
 }
 
 module.exports = _setPrototypeOf;
-},{}],20:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 function _typeof(obj) {
   "@babel/helpers - typeof";
 
@@ -951,915 +792,10 @@ function _typeof(obj) {
 }
 
 module.exports = _typeof;
-},{}],21:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 module.exports = require("regenerator-runtime");
 
-},{"regenerator-runtime":43}],22:[function(require,module,exports){
-var debug = require('debug')('assert-args')
-var exists = require('101/exists')
-var isObject = require('101/is-object')
-var not = require('101/not')
-
-var isOptionalKey = require('./lib/is-optional-key.js')
-var isSpreadKey = require('./lib/is-spread-key.js')
-var validate = require('./lib/validate.js')
-
-var isRequiredKey = not(isOptionalKey)
-
-module.exports = assertArgs
-
-function assertArgs (args, validation) {
-  if (typeof args !== 'object' || !exists(args.length)) {
-    throw new TypeError('"args" must be an array or array-like object (arguments)')
-  }
-  if (!isObject(validation)) { // strict object
-    throw new TypeError('"validation" must be an object')
-  }
-
-  // copy args
-  var argsLeft = Array.prototype.slice.call(args)
-  var firstOptionalErr
-  var ret = {}
-  var argKeys = Object.keys(validation)
-  var outKey
-
-  if (argKeys.filter(isSpreadKey).length > 1) {
-    throw new Error('assert-args only supports a single spread argument')
-  }
-
-  argKeys.forEach(function (key, i) {
-    var spreadArgs
-    var validator = validation[key]
-    var arg = argsLeft[0]
-
-    if (isSpreadKey(key)) {
-      debug('is spread key: ' + key)
-      debug('argKeys.length', argKeys.length)
-      debug('argsLeft.length', argsLeft.length)
-      var requiredKeysLeft = argKeys.slice(i + 1).filter(isRequiredKey)
-      debug('requiredKeysLeft', requiredKeysLeft)
-      spreadArgs = argsLeft.slice(0, argsLeft.length - requiredKeysLeft.length) // copy
-      debug('spreadArgs', spreadArgs)
-      debug('spreadArgs.length', spreadArgs.length)
-
-      if (isOptionalKey(key)) {
-        debug('is optional spread key: ' + key)
-        outKey = key.slice(4, -1)
-        ret[outKey] = []
-
-        spreadArgs.forEach(function (arg) {
-          if (!exists(arg)) {
-            // non-existant args pass as optional args
-            firstOptionalErr = null // reset after a pass
-            argsLeft.shift() // pass, remains [...]
-            return
-          }
-          try {
-            validate(key.slice(1, -1), arg, validator, true)
-            // optional arg passes validator
-            firstOptionalErr = null
-            ret[outKey].push(arg) // pass
-            argsLeft.shift()
-          } catch (err) {
-            debug('spread validate err: ' + err.message)
-            debug('spread validate argsLeft: ' + argsLeft)
-            if (firstOptionalErr) {
-              // other optional error already occurred, throw first.
-              throw firstOptionalErr
-            } else {
-              firstOptionalErr = err
-            }
-          }
-        })
-      } else { // isSpreadKey && isRequiredKey
-        debug('is required spread key: ' + key)
-        outKey = key.slice(3)
-        ret[outKey] = []
-
-        if (spreadArgs.length === 0) {
-          // missing trailing required arg, fail
-          throw new TypeError('"' + key + '" is required')
-        }
-        spreadArgs.forEach(function (arg) {
-          try {
-            validate(key, arg, validator, true)
-            // optional arg passes validator
-            firstOptionalErr = null
-            ret[outKey].push(arg) // pass
-            argsLeft.shift()
-          } catch (err) {
-            debug('spread validate err: ' + err.message)
-            debug('spread validate argsLeft: ' + argsLeft)
-            debug('spread validate argKeys: ' + argKeys)
-
-            if (i === (argKeys.length - 1)) {
-              // spread is last arg.
-              // spread assumes all args passed are used.
-              // there are no args left. and this failed for spread. throw it.
-              if (firstOptionalErr) {
-                if ((argsLeft.length - 1) > requiredKeysLeft.length) {
-                  throw firstOptionalErr
-                } else {
-                  throw err
-                }
-              } else {
-                throw err
-              }
-            } else {
-              // leading/middle spread arg
-              if (firstOptionalErr) {
-                // other optional error already occurred, throw first.
-                throw firstOptionalErr
-              } else {
-                // set optional err
-                firstOptionalErr = err
-              }
-            }
-          }
-        })
-      }
-      return
-    } else if (isOptionalKey(key)) {
-      debug('is optional key: ' + key)
-      key = key.slice(1, -1)
-
-      if (argsLeft.length === 0) {
-        // missing trailing optional arg, pass
-        ret[key] = undefined
-        return
-      } else if (!exists(arg)) {
-        // non-existant args pass as optional args
-        firstOptionalErr = null
-        ret[key] = argsLeft.shift() // pass
-        return
-      }
-
-      try {
-        validate(key, arg, validator)
-        // optional arg passes validator
-        firstOptionalErr = null
-        ret[key] = argsLeft.shift()
-        return
-      } catch (err) {
-        // optional arg failed validator
-        // * set as undefined and pass for now
-        // * save the error in case there are no more required args
-        firstOptionalErr = firstOptionalErr || err
-        ret[key] = undefined
-        return
-      }
-    } else { // isRequiredKey
-      debug('is required key: ' + key)
-      if (argsLeft.length === 0) {
-        // missing trailing required arg, fail
-        throw new TypeError('"' + key + '" is required')
-      }
-      try {
-        validate(key, arg, validator)
-        // required arg passes validator, pass
-        firstOptionalErr = null
-        ret[key] = argsLeft.shift()
-      } catch (err) {
-        if (firstOptionalErr && argsLeft.length > 1) {
-          // optional err was thrown before and this is not the last arg
-          throw firstOptionalErr
-        }
-        throw err
-      }
-      return
-    }
-  })
-
-  if (firstOptionalErr) {
-    throw firstOptionalErr
-  }
-
-  return ret
-}
-
-},{"./lib/is-optional-key.js":25,"./lib/is-spread-key.js":26,"./lib/validate.js":29,"101/exists":4,"101/is-object":8,"101/not":10,"debug":30}],23:[function(require,module,exports){
-module.exports = assertType
-
-function assertType (bool, message) {
-  if (!bool) {
-    throw new TypeError(message)
-  }
-}
-
-},{}],24:[function(require,module,exports){
-var isCapitalized = require('is-capitalized')
-var isClassStrict = require('is-class')
-var isFunction = require('101/is-function')
-
-module.exports = isClass
-
-function isClass (fn) {
-  return isClassStrict(fn) ||
-  (isFunction(fn) && isCapitalized(fn.name))
-}
-
-},{"101/is-function":6,"is-capitalized":39,"is-class":40}],25:[function(require,module,exports){
-module.exports = isOptionalKey
-
-function isOptionalKey (key) {
-  return /^\[.+\]$/.test(key)
-}
-
-},{}],26:[function(require,module,exports){
-module.exports = isSpreadKey
-
-function isSpreadKey (key) {
-  return /^[.]{3}.+/.test(key) ||
-  /^\[[.]{3}[^\]]+\]$/.test(key)
-}
-
-},{}],27:[function(require,module,exports){
-var compoundSubject = require('compound-subject')
-var isEmpty = require('101/is-empty')
-var isString = require('101/is-string')
-var isFunction = require('101/is-function')
-
-var assertType = require('./assert-type')
-var isClass = require('./is-class.js')
-var validate = require('./validate.js')
-var startsWithVowel = require('./starts-with-vowel.js')
-
-module.exports = multiValidate
-/**
- * validate an argument against multiple validators
- * @param  {string} key argument name
- * @param  {*} arg  argument value
- * @param  {array} validators array of validators
- */
-function multiValidate (key, arg, validators) {
-  var errMessage = '"' + key + '" must be '
-  assertType(!isEmpty(validators), '"validators" cannot be empty')
-  var typeArr = validators.map(function (validator) {
-    if (isString(validator)) {
-      return validator
-    } else if (isClass(validator)) {
-      return '"' + validator.name + '"'
-    } else if (isFunction(validator)) {
-      return 'pass "' + (validator.name || 'anonymous') + '"'
-    } else {
-      throw new TypeError('"validators" must be an array containing only strings, classes, or functions')
-    }
-  })
-  var typeStr = compoundSubject(typeArr)
-    .endWith('or')
-    .make()
-  var article = startsWithVowel(typeStr) ? 'an' : 'a'
-
-  errMessage += article + ' ' + typeStr
-
-  var passedAnyValidator = validators.some(function (validator) {
-    try {
-      validate(key, arg, validator)
-      return true
-    } catch (e) {
-      return false
-    }
-  })
-
-  if (!passedAnyValidator) {
-    throw new TypeError(errMessage)
-  }
-}
-
-},{"./assert-type":23,"./is-class.js":24,"./starts-with-vowel.js":28,"./validate.js":29,"101/is-empty":5,"101/is-function":6,"101/is-string":9,"compound-subject":36}],28:[function(require,module,exports){
-module.exports = startsWithVowel
-
-function startsWithVowel (str) {
-  return /^[aeiou]/i.test(str)
-}
-
-},{}],29:[function(require,module,exports){
-var isFunction = require('101/is-function')
-var isInteger = require('101/is-integer')
-var isObject = require('101/is-object')
-var isString = require('101/is-string')
-
-var assertType = require('./assert-type.js')
-var isClass = require('./is-class.js')
-var NoClass = function () {}
-var startsWithVowel = require('./starts-with-vowel.js')
-var classes = {
-  // primitive classes
-  string: String,
-  number: Number,
-  // extended typeof support
-  array: Array,
-  regexp: RegExp
-}
-
-module.exports = validate
-/**
- * validate an argument
- * @param  {string} key argument name
- * @param  {*} arg  argument value
- * @param  {string|function} validator argument validator
- */
-function validate (key, arg, validator, _plural) {
-  if (validator === '*') { return }
-
-  var keyStr = '"' + key + '"'
-  var typeStr
-  var article
-  var Class
-  var errMessage
-  var assertion
-
-  if (Array.isArray(validator)) {
-    // circular require
-    return require('./multi-validate.js')(key, arg, validator)
-  } else if (isString(validator)) {
-    // validator is a string
-    typeStr = validator
-    Class = classes[typeStr] || NoClass
-    article = startsWithVowel(typeStr) ? 'an' : 'a'
-    errMessage = _plural
-      ? (keyStr + ' must be ' + typeStr + 's')
-      : (keyStr + ' must be ' + article + ' ' + typeStr)
-
-    if (typeStr === 'integer') {
-      assertion = isInteger(arg)
-    } else if (typeStr === 'object') {
-      assertion = isObject(arg)
-    } else {
-      assertion = arg instanceof Class || typeof arg === validator
-    }
-
-    assertType(assertion, errMessage)
-  } else if (isClass(validator)) {
-    // validator is a class
-    typeStr = validator.name
-    Class = validator
-    errMessage = _plural
-      ? (keyStr + ' must be instances of "' + typeStr + '"')
-      : (keyStr + ' must be an instance of "' + typeStr + '"')
-    assertType(arg instanceof Class, errMessage)
-  } else if (isFunction(validator)) {
-    // validator is a test
-    try {
-      // test will throw an error if it fails
-      validator(arg)
-    } catch (e) {
-      e.message = (keyStr += ': ' + e.message)
-      throw e
-    }
-  } else {
-    throw new TypeError('"validator" must be a string, class or function')
-  }
-}
-
-},{"./assert-type.js":23,"./is-class.js":24,"./multi-validate.js":27,"./starts-with-vowel.js":28,"101/is-function":6,"101/is-integer":7,"101/is-object":8,"101/is-string":9}],30:[function(require,module,exports){
-(function (process){
-/**
- * This is the web browser implementation of `debug()`.
- *
- * Expose `debug()` as the module.
- */
-
-exports = module.exports = require('./debug');
-exports.log = log;
-exports.formatArgs = formatArgs;
-exports.save = save;
-exports.load = load;
-exports.useColors = useColors;
-exports.storage = 'undefined' != typeof chrome
-               && 'undefined' != typeof chrome.storage
-                  ? chrome.storage.local
-                  : localstorage();
-
-/**
- * Colors.
- */
-
-exports.colors = [
-  'lightseagreen',
-  'forestgreen',
-  'goldenrod',
-  'dodgerblue',
-  'darkorchid',
-  'crimson'
-];
-
-/**
- * Currently only WebKit-based Web Inspectors, Firefox >= v31,
- * and the Firebug extension (any Firefox version) are known
- * to support "%c" CSS customizations.
- *
- * TODO: add a `localStorage` variable to explicitly enable/disable colors
- */
-
-function useColors() {
-  // NB: In an Electron preload script, document will be defined but not fully
-  // initialized. Since we know we're in Chrome, we'll just detect this case
-  // explicitly
-  if (typeof window !== 'undefined' && window.process && window.process.type === 'renderer') {
-    return true;
-  }
-
-  // is webkit? http://stackoverflow.com/a/16459606/376773
-  // document is undefined in react-native: https://github.com/facebook/react-native/pull/1632
-  return (typeof document !== 'undefined' && document.documentElement && document.documentElement.style && document.documentElement.style.WebkitAppearance) ||
-    // is firebug? http://stackoverflow.com/a/398120/376773
-    (typeof window !== 'undefined' && window.console && (window.console.firebug || (window.console.exception && window.console.table))) ||
-    // is firefox >= v31?
-    // https://developer.mozilla.org/en-US/docs/Tools/Web_Console#Styling_messages
-    (typeof navigator !== 'undefined' && navigator.userAgent && navigator.userAgent.toLowerCase().match(/firefox\/(\d+)/) && parseInt(RegExp.$1, 10) >= 31) ||
-    // double check webkit in userAgent just in case we are in a worker
-    (typeof navigator !== 'undefined' && navigator.userAgent && navigator.userAgent.toLowerCase().match(/applewebkit\/(\d+)/));
-}
-
-/**
- * Map %j to `JSON.stringify()`, since no Web Inspectors do that by default.
- */
-
-exports.formatters.j = function(v) {
-  try {
-    return JSON.stringify(v);
-  } catch (err) {
-    return '[UnexpectedJSONParseError]: ' + err.message;
-  }
-};
-
-
-/**
- * Colorize log arguments if enabled.
- *
- * @api public
- */
-
-function formatArgs(args) {
-  var useColors = this.useColors;
-
-  args[0] = (useColors ? '%c' : '')
-    + this.namespace
-    + (useColors ? ' %c' : ' ')
-    + args[0]
-    + (useColors ? '%c ' : ' ')
-    + '+' + exports.humanize(this.diff);
-
-  if (!useColors) return;
-
-  var c = 'color: ' + this.color;
-  args.splice(1, 0, c, 'color: inherit')
-
-  // the final "%c" is somewhat tricky, because there could be other
-  // arguments passed either before or after the %c, so we need to
-  // figure out the correct index to insert the CSS into
-  var index = 0;
-  var lastC = 0;
-  args[0].replace(/%[a-zA-Z%]/g, function(match) {
-    if ('%%' === match) return;
-    index++;
-    if ('%c' === match) {
-      // we only are interested in the *last* %c
-      // (the user may have provided their own)
-      lastC = index;
-    }
-  });
-
-  args.splice(lastC, 0, c);
-}
-
-/**
- * Invokes `console.log()` when available.
- * No-op when `console.log` is not a "function".
- *
- * @api public
- */
-
-function log() {
-  // this hackery is required for IE8/9, where
-  // the `console.log` function doesn't have 'apply'
-  return 'object' === typeof console
-    && console.log
-    && Function.prototype.apply.call(console.log, console, arguments);
-}
-
-/**
- * Save `namespaces`.
- *
- * @param {String} namespaces
- * @api private
- */
-
-function save(namespaces) {
-  try {
-    if (null == namespaces) {
-      exports.storage.removeItem('debug');
-    } else {
-      exports.storage.debug = namespaces;
-    }
-  } catch(e) {}
-}
-
-/**
- * Load `namespaces`.
- *
- * @return {String} returns the previously persisted debug modes
- * @api private
- */
-
-function load() {
-  var r;
-  try {
-    r = exports.storage.debug;
-  } catch(e) {}
-
-  // If debug isn't set in LS, and we're in Electron, try to load $DEBUG
-  if (!r && typeof process !== 'undefined' && 'env' in process) {
-    r = process.env.DEBUG;
-  }
-
-  return r;
-}
-
-/**
- * Enable namespaces listed in `localStorage.debug` initially.
- */
-
-exports.enable(load());
-
-/**
- * Localstorage attempts to return the localstorage.
- *
- * This is necessary because safari throws
- * when a user disables cookies/localstorage
- * and you attempt to access it.
- *
- * @return {LocalStorage}
- * @api private
- */
-
-function localstorage() {
-  try {
-    return window.localStorage;
-  } catch (e) {}
-}
-
-}).call(this,require('_process'))
-},{"./debug":31,"_process":42}],31:[function(require,module,exports){
-
-/**
- * This is the common logic for both the Node.js and web browser
- * implementations of `debug()`.
- *
- * Expose `debug()` as the module.
- */
-
-exports = module.exports = createDebug.debug = createDebug['default'] = createDebug;
-exports.coerce = coerce;
-exports.disable = disable;
-exports.enable = enable;
-exports.enabled = enabled;
-exports.humanize = require('ms');
-
-/**
- * The currently active debug mode names, and names to skip.
- */
-
-exports.names = [];
-exports.skips = [];
-
-/**
- * Map of special "%n" handling functions, for the debug "format" argument.
- *
- * Valid key names are a single, lower or upper-case letter, i.e. "n" and "N".
- */
-
-exports.formatters = {};
-
-/**
- * Previous log timestamp.
- */
-
-var prevTime;
-
-/**
- * Select a color.
- * @param {String} namespace
- * @return {Number}
- * @api private
- */
-
-function selectColor(namespace) {
-  var hash = 0, i;
-
-  for (i in namespace) {
-    hash  = ((hash << 5) - hash) + namespace.charCodeAt(i);
-    hash |= 0; // Convert to 32bit integer
-  }
-
-  return exports.colors[Math.abs(hash) % exports.colors.length];
-}
-
-/**
- * Create a debugger with the given `namespace`.
- *
- * @param {String} namespace
- * @return {Function}
- * @api public
- */
-
-function createDebug(namespace) {
-
-  function debug() {
-    // disabled?
-    if (!debug.enabled) return;
-
-    var self = debug;
-
-    // set `diff` timestamp
-    var curr = +new Date();
-    var ms = curr - (prevTime || curr);
-    self.diff = ms;
-    self.prev = prevTime;
-    self.curr = curr;
-    prevTime = curr;
-
-    // turn the `arguments` into a proper Array
-    var args = new Array(arguments.length);
-    for (var i = 0; i < args.length; i++) {
-      args[i] = arguments[i];
-    }
-
-    args[0] = exports.coerce(args[0]);
-
-    if ('string' !== typeof args[0]) {
-      // anything else let's inspect with %O
-      args.unshift('%O');
-    }
-
-    // apply any `formatters` transformations
-    var index = 0;
-    args[0] = args[0].replace(/%([a-zA-Z%])/g, function(match, format) {
-      // if we encounter an escaped % then don't increase the array index
-      if (match === '%%') return match;
-      index++;
-      var formatter = exports.formatters[format];
-      if ('function' === typeof formatter) {
-        var val = args[index];
-        match = formatter.call(self, val);
-
-        // now we need to remove `args[index]` since it's inlined in the `format`
-        args.splice(index, 1);
-        index--;
-      }
-      return match;
-    });
-
-    // apply env-specific formatting (colors, etc.)
-    exports.formatArgs.call(self, args);
-
-    var logFn = debug.log || exports.log || console.log.bind(console);
-    logFn.apply(self, args);
-  }
-
-  debug.namespace = namespace;
-  debug.enabled = exports.enabled(namespace);
-  debug.useColors = exports.useColors();
-  debug.color = selectColor(namespace);
-
-  // env-specific initialization logic for debug instances
-  if ('function' === typeof exports.init) {
-    exports.init(debug);
-  }
-
-  return debug;
-}
-
-/**
- * Enables a debug mode by namespaces. This can include modes
- * separated by a colon and wildcards.
- *
- * @param {String} namespaces
- * @api public
- */
-
-function enable(namespaces) {
-  exports.save(namespaces);
-
-  exports.names = [];
-  exports.skips = [];
-
-  var split = (typeof namespaces === 'string' ? namespaces : '').split(/[\s,]+/);
-  var len = split.length;
-
-  for (var i = 0; i < len; i++) {
-    if (!split[i]) continue; // ignore empty strings
-    namespaces = split[i].replace(/\*/g, '.*?');
-    if (namespaces[0] === '-') {
-      exports.skips.push(new RegExp('^' + namespaces.substr(1) + '$'));
-    } else {
-      exports.names.push(new RegExp('^' + namespaces + '$'));
-    }
-  }
-}
-
-/**
- * Disable debug output.
- *
- * @api public
- */
-
-function disable() {
-  exports.enable('');
-}
-
-/**
- * Returns true if the given mode name is enabled, false otherwise.
- *
- * @param {String} name
- * @return {Boolean}
- * @api public
- */
-
-function enabled(name) {
-  var i, len;
-  for (i = 0, len = exports.skips.length; i < len; i++) {
-    if (exports.skips[i].test(name)) {
-      return false;
-    }
-  }
-  for (i = 0, len = exports.names.length; i < len; i++) {
-    if (exports.names[i].test(name)) {
-      return true;
-    }
-  }
-  return false;
-}
-
-/**
- * Coerce `val`.
- *
- * @param {Mixed} val
- * @return {Mixed}
- * @api private
- */
-
-function coerce(val) {
-  if (val instanceof Error) return val.stack || val.message;
-  return val;
-}
-
-},{"ms":32}],32:[function(require,module,exports){
-/**
- * Helpers.
- */
-
-var s = 1000;
-var m = s * 60;
-var h = m * 60;
-var d = h * 24;
-var y = d * 365.25;
-
-/**
- * Parse or format the given `val`.
- *
- * Options:
- *
- *  - `long` verbose formatting [false]
- *
- * @param {String|Number} val
- * @param {Object} [options]
- * @throws {Error} throw an error if val is not a non-empty string or a number
- * @return {String|Number}
- * @api public
- */
-
-module.exports = function(val, options) {
-  options = options || {};
-  var type = typeof val;
-  if (type === 'string' && val.length > 0) {
-    return parse(val);
-  } else if (type === 'number' && isNaN(val) === false) {
-    return options.long ? fmtLong(val) : fmtShort(val);
-  }
-  throw new Error(
-    'val is not a non-empty string or a valid number. val=' +
-      JSON.stringify(val)
-  );
-};
-
-/**
- * Parse the given `str` and return milliseconds.
- *
- * @param {String} str
- * @return {Number}
- * @api private
- */
-
-function parse(str) {
-  str = String(str);
-  if (str.length > 100) {
-    return;
-  }
-  var match = /^((?:\d+)?\.?\d+) *(milliseconds?|msecs?|ms|seconds?|secs?|s|minutes?|mins?|m|hours?|hrs?|h|days?|d|years?|yrs?|y)?$/i.exec(
-    str
-  );
-  if (!match) {
-    return;
-  }
-  var n = parseFloat(match[1]);
-  var type = (match[2] || 'ms').toLowerCase();
-  switch (type) {
-    case 'years':
-    case 'year':
-    case 'yrs':
-    case 'yr':
-    case 'y':
-      return n * y;
-    case 'days':
-    case 'day':
-    case 'd':
-      return n * d;
-    case 'hours':
-    case 'hour':
-    case 'hrs':
-    case 'hr':
-    case 'h':
-      return n * h;
-    case 'minutes':
-    case 'minute':
-    case 'mins':
-    case 'min':
-    case 'm':
-      return n * m;
-    case 'seconds':
-    case 'second':
-    case 'secs':
-    case 'sec':
-    case 's':
-      return n * s;
-    case 'milliseconds':
-    case 'millisecond':
-    case 'msecs':
-    case 'msec':
-    case 'ms':
-      return n;
-    default:
-      return undefined;
-  }
-}
-
-/**
- * Short format for `ms`.
- *
- * @param {Number} ms
- * @return {String}
- * @api private
- */
-
-function fmtShort(ms) {
-  if (ms >= d) {
-    return Math.round(ms / d) + 'd';
-  }
-  if (ms >= h) {
-    return Math.round(ms / h) + 'h';
-  }
-  if (ms >= m) {
-    return Math.round(ms / m) + 'm';
-  }
-  if (ms >= s) {
-    return Math.round(ms / s) + 's';
-  }
-  return ms + 'ms';
-}
-
-/**
- * Long format for `ms`.
- *
- * @param {Number} ms
- * @return {String}
- * @api private
- */
-
-function fmtLong(ms) {
-  return plural(ms, d, 'day') ||
-    plural(ms, h, 'hour') ||
-    plural(ms, m, 'minute') ||
-    plural(ms, s, 'second') ||
-    ms + ' ms';
-}
-
-/**
- * Pluralization helper.
- */
-
-function plural(ms, n, name) {
-  if (ms < n) {
-    return;
-  }
-  if (ms < n * 1.5) {
-    return Math.floor(ms / n) + ' ' + name;
-  }
-  return Math.ceil(ms / n) + ' ' + name + 's';
-}
-
-},{}],33:[function(require,module,exports){
+},{"regenerator-runtime":22}],15:[function(require,module,exports){
 'use strict'
 
 exports.byteLength = byteLength
@@ -2013,7 +949,7 @@ function fromByteArray (uint8) {
   return parts.join('')
 }
 
-},{}],34:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 (function (Buffer){
 /*!
  * The buffer module from node.js, for the browser.
@@ -2027,10 +963,6 @@ function fromByteArray (uint8) {
 
 var base64 = require('base64-js')
 var ieee754 = require('ieee754')
-var customInspectSymbol =
-  (typeof Symbol === 'function' && typeof Symbol.for === 'function')
-    ? Symbol.for('nodejs.util.inspect.custom')
-    : null
 
 exports.Buffer = Buffer
 exports.SlowBuffer = SlowBuffer
@@ -2067,9 +999,7 @@ function typedArraySupport () {
   // Can typed array instances can be augmented?
   try {
     var arr = new Uint8Array(1)
-    var proto = { foo: function () { return 42 } }
-    Object.setPrototypeOf(proto, Uint8Array.prototype)
-    Object.setPrototypeOf(arr, proto)
+    arr.__proto__ = { __proto__: Uint8Array.prototype, foo: function () { return 42 } }
     return arr.foo() === 42
   } catch (e) {
     return false
@@ -2098,7 +1028,7 @@ function createBuffer (length) {
   }
   // Return an augmented `Uint8Array` instance
   var buf = new Uint8Array(length)
-  Object.setPrototypeOf(buf, Buffer.prototype)
+  buf.__proto__ = Buffer.prototype
   return buf
 }
 
@@ -2148,7 +1078,7 @@ function from (value, encodingOrOffset, length) {
   }
 
   if (value == null) {
-    throw new TypeError(
+    throw TypeError(
       'The first argument must be one of type string, Buffer, ArrayBuffer, Array, ' +
       'or Array-like Object. Received type ' + (typeof value)
     )
@@ -2200,8 +1130,8 @@ Buffer.from = function (value, encodingOrOffset, length) {
 
 // Note: Change prototype *after* Buffer.from is defined to workaround Chrome bug:
 // https://github.com/feross/buffer/pull/148
-Object.setPrototypeOf(Buffer.prototype, Uint8Array.prototype)
-Object.setPrototypeOf(Buffer, Uint8Array)
+Buffer.prototype.__proto__ = Uint8Array.prototype
+Buffer.__proto__ = Uint8Array
 
 function assertSize (size) {
   if (typeof size !== 'number') {
@@ -2305,8 +1235,7 @@ function fromArrayBuffer (array, byteOffset, length) {
   }
 
   // Return an augmented `Uint8Array` instance
-  Object.setPrototypeOf(buf, Buffer.prototype)
-
+  buf.__proto__ = Buffer.prototype
   return buf
 }
 
@@ -2628,9 +1557,6 @@ Buffer.prototype.inspect = function inspect () {
   if (this.length > max) str += ' ... '
   return '<Buffer ' + str + '>'
 }
-if (customInspectSymbol) {
-  Buffer.prototype[customInspectSymbol] = Buffer.prototype.inspect
-}
 
 Buffer.prototype.compare = function compare (target, start, end, thisStart, thisEnd) {
   if (isInstance(target, Uint8Array)) {
@@ -2756,7 +1682,7 @@ function bidirectionalIndexOf (buffer, val, byteOffset, encoding, dir) {
         return Uint8Array.prototype.lastIndexOf.call(buffer, val, byteOffset)
       }
     }
-    return arrayIndexOf(buffer, [val], byteOffset, encoding, dir)
+    return arrayIndexOf(buffer, [ val ], byteOffset, encoding, dir)
   }
 
   throw new TypeError('val must be string, number or Buffer')
@@ -3085,7 +2011,7 @@ function hexSlice (buf, start, end) {
 
   var out = ''
   for (var i = start; i < end; ++i) {
-    out += hexSliceLookupTable[buf[i]]
+    out += toHex(buf[i])
   }
   return out
 }
@@ -3122,8 +2048,7 @@ Buffer.prototype.slice = function slice (start, end) {
 
   var newBuf = this.subarray(start, end)
   // Return an augmented `Uint8Array` instance
-  Object.setPrototypeOf(newBuf, Buffer.prototype)
-
+  newBuf.__proto__ = Buffer.prototype
   return newBuf
 }
 
@@ -3612,8 +2537,6 @@ Buffer.prototype.fill = function fill (val, start, end, encoding) {
     }
   } else if (typeof val === 'number') {
     val = val & 255
-  } else if (typeof val === 'boolean') {
-    val = Number(val)
   }
 
   // Invalid ranges are not set to a default, so can range check early.
@@ -3669,6 +2592,11 @@ function base64clean (str) {
     str = str + '='
   }
   return str
+}
+
+function toHex (n) {
+  if (n < 16) return '0' + n.toString(16)
+  return n.toString(16)
 }
 
 function utf8ToBytes (string, units) {
@@ -3801,22 +2729,8 @@ function numberIsNaN (obj) {
   return obj !== obj // eslint-disable-line no-self-compare
 }
 
-// Create lookup table for `toString('hex')`
-// See: https://github.com/feross/buffer/issues/219
-var hexSliceLookupTable = (function () {
-  var alphabet = '0123456789abcdef'
-  var table = new Array(256)
-  for (var i = 0; i < 16; ++i) {
-    var i16 = i * 16
-    for (var j = 0; j < 16; ++j) {
-      table[i16 + j] = alphabet[i] + alphabet[j]
-    }
-  }
-  return table
-})()
-
 }).call(this,require("buffer").Buffer)
-},{"base64-js":33,"buffer":34,"ieee754":38}],35:[function(require,module,exports){
+},{"base64-js":15,"buffer":16,"ieee754":19}],17:[function(require,module,exports){
 /*!
 Copyright (C) 2013-2017 by Andrea Giammarchi - @WebReflection
 
@@ -4025,116 +2939,7 @@ var CircularJSON = {
 
 module.exports = CircularJSON;
 
-},{}],36:[function(require,module,exports){
-(function () {
-
-
-	'use strict';
-
-
-	var compoundSubject = function (arrayOfStrings) {
-
-
-		var wrapperObject = {},
-			endWith = 'and',
-			delimitAll = false,
-			delimitWith = ',';
-
-
-		wrapperObject.endWith = function (newEndWith) {
-
-			if (typeof newEndWith !== 'string') {
-				return wrapperObject;
-			}
-
-			endWith = newEndWith;
-
-			return wrapperObject;
-
-		};
-
-
-		wrapperObject.delimitAll = function (/*newDelimitAll*/) {
-
-			var newDelimitAll = arguments[0];
-
-			if (typeof newDelimitAll === 'boolean') {
-				delimitAll = newDelimitAll;
-			}
-
-			else {
-				delimitAll = true;
-			}
-
-			return wrapperObject;
-
-		};
-
-
-		wrapperObject.delimitWith = function (newDelimitWith) {
-
-			if (typeof newDelimitWith !== 'string') {
-				return wrapperObject;
-			}
-
-			delimitWith = newDelimitWith;
-
-			return wrapperObject;
-
-		};
-
-
-		wrapperObject.make = function () {
-
-			var combinedEndWith = delimitAll ? delimitWith + ' ' + endWith + ' ' : ' ' + endWith + ' ',
-				upToLastTwo,
-				lastTwo;
-
-			if (typeof arrayOfStrings === 'undefined' || !arrayOfStrings instanceof Array) {
-				return '';
-			}
-
-			upToLastTwo = arrayOfStrings
-				.slice(0, -2)
-				.join(delimitWith + ' ');
-
-			lastTwo = arrayOfStrings
-				.slice(arrayOfStrings.length - 2)
-				.join(combinedEndWith);				
-
-			if (!upToLastTwo.length) {
-				return lastTwo;
-			}
-
-			return upToLastTwo + delimitWith + ' ' + lastTwo;
-
-		};
-
-
-		return wrapperObject;
-
-
-	};
-
-
-	// Node
-	if (typeof module !== 'undefined') {
-		module.exports = compoundSubject;
-	}
-
-	// Browser
-	else if (typeof window !== 'undefined') {
-		window.compoundSubject = compoundSubject;
-	}
-
-	else {
-		throw new Error('Couldn\'t find a suitable scope in which to define compoundSubject');
-	}
-
-
-})();
-
-},{}],37:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 'use strict';
 
 var has = Object.prototype.hasOwnProperty
@@ -4472,7 +3277,7 @@ if ('undefined' !== typeof module) {
   module.exports = EventEmitter;
 }
 
-},{}],38:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   var e, m
   var eLen = (nBytes * 8) - mLen - 1
@@ -4558,50 +3363,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128
 }
 
-},{}],39:[function(require,module,exports){
-var capitalized = /^[A-Z]/
-var strictCapitalilized = /^[A-Z]([a-z]|$)/
-
-module.exports = isCapitalized
-
-function isCapitalized (str, strict) {
-  return strict
-    ? strictCapitalilized.test(str)
-    : capitalized.test(str)
-}
-
-},{}],40:[function(require,module,exports){
-(function(root) {
-  var toString = Function.prototype.toString;
-
-  function fnBody(fn) {
-    return toString.call(fn).replace(/^[^{]*{\s*/,'').replace(/\s*}[^}]*$/,'');
-  }
-
-  function isClass(fn) {
-    return (typeof fn === 'function' &&
-            (/^class\s/.test(toString.call(fn)) ||
-              (/^.*classCallCheck\(/.test(fnBody(fn)))) // babel.js
-            );
-  }
-
-  if (typeof exports !== 'undefined') {
-    if (typeof module !== 'undefined' && module.exports) {
-      exports = module.exports = isClass;
-    }
-    exports.isClass = isClass;
-  } else if (typeof define === 'function' && define.amd) {
-    define([], function() {
-      return isClass;
-    });
-  } else {
-    root.isClass = isClass;
-  }
-
-})(this);
-
-
-},{}],41:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 (function (process,setImmediate){
 'use strict';
 
@@ -4679,7 +3441,7 @@ module.exports = (function () {
 }());
 
 }).call(this,require('_process'),require("timers").setImmediate)
-},{"_process":42,"timers":44}],42:[function(require,module,exports){
+},{"_process":21,"timers":23}],21:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -4865,7 +3627,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],43:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 /**
  * Copyright (c) 2014-present, Facebook, Inc.
  *
@@ -4883,6 +3645,24 @@ var runtime = (function (exports) {
   var iteratorSymbol = $Symbol.iterator || "@@iterator";
   var asyncIteratorSymbol = $Symbol.asyncIterator || "@@asyncIterator";
   var toStringTagSymbol = $Symbol.toStringTag || "@@toStringTag";
+
+  function define(obj, key, value) {
+    Object.defineProperty(obj, key, {
+      value: value,
+      enumerable: true,
+      configurable: true,
+      writable: true
+    });
+    return obj[key];
+  }
+  try {
+    // IE 8 has a broken Object.defineProperty that only works on DOM objects.
+    define({}, "");
+  } catch (err) {
+    define = function(obj, key, value) {
+      return obj[key] = value;
+    };
+  }
 
   function wrap(innerFn, outerFn, self, tryLocsList) {
     // If outerFn provided and outerFn.prototype is a Generator, then outerFn.prototype instanceof Generator.
@@ -4954,16 +3734,19 @@ var runtime = (function (exports) {
     Generator.prototype = Object.create(IteratorPrototype);
   GeneratorFunction.prototype = Gp.constructor = GeneratorFunctionPrototype;
   GeneratorFunctionPrototype.constructor = GeneratorFunction;
-  GeneratorFunctionPrototype[toStringTagSymbol] =
-    GeneratorFunction.displayName = "GeneratorFunction";
+  GeneratorFunction.displayName = define(
+    GeneratorFunctionPrototype,
+    toStringTagSymbol,
+    "GeneratorFunction"
+  );
 
   // Helper for defining the .next, .throw, and .return methods of the
   // Iterator interface in terms of a single ._invoke method.
   function defineIteratorMethods(prototype) {
     ["next", "throw", "return"].forEach(function(method) {
-      prototype[method] = function(arg) {
+      define(prototype, method, function(arg) {
         return this._invoke(method, arg);
-      };
+      });
     });
   }
 
@@ -4982,9 +3765,7 @@ var runtime = (function (exports) {
       Object.setPrototypeOf(genFun, GeneratorFunctionPrototype);
     } else {
       genFun.__proto__ = GeneratorFunctionPrototype;
-      if (!(toStringTagSymbol in genFun)) {
-        genFun[toStringTagSymbol] = "GeneratorFunction";
-      }
+      define(genFun, toStringTagSymbol, "GeneratorFunction");
     }
     genFun.prototype = Object.create(Gp);
     return genFun;
@@ -5254,7 +4035,7 @@ var runtime = (function (exports) {
   // unified ._invoke helper method.
   defineIteratorMethods(Gp);
 
-  Gp[toStringTagSymbol] = "Generator";
+  define(Gp, toStringTagSymbol, "Generator");
 
   // A Generator should always return itself as the iterator object when the
   // @@iterator function is called on it. Some browsers' implementations of the
@@ -5596,7 +4377,7 @@ try {
   Function("r", "regeneratorRuntime = r")(runtime);
 }
 
-},{}],44:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 (function (setImmediate,clearImmediate){
 var nextTick = require('process/browser.js').nextTick;
 var apply = Function.prototype.apply;
@@ -5675,5 +4456,5 @@ exports.clearImmediate = typeof clearImmediate === "function" ? clearImmediate :
   delete immediateIds[id];
 };
 }).call(this,require("timers").setImmediate,require("timers").clearImmediate)
-},{"process/browser.js":42,"timers":44}]},{},[1])(1)
+},{"process/browser.js":21,"timers":23}]},{},[1])(1)
 });

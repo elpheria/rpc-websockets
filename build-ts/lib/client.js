@@ -5,7 +5,6 @@
  */
 "use strict";
 // @ts-ignore
-import assertArgs from "assert-args";
 import { EventEmitter } from "eventemitter3";
 import CircularJSON from "circular-json";
 const nextTick = require("next-tick");
@@ -25,7 +24,6 @@ export default class CommonClient extends EventEmitter {
         this.queue = {};
         this.rpc_id = 0;
         this.address = address;
-        this.options = arguments[2];
         this.autoconnect = autoconnect;
         this.ready = false;
         this.reconnect = reconnect;
@@ -34,7 +32,12 @@ export default class CommonClient extends EventEmitter {
         this.current_reconnects = 0;
         this.generate_request_id = generate_request_id || (() => ++this.rpc_id);
         if (this.autoconnect)
-            this._connect(this.address, this.options);
+            this._connect(this.address, {
+                autoconnect: this.autoconnect,
+                reconnect: this.reconnect,
+                reconnect_interval: this.reconnect_interval,
+                max_reconnects: this.max_reconnects
+            });
     }
     /**
      * Connects to a defined server if not connected already.
@@ -44,7 +47,12 @@ export default class CommonClient extends EventEmitter {
     connect() {
         if (this.socket)
             return;
-        this._connect(this.address, this.options);
+        this._connect(this.address, {
+            autoconnect: this.autoconnect,
+            reconnect: this.reconnect,
+            reconnect_interval: this.reconnect_interval,
+            max_reconnects: this.max_reconnects
+        });
     }
     /**
      * Calls a registered RPC method on server.
@@ -56,12 +64,6 @@ export default class CommonClient extends EventEmitter {
      * @return {Promise}
      */
     call(method, params, timeout, ws_opts) {
-        assertArgs(arguments, {
-            "method": "string",
-            "[params]": ["object", Array],
-            "[timeout]": "number",
-            "[ws_opts]": "object"
-        });
         if (!ws_opts && "object" === typeof timeout) {
             ws_opts = timeout;
             timeout = null;
@@ -116,10 +118,6 @@ export default class CommonClient extends EventEmitter {
      * @return {Promise}
      */
     notify(method, params) {
-        assertArgs(arguments, {
-            "method": "string",
-            "[params]": ["object", Array]
-        });
         return new Promise((resolve, reject) => {
             if (!this.ready)
                 return reject(new Error("socket not ready"));
@@ -143,9 +141,6 @@ export default class CommonClient extends EventEmitter {
      * @throws {Error}
      */
     async subscribe(event) {
-        assertArgs(arguments, {
-            event: ["string", Array]
-        });
         if (typeof event === "string")
             event = [event];
         const result = await this.call("rpc.on", event);
@@ -161,9 +156,6 @@ export default class CommonClient extends EventEmitter {
      * @throws {Error}
      */
     async unsubscribe(event) {
-        assertArgs(arguments, {
-            event: ["string", Array]
-        });
         if (typeof event === "string")
             event = [event];
         const result = await this.call("rpc.off", event);
@@ -217,6 +209,7 @@ export default class CommonClient extends EventEmitter {
                     for (let i = 0; i < message.params.length; i++)
                         args.push(message.params[i]);
                 // send on next tick so that queue responses can be handled first
+                // eslint-disable-next-line prefer-spread
                 return nextTick(() => { this.emit.apply(this, args); });
             }
             if (!this.queue[message.id]) {

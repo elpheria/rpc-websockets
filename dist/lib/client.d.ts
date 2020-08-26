@@ -6,7 +6,10 @@
 import { EventEmitter } from "eventemitter3";
 import { NodeWebSocketType, ICommonWebSocketFactory } from "./client/client.types";
 interface IQueueElement {
-    promise: [Parameters<ConstructorParameters<typeof Promise>[0]>[0], Parameters<ConstructorParameters<typeof Promise>[0]>[1]];
+    promise: [
+        Parameters<ConstructorParameters<typeof Promise>[0]>[0],
+        Parameters<ConstructorParameters<typeof Promise>[0]>[1]
+    ];
     timeout?: ReturnType<typeof setTimeout>;
 }
 export interface IQueue {
