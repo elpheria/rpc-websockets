@@ -414,12 +414,12 @@ describe("Client", function()
             })
         })
 
-        it("should throw TypeError if event name not provided", function()
+        it("should throw an error if event name not provided", function()
         {
             client.subscribe().catch(function(error)
             {
-                error.name.should.equal("TypeError")
-                error.message.should.equal("\"event\" is required")
+                error.code.should.equal(-32000)
+                error.message.should.equal("Event not provided")
             })
         })
 
@@ -541,7 +541,7 @@ describe("Client", function()
             })
         })
 
-        it("should throw TypeError if event name not provided", function()
+        it("should throw an error if event name not provided", function()
         {
             client.unsubscribe().catch(function(error)
             {
