@@ -19,7 +19,6 @@
     "assert-args": "^1.2.1",
     "circular-json": "^0.5.9",
     "eventemitter3": "^4.0.6",
-    "next-tick": "^1.1.0",
     "uuid": "^8.3.0",
     "ws": "^7.3.1"
   },
