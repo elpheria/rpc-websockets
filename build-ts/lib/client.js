@@ -7,7 +7,6 @@
 // @ts-ignore
 import { EventEmitter } from "eventemitter3";
 import CircularJSON from "circular-json";
-const nextTick = require("next-tick");
 export default class CommonClient extends EventEmitter {
     /**
      * Instantiate a Client class.
@@ -208,15 +207,17 @@ export default class CommonClient extends EventEmitter {
                     // using for-loop instead of unshift/spread because performance is better
                     for (let i = 0; i < message.params.length; i++)
                         args.push(message.params[i]);
-                // send on next tick so that queue responses can be handled first
+                // run as microtask so that pending queue messages are resolved first
                 // eslint-disable-next-line prefer-spread
-                return nextTick(() => { this.emit.apply(this, args); });
+                return Promise.resolve().then(() => { this.emit.apply(this, args); });
             }
             if (!this.queue[message.id]) {
                 // general JSON RPC 2.0 events
                 if (message.method && message.params) {
-                    // send on next tick so that queue responses can be handled first
-                    return nextTick(() => { this.emit(message.method, message.params); });
+                    // run as microtask so that pending queue messages are resolved first
+                    return Promise.resolve().then(() => {
+                        this.emit(message.method, message.params);
+                    });
                 }
                 return;
             }
