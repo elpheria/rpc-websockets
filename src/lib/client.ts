@@ -360,6 +360,7 @@ export default class CommonClient extends EventEmitter
                 this.emit("close", code, reason)
 
             this.ready = false
+            this.socket = undefined
 
             if (code === 1000)
                 return

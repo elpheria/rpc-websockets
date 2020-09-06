@@ -441,6 +441,7 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
             reason = _ref3.reason;
         if (_this4.ready) _this4.emit("close", code, reason);
         _this4.ready = false;
+        _this4.socket = undefined;
         if (code === 1000) return;
         _this4.current_reconnects++;
         if (_this4.reconnect && (_this4.max_reconnects > _this4.current_reconnects || _this4.max_reconnects === 0)) setTimeout(function () {
