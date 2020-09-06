@@ -475,6 +475,9 @@ export default class Server extends EventEmitter
                 data = Buffer.from(data).toString()
             }
 
+            if (socket.readyState !== 1)
+                return // TODO: should have debug logs here
+
             let parsedData: any
 
             try { parsedData = JSON.parse(data as string) }

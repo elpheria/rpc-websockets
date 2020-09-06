@@ -504,28 +504,36 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
                     data = Buffer.from(data).toString();
                   }
 
-                  _context.prev = 2;
+                  if (!(socket.readyState !== 1)) {
+                    _context.next = 4;
+                    break;
+                  }
+
+                  return _context.abrupt("return");
+
+                case 4:
+                  _context.prev = 4;
                   parsedData = JSON.parse(data);
-                  _context.next = 9;
+                  _context.next = 11;
                   break;
 
-                case 6:
-                  _context.prev = 6;
-                  _context.t0 = _context["catch"](2);
+                case 8:
+                  _context.prev = 8;
+                  _context.t0 = _context["catch"](4);
                   return _context.abrupt("return", socket.send(JSON.stringify({
                     jsonrpc: "2.0",
                     error: utils.createError(-32700, _context.t0.toString()),
                     id: null
                   }), msg_options));
 
-                case 9:
+                case 11:
                   if (!Array.isArray(parsedData)) {
-                    _context.next = 37;
+                    _context.next = 39;
                     break;
                   }
 
                   if (parsedData.length) {
-                    _context.next = 12;
+                    _context.next = 14;
                     break;
                   }
 
@@ -535,91 +543,91 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
                     id: null
                   }), msg_options));
 
-                case 12:
+                case 14:
                   responses = [];
                   _iterator3 = _createForOfIteratorHelper(parsedData);
-                  _context.prev = 14;
+                  _context.prev = 16;
 
                   _iterator3.s();
 
-                case 16:
+                case 18:
                   if ((_step3 = _iterator3.n()).done) {
-                    _context.next = 26;
+                    _context.next = 28;
                     break;
                   }
 
                   message = _step3.value;
-                  _context.next = 20;
+                  _context.next = 22;
                   return _this5._runMethod(message, socket._id, ns);
 
-                case 20:
+                case 22:
                   _response = _context.sent;
 
                   if (_response) {
-                    _context.next = 23;
+                    _context.next = 25;
                     break;
                   }
 
-                  return _context.abrupt("continue", 24);
+                  return _context.abrupt("continue", 26);
 
-                case 23:
+                case 25:
                   responses.push(_response);
 
-                case 24:
-                  _context.next = 16;
-                  break;
-
                 case 26:
-                  _context.next = 31;
+                  _context.next = 18;
                   break;
 
                 case 28:
-                  _context.prev = 28;
-                  _context.t1 = _context["catch"](14);
+                  _context.next = 33;
+                  break;
+
+                case 30:
+                  _context.prev = 30;
+                  _context.t1 = _context["catch"](16);
 
                   _iterator3.e(_context.t1);
 
-                case 31:
-                  _context.prev = 31;
+                case 33:
+                  _context.prev = 33;
 
                   _iterator3.f();
 
-                  return _context.finish(31);
+                  return _context.finish(33);
 
-                case 34:
+                case 36:
                   if (responses.length) {
-                    _context.next = 36;
+                    _context.next = 38;
                     break;
                   }
 
                   return _context.abrupt("return");
 
-                case 36:
+                case 38:
                   return _context.abrupt("return", socket.send(_circularJson["default"].stringify(responses), msg_options));
 
-                case 37:
-                  _context.next = 39;
+                case 39:
+                  _context.next = 41;
                   return _this5._runMethod(parsedData, socket._id, ns);
 
-                case 39:
+                case 41:
                   response = _context.sent;
 
                   if (response) {
-                    _context.next = 42;
+                    _context.next = 44;
                     break;
                   }
 
                   return _context.abrupt("return");
 
-                case 42:
+                case 44:
                   return _context.abrupt("return", socket.send(_circularJson["default"].stringify(response), msg_options));
 
-                case 43:
+                case 45:
                 case "end":
                   return _context.stop();
               }
             }
-          }, _callee, null, [[2, 6], [14, 28, 31, 34]]);
+          }, _callee, null, [[4, 8], [16, 30, 33, 36]]);
         }));
 
         return function (_x) {
