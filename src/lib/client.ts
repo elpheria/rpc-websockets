@@ -356,8 +356,8 @@ export default class CommonClient extends EventEmitter
 
         this.socket.addEventListener("close", ({code, reason}) =>
         {
-            if (this.ready)
-                this.emit("close", code, reason)
+            if (this.ready) // Delay close event until internal state is updated
+                setTimeout(() => this.emit("close", code, reason), 0)
 
             this.ready = false
             this.socket = undefined

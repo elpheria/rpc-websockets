@@ -499,7 +499,10 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
       this.socket.addEventListener("close", function (_ref3) {
         var code = _ref3.code,
             reason = _ref3.reason;
-        if (_this4.ready) _this4.emit("close", code, reason);
+        if (_this4.ready) // Delay close event until internal state is updated
+          setTimeout(function () {
+            return _this4.emit("close", code, reason);
+          }, 0);
         _this4.ready = false;
         _this4.socket = undefined;
         if (code === 1000) return;
