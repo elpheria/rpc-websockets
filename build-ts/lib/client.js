@@ -211,6 +211,10 @@ export default class CommonClient extends EventEmitter {
                 // eslint-disable-next-line prefer-spread
                 return Promise.resolve().then(() => { this.emit.apply(this, args); });
             }
+            console.log(message);
+            // reject early since server's response is invalid
+            if (message.error === undefined && message.result === undefined)
+                this.queue[message.id].promise[1]("server response malformed");
             if (!this.queue[message.id]) {
                 // general JSON RPC 2.0 events
                 if (message.method && message.params) {

@@ -417,6 +417,10 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
           });
         }
 
+        console.log(message); // reject early since server's response is invalid
+
+        if (message.error === undefined && message.result === undefined) _this4.queue[message.id].promise[1]("server response malformed");
+
         if (!_this4.queue[message.id]) {
           // general JSON RPC 2.0 events
           if (message.method && message.params) {
