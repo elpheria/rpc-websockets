@@ -475,9 +475,8 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
           return Promise.resolve().then(function () {
             _this4.emit.apply(_this4, args);
           });
-        }
+        } // reject early since server's response is invalid
 
-        console.log(message); // reject early since server's response is invalid
 
         if (message.error === undefined && message.result === undefined) _this4.queue[message.id].promise[1]("server response malformed");
 
