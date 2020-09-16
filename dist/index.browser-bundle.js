@@ -475,10 +475,7 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
           return Promise.resolve().then(function () {
             _this4.emit.apply(_this4, args);
           });
-        } // reject early since server's response is invalid
-
-
-        if (message.error === undefined && message.result === undefined) _this4.queue[message.id].promise[1]("server response malformed");
+        }
 
         if (!_this4.queue[message.id]) {
           // general JSON RPC 2.0 events
@@ -490,8 +487,10 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
           }
 
           return;
-        }
+        } // reject early since server's response is invalid
 
+
+        if (message.error === undefined && message.result === undefined) _this4.queue[message.id].promise[1]("server response malformed");
         if (_this4.queue[message.id].timeout) clearTimeout(_this4.queue[message.id].timeout);
         if (message.error) _this4.queue[message.id].promise[1](message.error);else _this4.queue[message.id].promise[0](message.result);
         _this4.queue[message.id] = null;
