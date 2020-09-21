@@ -490,7 +490,7 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
         } // reject early since server's response is invalid
 
 
-        if (message.error === undefined && message.result === undefined) _this4.queue[message.id].promise[1]("server response malformed");
+        if ("error" in message === "result" in message) _this4.queue[message.id].promise[1](new Error("Server response malformed. Response must include either \"result\"" + " or \"error\", but not both."));
         if (_this4.queue[message.id].timeout) clearTimeout(_this4.queue[message.id].timeout);
         if (message.error) _this4.queue[message.id].promise[1](message.error);else _this4.queue[message.id].promise[0](message.result);
         _this4.queue[message.id] = null;

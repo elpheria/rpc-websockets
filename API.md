@@ -81,7 +81,7 @@ Connects to a previously defined server if not connected already. Should only be
 
 ### ws.call(method[, params[, timeout[, ws_options]]]) -> Promise
 
-Calls a registered RPC method on server. Resolves once the response is ready. Throws if an RPC error was received.
+Calls a registered RPC method on server. Resolves once the response is ready. Throws if an RPC error was received. Throws if `method` resolves to `undefined` (JSON knows no `undefined` type, so the response will neither have `result` nor `error` properties which violates JSON-RPC 2.0).
 
 Parameters:
 * `method` {String}: An RPC method name to run on server-side.
@@ -189,7 +189,7 @@ Registers an RPC method and returns the RPCMethod object to manage method permis
 
 Parameters:
 * `method` {String}: RPC method name.
-* `handler` {Function}: RPC function that will be fired with a signature of `([params[, socket_id]])` once the method is called.
+* `handler` {Function}: RPC function that will be fired with a signature of `([params[, socket_id]])` once the method is called. Should not return `undefined` (see [ws.call](#wscallmethod-params-timeout-ws_options---promise)).
 * `namespace` {String}: Namespace identifier. Defaults to ```/```.
 
 ### server.setAuth(handler[, namespace])

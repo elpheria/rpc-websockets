@@ -342,8 +342,11 @@ export default class CommonClient extends EventEmitter
             }
 
             // reject early since server's response is invalid
-            if (message.error === undefined && message.result === undefined)
-                this.queue[message.id].promise[1]("server response malformed")
+            if ("error" in message === "result" in message)
+                this.queue[message.id].promise[1](new Error(
+                    "Server response malformed. Response must include either \"result\"" +
+                    " or \"error\", but not both."
+                ))
 
             if (this.queue[message.id].timeout)
                 clearTimeout(this.queue[message.id].timeout)
