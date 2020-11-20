@@ -616,6 +616,30 @@ describe("Server", function()
                 })
             })
 
+            it("should respond with -32600 when request data is null", function(done)
+            {
+                connect(port, host).then(function(ws)
+                {
+                    const data = "null";
+                    ws.send(data)
+
+                    ws.on("message", function(message)
+                    {
+                        message = JSON.parse(message)
+                        message.error.code.should.equal(-32600)
+                        message.error.message.should.equal("Invalid Request")
+
+                        ws.close()
+                        done()
+                    })
+
+                    ws.once("error", function(error)
+                    {
+                        done(error)
+                    })
+                })
+            })
+
             it("should respond with -32600 when called with invalid method name in JSON-RPC 2.0 Request object", function(done)
             {
                 connect(port, host).then(function(ws)
