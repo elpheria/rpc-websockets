@@ -378,7 +378,7 @@ export default class Server extends EventEmitter {
      * @return {Object|undefined}
      */
     async _runMethod(message, socket_id, ns = "/") {
-        if (typeof message !== "object")
+        if (typeof message !== "object" || message === null)
             return {
                 jsonrpc: "2.0",
                 error: utils.createError(-32600),

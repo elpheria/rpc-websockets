@@ -672,7 +672,7 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
               case 0:
                 ns = _args2.length > 2 && _args2[2] !== undefined ? _args2[2] : "/";
 
-                if (!((0, _typeof2["default"])(message) !== "object")) {
+                if (!((0, _typeof2["default"])(message) !== "object" || message === null)) {
                   _context2.next = 3;
                   break;
                 }
