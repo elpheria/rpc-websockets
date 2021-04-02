@@ -58,7 +58,7 @@
     "server"
   ],
   "author": "Elpheria",
-  "license": "MIT",
+  "license": "LGPL-3.0-only",
   "bugs": {
     "url": "https://github.com/elpheria/rpc-websockets/issues"
   },
