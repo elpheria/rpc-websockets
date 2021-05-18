@@ -339,6 +339,7 @@ describe("Client", function()
                     password: "bar"
                 }).then(function(response)
                 {
+                    expect(response).should.not.be.an("object", JSON.stringify(response))
                     expect(response.code).to.exist
                     expect(response.message).to.exist
                     done()
