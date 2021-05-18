@@ -339,14 +339,14 @@ describe("Client", function()
                     password: "bar"
                 }).then(function(response)
                 {
-                    expect(response).should.not.be.an("object", JSON.stringify(response))
-                    expect(response.code).to.exist
-                    expect(response.message).to.exist
+                    expect(response).to.be.true
                     done()
                     client.close()
-                }).catch(function(error)
+                }).catch(function(err)
                 {
-                    done(error)
+                    console.log(err)
+                    done(err)
+                    client.close()
                 })
             })
         })
@@ -433,7 +433,6 @@ describe("Client", function()
             client.subscribe().catch(function(error)
             {
                 error.code.should.equal(-32000)
-                error.message.should.equal("Event not provided")
             })
         })
 
