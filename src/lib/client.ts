@@ -181,6 +181,8 @@ export default class CommonClient extends EventEmitter
 
         if (!resp)
             throw new Error("authentication failed")
+
+        return resp
     }
 
     /**

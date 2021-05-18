@@ -7,6 +7,8 @@
     "build": "tsc && mkdir -p ./dist && eslint --fix -c ./.eslintrc './src/**/*.ts' && babel ./build-ts -d ./dist --copy-files && browserify -s RPCWebSocket ./dist/index.browser.js > ./dist/index.browser-bundle.js",
     "pretest": "npm run-script build",
     "test": "mocha --exit test/*spec.js",
+    "test:client": "mocha --exit test/client.spec.js",
+    "test:server": "mocha --exit test/server.spec.js",
     "coverage": "istanbul cover _mocha --report lcovonly -- -R spec --exit && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
     "coveralls": "npm run-script coverage && coveralls < ./coverage/lcov.info"
   },
@@ -20,9 +22,7 @@
     "circular-json": "^0.5.9",
     "eventemitter3": "^4.0.7",
     "uuid": "^8.3.0",
-    "ws": "^7.3.1",
-    "bufferutil": "^4.0.1",
-    "utf-8-validate": "^5.0.2"
+    "ws": "^7.4.5"
   },
   "optionalDependencies": {
     "bufferutil": "^4.0.1",

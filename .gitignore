@@ -11,7 +11,7 @@ docs/
 db/
 
 docker/src/
-
+.coveralls.yml
 node_modules/
 .idea/
 
