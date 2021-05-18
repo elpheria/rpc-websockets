@@ -334,20 +334,27 @@ describe("Client", function()
 
             client.on("open", function()
             {
-                client.login({
-                    username: "foo",
-                    password: "bar"
-                }).then(function(response)
+                try
                 {
-                    expect(response).to.be.true
-                    done()
-                    client.close()
-                }).catch(function(err)
+                    client.login({
+                        username: "foo",
+                        password: "bar"
+                    }).then(function(response)
+                    {
+                        expect(response).to.be.true
+                        done()
+                        client.close()
+                    }).catch(function(err)
+                    {
+                        console.log(err)
+                        done(err)
+                        client.close()
+                    })
+                }
+                catch (error)
                 {
-                    console.log(err)
-                    done(err)
-                    client.close()
-                })
+                    throw new Error(error)
+                }
             })
         })
     })
