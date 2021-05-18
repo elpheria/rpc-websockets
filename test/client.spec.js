@@ -3,6 +3,7 @@
 
 "use strict"
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const should = require("chai").should()
 const expect = require("chai").expect
 const WebSocketServer = require("../dist").Server
@@ -48,7 +49,14 @@ describe("Client", function()
                 {
                     return new Promise(function(resolve, reject)
                     {
-                        setTimeout(function() { resolve() }, 3000)
+                        try
+                        {
+                            setTimeout(function() { resolve() }, 3000)
+                        }
+                        catch (e)
+                        {
+                            reject(e)
+                        }
                     })
                 })
 
@@ -253,18 +261,21 @@ describe("Client", function()
 
             client.on("open", function()
             {
-                client.call("cryptic").then(function(response)
-                {
-                    done(new Error("should not be authorized to run this method"))
-                    client.close()
-                }, function(error)
-                {
-                    expect(error.code).to.exist
-                    expect(error.message).to.exist
-                    expect(error.code).to.equal(-32605)
-                    expect(error.message).to.equal("Method forbidden")
-                    done()
-                })
+                client.call("cryptic")
+                    .then(function(response)
+                    {
+                        expect(response.code).to.exist
+                        expect(response.message).to.exist
+                        done(new Error("should not be authorized to run this method"))
+                        client.close()
+                    }, function(error)
+                    {
+                        expect(error.code).to.exist
+                        expect(error.message).to.exist
+                        expect(error.code).to.equal(-32605)
+                        expect(error.message).to.equal("Method forbidden")
+                        done()
+                    })
             })
 
             client.on("error", (error) => console.log(error))
@@ -328,6 +339,8 @@ describe("Client", function()
                     password: "bar"
                 }).then(function(response)
                 {
+                    expect(response.code).to.exist
+                    expect(response.message).to.exist
                     done()
                     client.close()
                 }).catch(function(error)
@@ -653,12 +666,18 @@ function runServer(port, host)
 {
     return new Promise((resolve, reject) =>
     {
-        const wss = new WebSocketServer(
-            {
-                host: host || SERVER_HOST,
-                port: port || SERVER_PORT
-            })
-
-        wss.on("listening", () => resolve(wss))
+        try
+        {
+            const wss = new WebSocketServer(
+                {
+                    host: host || SERVER_HOST,
+                    port: port || SERVER_PORT
+                })
+            wss.on("listening", () => resolve(wss))
+        }
+        catch (error)
+        {
+            reject(error)
+        }
     })
 }
