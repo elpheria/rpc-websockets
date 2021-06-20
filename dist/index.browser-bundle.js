@@ -247,6 +247,9 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
                 throw new Error("authentication failed");
 
               case 5:
+                return _context.abrupt("return", resp);
+
+              case 6:
               case "end":
                 return _context.stop();
             }
