@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable brace-style */
 /* eslint no-unused-vars: "off" */
 /* eslint max-len: "off" */
 
@@ -620,7 +622,7 @@ describe("Server", function()
             {
                 connect(port, host).then(function(ws)
                 {
-                    const data = "null";
+                    const data = "null"
                     ws.send(data)
 
                     ws.on("message", function(message)
@@ -1389,6 +1391,11 @@ describe("Server", function()
 
                     ws.once("message", function(message)
                     {
+                        message = JSON.parse(message)
+
+                        message.id.should.equal(rpc_id)
+                        message.result.should.equal(true)
+
                         ws.send(JSON.stringify({
                             id: ++rpc_id,
                             jsonrpc: "2.0",
@@ -1400,9 +1407,11 @@ describe("Server", function()
                         {
                             message = JSON.parse(message)
 
+                            message.id.should.equal(rpc_id)
+                            message.result.should.equal(Math.sqrt(4))
+
                             rpc_id++
-                            ws.close()
-                            done()
+                            disconnect(ws).then(done())
                         })
                     })
 
@@ -1432,6 +1441,7 @@ function getInstance(port, host)
         })
 
         wss.on("listening", () => resolve(wss))
+        wss.on("error", (error) => reject(error))
     })
 }
 
@@ -1464,7 +1474,12 @@ function disconnect(client)
 {
     return new Promise(function(resolve, reject)
     {
-        client.close()
+        try {
+            client.close()
+        }
+        catch (error) {
+            reject(error)
+        }
         resolve()
     })
 }
