@@ -45,6 +45,7 @@ export default class CommonClient extends EventEmitter
     private reconnect: boolean;
     private reconnect_interval: number;
     private max_reconnects: number;
+    private rest_options: IWSClientAdditionalOptions & NodeWebSocket.ClientOptions;
     private current_reconnects: number;
     private generate_request_id: (method: string, params: object | Array<any>) => number;
     private socket: ICommonWebSocket;
@@ -66,7 +67,8 @@ export default class CommonClient extends EventEmitter
             autoconnect = true,
             reconnect = true,
             reconnect_interval = 1000,
-            max_reconnects = 5
+            max_reconnects = 5,
+            ...rest_options
         } = {},
         generate_request_id?: (method: string, params: object | Array<any>) => number
     )
@@ -84,6 +86,7 @@ export default class CommonClient extends EventEmitter
         this.reconnect = reconnect
         this.reconnect_interval = reconnect_interval
         this.max_reconnects = max_reconnects
+        this.rest_options = rest_options
         this.current_reconnects = 0
         this.generate_request_id = generate_request_id || (() => ++this.rpc_id)
 
@@ -92,7 +95,8 @@ export default class CommonClient extends EventEmitter
                 autoconnect: this.autoconnect,
                 reconnect: this.reconnect,
                 reconnect_interval: this.reconnect_interval,
-                max_reconnects: this.max_reconnects
+                max_reconnects: this.max_reconnects,
+                ...this.rest_options
             })
     }
 
@@ -110,7 +114,8 @@ export default class CommonClient extends EventEmitter
             autoconnect: this.autoconnect,
             reconnect: this.reconnect,
             reconnect_interval: this.reconnect_interval,
-            max_reconnects: this.max_reconnects
+            max_reconnects: this.max_reconnects,
+            ...this.rest_options
         })
     }
 
