@@ -4,6 +4,17 @@
  * @module Client
  */
 "use strict";
+var __rest = (this && this.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+                t[p[i]] = s[p[i]];
+        }
+    return t;
+};
 // @ts-ignore
 import { EventEmitter } from "eventemitter3";
 import CircularJSON from "circular-json";
@@ -17,7 +28,8 @@ export default class CommonClient extends EventEmitter {
      * @param {Function} generate_request_id - custom generation request Id
      * @return {CommonClient}
      */
-    constructor(webSocketFactory, address = "ws://localhost:8080", { autoconnect = true, reconnect = true, reconnect_interval = 1000, max_reconnects = 5 } = {}, generate_request_id) {
+    constructor(webSocketFactory, address = "ws://localhost:8080", _a = {}, generate_request_id) {
+        var { autoconnect = true, reconnect = true, reconnect_interval = 1000, max_reconnects = 5 } = _a, rest_options = __rest(_a, ["autoconnect", "reconnect", "reconnect_interval", "max_reconnects"]);
         super();
         this.webSocketFactory = webSocketFactory;
         this.queue = {};
@@ -28,15 +40,11 @@ export default class CommonClient extends EventEmitter {
         this.reconnect = reconnect;
         this.reconnect_interval = reconnect_interval;
         this.max_reconnects = max_reconnects;
+        this.rest_options = rest_options;
         this.current_reconnects = 0;
         this.generate_request_id = generate_request_id || (() => ++this.rpc_id);
         if (this.autoconnect)
-            this._connect(this.address, {
-                autoconnect: this.autoconnect,
-                reconnect: this.reconnect,
-                reconnect_interval: this.reconnect_interval,
-                max_reconnects: this.max_reconnects
-            });
+            this._connect(this.address, Object.assign({ autoconnect: this.autoconnect, reconnect: this.reconnect, reconnect_interval: this.reconnect_interval, max_reconnects: this.max_reconnects }, this.rest_options));
     }
     /**
      * Connects to a defined server if not connected already.
@@ -46,12 +54,7 @@ export default class CommonClient extends EventEmitter {
     connect() {
         if (this.socket)
             return;
-        this._connect(this.address, {
-            autoconnect: this.autoconnect,
-            reconnect: this.reconnect,
-            reconnect_interval: this.reconnect_interval,
-            max_reconnects: this.max_reconnects
-        });
+        this._connect(this.address, Object.assign({ autoconnect: this.autoconnect, reconnect: this.reconnect, reconnect_interval: this.reconnect_interval, max_reconnects: this.max_reconnects }, this.rest_options));
     }
     /**
      * Calls a registered RPC method on server.

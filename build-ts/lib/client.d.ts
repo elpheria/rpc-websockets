@@ -29,6 +29,7 @@ export default class CommonClient extends EventEmitter {
     private reconnect;
     private reconnect_interval;
     private max_reconnects;
+    private rest_options;
     private current_reconnects;
     private generate_request_id;
     private socket;
@@ -42,7 +43,7 @@ export default class CommonClient extends EventEmitter {
      * @param {Function} generate_request_id - custom generation request Id
      * @return {CommonClient}
      */
-    constructor(webSocketFactory: ICommonWebSocketFactory, address?: string, { autoconnect, reconnect, reconnect_interval, max_reconnects }?: {
+    constructor(webSocketFactory: ICommonWebSocketFactory, address?: string, { autoconnect, reconnect, reconnect_interval, max_reconnects, ...rest_options }?: {
         autoconnect?: boolean;
         reconnect?: boolean;
         reconnect_interval?: number;

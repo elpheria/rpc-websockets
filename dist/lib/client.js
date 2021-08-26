@@ -3,7 +3,7 @@
  * according to the environment providing JSON RPC 2.0 support on top.
  * @module Client
  */
-"use strict"; // @ts-ignore
+"use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 
@@ -36,6 +36,20 @@ function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflec
 
 function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
 
+var __rest = void 0 && (void 0).__rest || function (s, e) {
+  var t = {};
+
+  for (var p in s) {
+    if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0) t[p] = s[p];
+  }
+
+  if (s != null && typeof Object.getOwnPropertySymbols === "function") for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+    if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i])) t[p[i]] = s[p[i]];
+  }
+  return t;
+}; // @ts-ignore
+
+
 var CommonClient = /*#__PURE__*/function (_EventEmitter) {
   (0, _inherits2["default"])(CommonClient, _EventEmitter);
 
@@ -55,18 +69,21 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
 
     var address = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "ws://localhost:8080";
 
-    var _ref = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {},
-        _ref$autoconnect = _ref.autoconnect,
-        autoconnect = _ref$autoconnect === void 0 ? true : _ref$autoconnect,
-        _ref$reconnect = _ref.reconnect,
-        reconnect = _ref$reconnect === void 0 ? true : _ref$reconnect,
-        _ref$reconnect_interv = _ref.reconnect_interval,
-        reconnect_interval = _ref$reconnect_interv === void 0 ? 1000 : _ref$reconnect_interv,
-        _ref$max_reconnects = _ref.max_reconnects,
-        max_reconnects = _ref$max_reconnects === void 0 ? 5 : _ref$max_reconnects;
+    var _a = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
 
     var generate_request_id = arguments.length > 3 ? arguments[3] : undefined;
     (0, _classCallCheck2["default"])(this, CommonClient);
+
+    var _a$autoconnect = _a.autoconnect,
+        autoconnect = _a$autoconnect === void 0 ? true : _a$autoconnect,
+        _a$reconnect = _a.reconnect,
+        reconnect = _a$reconnect === void 0 ? true : _a$reconnect,
+        _a$reconnect_interval = _a.reconnect_interval,
+        reconnect_interval = _a$reconnect_interval === void 0 ? 1000 : _a$reconnect_interval,
+        _a$max_reconnects = _a.max_reconnects,
+        max_reconnects = _a$max_reconnects === void 0 ? 5 : _a$max_reconnects,
+        rest_options = __rest(_a, ["autoconnect", "reconnect", "reconnect_interval", "max_reconnects"]);
+
     _this = _super.call(this);
     _this.webSocketFactory = webSocketFactory;
     _this.queue = {};
@@ -77,18 +94,19 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
     _this.reconnect = reconnect;
     _this.reconnect_interval = reconnect_interval;
     _this.max_reconnects = max_reconnects;
+    _this.rest_options = rest_options;
     _this.current_reconnects = 0;
 
     _this.generate_request_id = generate_request_id || function () {
       return ++_this.rpc_id;
     };
 
-    if (_this.autoconnect) _this._connect(_this.address, {
+    if (_this.autoconnect) _this._connect(_this.address, Object.assign({
       autoconnect: _this.autoconnect,
       reconnect: _this.reconnect,
       reconnect_interval: _this.reconnect_interval,
       max_reconnects: _this.max_reconnects
-    });
+    }, _this.rest_options));
     return _this;
   }
   /**
@@ -103,12 +121,12 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
     value: function connect() {
       if (this.socket) return;
 
-      this._connect(this.address, {
+      this._connect(this.address, Object.assign({
         autoconnect: this.autoconnect,
         reconnect: this.reconnect,
         reconnect_interval: this.reconnect_interval,
         max_reconnects: this.max_reconnects
-      });
+      }, this.rest_options));
     }
     /**
      * Calls a registered RPC method on server.
@@ -395,8 +413,8 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
 
         _this4.current_reconnects = 0;
       });
-      this.socket.addEventListener("message", function (_ref2) {
-        var message = _ref2.data;
+      this.socket.addEventListener("message", function (_ref) {
+        var message = _ref.data;
         if (message instanceof ArrayBuffer) message = Buffer.from(message).toString();
 
         try {
@@ -441,9 +459,9 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
       this.socket.addEventListener("error", function (error) {
         return _this4.emit("error", error);
       });
-      this.socket.addEventListener("close", function (_ref3) {
-        var code = _ref3.code,
-            reason = _ref3.reason;
+      this.socket.addEventListener("close", function (_ref2) {
+        var code = _ref2.code,
+            reason = _ref2.reason;
         if (_this4.ready) // Delay close event until internal state is updated
           setTimeout(function () {
             return _this4.emit("close", code, reason);
