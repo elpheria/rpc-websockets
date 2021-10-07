@@ -333,10 +333,15 @@ describe("Server", function()
                 host = server.wss.options.host
                 port = server.wss.options.port
 
-                inst.setAuth(function(data)
+                auth_id = null
+
+                inst.setAuth(function(data, socket_id)
                 {
                     if (data.username === "foo" && data.password === "bar")
+                    {
+                        auth_id = socket_id
                         return true
+                    }
                     else
                         return false
                 })
@@ -346,8 +351,9 @@ describe("Server", function()
                     return Math.sqrt(param)
                 })
 
-                inst.register("sqrt_protected", function(param)
+                inst.register("sqrt_protected", function(param, socket_id)
                 {
+                    if(auth_id !== socket_id) throw "Socket ID does not match!";
                     return Math.sqrt(param)
                 }).protected()
 
