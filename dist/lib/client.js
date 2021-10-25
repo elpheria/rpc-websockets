@@ -168,7 +168,7 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
 
           if (timeout) {
             _this2.queue[rpc_id].timeout = setTimeout(function () {
-              _this2.queue[rpc_id] = null;
+              delete _this2.queue[rpc_id];
               reject(new Error("reply timeout"));
             }, timeout);
           }
@@ -454,7 +454,7 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
         if ("error" in message === "result" in message) _this4.queue[message.id].promise[1](new Error("Server response malformed. Response must include either \"result\"" + " or \"error\", but not both."));
         if (_this4.queue[message.id].timeout) clearTimeout(_this4.queue[message.id].timeout);
         if (message.error) _this4.queue[message.id].promise[1](message.error);else _this4.queue[message.id].promise[0](message.result);
-        _this4.queue[message.id] = null;
+        delete _this4.queue[message.id];
       });
       this.socket.addEventListener("error", function (error) {
         return _this4.emit("error", error);
