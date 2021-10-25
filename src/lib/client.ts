@@ -166,7 +166,7 @@ export default class CommonClient extends EventEmitter
                 {
                     this.queue[rpc_id].timeout = setTimeout(() =>
                     {
-                        this.queue[rpc_id] = null
+                        delete this.queue[rpc_id]
                         reject(new Error("reply timeout"))
                     }, timeout)
                 }
@@ -363,7 +363,7 @@ export default class CommonClient extends EventEmitter
             else
                 this.queue[message.id].promise[0](message.result)
 
-            this.queue[message.id] = null
+            delete this.queue[message.id]
         })
 
         this.socket.addEventListener("error", (error) => this.emit("error", error))

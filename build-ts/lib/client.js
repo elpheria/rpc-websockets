@@ -86,7 +86,7 @@ export default class CommonClient extends EventEmitter {
                 this.queue[rpc_id] = { promise: [resolve, reject] };
                 if (timeout) {
                     this.queue[rpc_id].timeout = setTimeout(() => {
-                        this.queue[rpc_id] = null;
+                        delete this.queue[rpc_id];
                         reject(new Error("reply timeout"));
                     }, timeout);
                 }
@@ -235,7 +235,7 @@ export default class CommonClient extends EventEmitter {
                 this.queue[message.id].promise[1](message.error);
             else
                 this.queue[message.id].promise[0](message.result);
-            this.queue[message.id] = null;
+            delete this.queue[message.id];
         });
         this.socket.addEventListener("error", (error) => this.emit("error", error));
         this.socket.addEventListener("close", ({ code, reason }) => {
