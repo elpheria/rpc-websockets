@@ -85,7 +85,7 @@ export default class CommonClient extends EventEmitter {
      * @param {Object} params - optional method parameters
      * @return {Promise}
      */
-    notify(method: string, params?: IWSRequestParams): Promise<unknown>;
+    notify(method: string, params?: IWSRequestParams): Promise<void>;
     /**
      * Subscribes for a defined event.
      * @method

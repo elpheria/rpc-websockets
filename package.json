@@ -20,6 +20,7 @@
     "@babel/runtime": "^7.17.2",
     "circular-json": "^0.5.9",
     "eventemitter3": "^4.0.7",
+    "flatted": "^3.2.5",
     "uuid": "^8.3.2",
     "ws": "^8.5.0"
   },

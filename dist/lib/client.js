@@ -30,11 +30,11 @@ var _getPrototypeOf2 = _interopRequireDefault(require("@babel/runtime/helpers/ge
 
 var _eventemitter = require("eventemitter3");
 
-var _circularJson = _interopRequireDefault(require("circular-json"));
+var _flatted = require("flatted");
 
 function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = (0, _getPrototypeOf2["default"])(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = (0, _getPrototypeOf2["default"])(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return (0, _possibleConstructorReturn2["default"])(this, result); }; }
 
-function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Date.prototype.toString.call(Reflect.construct(Date, [], function () {})); return true; } catch (e) { return false; } }
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
 
 var __rest = void 0 && (void 0).__rest || function (s, e) {
   var t = {};
@@ -160,7 +160,7 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
           id: rpc_id
         };
 
-        _this2.socket.send(JSON.stringify(message), ws_opts, function (error) {
+        _this2.socket.send((0, _flatted.stringify)(message), ws_opts, function (error) {
           if (error) return reject(error);
           _this2.queue[rpc_id] = {
             promise: [resolve, reject]
@@ -276,7 +276,7 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
           params: params || null
         };
 
-        _this3.socket.send(JSON.stringify(message), function (error) {
+        _this3.socket.send((0, _flatted.stringify)(message), function (error) {
           if (error) return reject(error);
           resolve();
         });
@@ -418,7 +418,7 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
         if (message instanceof ArrayBuffer) message = Buffer.from(message).toString();
 
         try {
-          message = _circularJson["default"].parse(message);
+          message = (0, _flatted.parse)(message);
         } catch (error) {
           return;
         } // check if any listeners are attached and forward event

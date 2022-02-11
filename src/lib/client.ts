@@ -9,7 +9,7 @@
 import NodeWebSocket from "ws"
 // @ts-ignore
 import { EventEmitter } from "eventemitter3"
-import CircularJSON from "circular-json"
+import { stringify, parse } from "flatted"
 import {
     ICommonWebSocket,
     IWSClientAdditionalOptions,
@@ -36,20 +36,20 @@ export interface IWSRequestParams {
 
 export default class CommonClient extends EventEmitter
 {
-    private address: string;
-    private rpc_id: number;
-    private queue: IQueue;
-    private options: IWSClientAdditionalOptions & NodeWebSocket.ClientOptions;
-    private autoconnect: boolean;
-    private ready: boolean;
-    private reconnect: boolean;
-    private reconnect_interval: number;
-    private max_reconnects: number;
-    private rest_options: IWSClientAdditionalOptions & NodeWebSocket.ClientOptions;
-    private current_reconnects: number;
-    private generate_request_id: (method: string, params: object | Array<any>) => number;
-    private socket: ICommonWebSocket;
-    private webSocketFactory: ICommonWebSocketFactory;
+    private address: string
+    private rpc_id: number
+    private queue: IQueue
+    private options: IWSClientAdditionalOptions & NodeWebSocket.ClientOptions
+    private autoconnect: boolean
+    private ready: boolean
+    private reconnect: boolean
+    private reconnect_interval: number
+    private max_reconnects: number
+    private rest_options: IWSClientAdditionalOptions & NodeWebSocket.ClientOptions
+    private current_reconnects: number
+    private generate_request_id: (method: string, params: object | Array<any>) => number
+    private socket: ICommonWebSocket
+    private webSocketFactory: ICommonWebSocketFactory
 
     /**
      * Instantiate a Client class.
@@ -155,7 +155,7 @@ export default class CommonClient extends EventEmitter
                 id: rpc_id
             }
 
-            this.socket.send(JSON.stringify(message), ws_opts, (error) =>
+            this.socket.send(stringify(message), ws_opts, (error) =>
             {
                 if (error)
                     return reject(error)
@@ -209,7 +209,7 @@ export default class CommonClient extends EventEmitter
      */
     notify(method: string, params?: IWSRequestParams)
     {
-        return new Promise((resolve, reject) =>
+        return new Promise<void>((resolve, reject) =>
         {
             if (!this.ready)
                 return reject(new Error("socket not ready"))
@@ -220,7 +220,7 @@ export default class CommonClient extends EventEmitter
                 params: params || null
             }
 
-            this.socket.send(JSON.stringify(message), (error) =>
+            this.socket.send(stringify(message), (error) =>
             {
                 if (error)
                     return reject(error)
@@ -309,7 +309,7 @@ export default class CommonClient extends EventEmitter
             if (message instanceof ArrayBuffer)
                 message = Buffer.from(message).toString()
 
-            try { message = CircularJSON.parse(message) }
+            try { message = parse(message) }
 
             catch (error) { return }
 

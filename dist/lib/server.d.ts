@@ -182,7 +182,7 @@ export default class Server extends EventEmitter {
      * @method
      * @return {Promise}
      */
-    close(): Promise<unknown>;
+    close(): Promise<void>;
     /**
      * Handles all WebSocket JSON RPC 2.0 requests.
      * @private
