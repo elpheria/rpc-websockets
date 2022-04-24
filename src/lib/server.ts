@@ -10,7 +10,6 @@ import { EventEmitter } from "eventemitter3"
 import NodeWebSocket, { Server as WebSocketServer } from "ws"
 import { v1 as uuidv1 } from "uuid"
 import url from "url"
-import { stringify } from "flatted"
 
 import * as utils from "./utils"
 
@@ -282,7 +281,7 @@ export default class Server extends EventEmitter
                 if (!socket)
                     continue
 
-                socket.send(stringify({
+                socket.send(JSON.stringify({
                     notification: name,
                     params: params || null
                 }))
@@ -356,7 +355,7 @@ export default class Server extends EventEmitter
 
                 for (let i = 0, id; id = socket_ids[i]; ++i)
                 {
-                    self.namespaces[name].clients.get(id).send(stringify({
+                    self.namespaces[name].clients.get(id).send(JSON.stringify({
                         notification: event,
                         params: params || []
                     }))
@@ -484,7 +483,7 @@ export default class Server extends EventEmitter
 
             catch (error)
             {
-                return socket.send(stringify({
+                return socket.send(JSON.stringify({
                     jsonrpc: "2.0",
                     error: utils.createError(-32700, error.toString()),
                     id: null
@@ -494,7 +493,7 @@ export default class Server extends EventEmitter
             if (Array.isArray(parsedData))
             {
                 if (!parsedData.length)
-                    return socket.send(stringify({
+                    return socket.send(JSON.stringify({
                         jsonrpc: "2.0",
                         error: utils.createError(-32600, "Invalid array"),
                         id: null
@@ -515,7 +514,7 @@ export default class Server extends EventEmitter
                 if (!responses.length)
                     return
 
-                return socket.send(stringify(responses), msg_options)
+                return socket.send(JSON.stringify(responses), msg_options)
             }
 
             const response = await this._runMethod(parsedData, socket._id, ns)
@@ -523,7 +522,7 @@ export default class Server extends EventEmitter
             if (!response)
                 return
 
-            return socket.send(stringify(response), msg_options)
+            return socket.send(JSON.stringify(response), msg_options)
         })
     }
 

@@ -41,8 +41,6 @@ var _uuid = require("uuid");
 
 var _url = _interopRequireDefault(require("url"));
 
-var _flatted = require("flatted");
-
 var utils = _interopRequireWildcard(require("./utils"));
 
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
@@ -312,7 +310,7 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
             var socket = _this3.namespaces[ns].clients.get(socket_id);
 
             if (!socket) continue;
-            socket.send((0, _flatted.stringify)({
+            socket.send(JSON.stringify({
               notification: name,
               params: params || null
             }));
@@ -381,7 +379,7 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
           }
 
           for (var i = 0, id; id = socket_ids[i]; ++i) {
-            self.namespaces[name].clients.get(id).send((0, _flatted.stringify)({
+            self.namespaces[name].clients.get(id).send(JSON.stringify({
               notification: event,
               params: params || []
             }));
@@ -524,7 +522,7 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
                 case 8:
                   _context.prev = 8;
                   _context.t0 = _context["catch"](4);
-                  return _context.abrupt("return", socket.send((0, _flatted.stringify)({
+                  return _context.abrupt("return", socket.send(JSON.stringify({
                     jsonrpc: "2.0",
                     error: utils.createError(-32700, _context.t0.toString()),
                     id: null
@@ -541,7 +539,7 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
                     break;
                   }
 
-                  return _context.abrupt("return", socket.send((0, _flatted.stringify)({
+                  return _context.abrupt("return", socket.send(JSON.stringify({
                     jsonrpc: "2.0",
                     error: utils.createError(-32600, "Invalid array"),
                     id: null
@@ -607,7 +605,7 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
                   return _context.abrupt("return");
 
                 case 38:
-                  return _context.abrupt("return", socket.send((0, _flatted.stringify)(responses), msg_options));
+                  return _context.abrupt("return", socket.send(JSON.stringify(responses), msg_options));
 
                 case 39:
                   _context.next = 41;
@@ -624,7 +622,7 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
                   return _context.abrupt("return");
 
                 case 44:
-                  return _context.abrupt("return", socket.send((0, _flatted.stringify)(response), msg_options));
+                  return _context.abrupt("return", socket.send(JSON.stringify(response), msg_options));
 
                 case 45:
                 case "end":

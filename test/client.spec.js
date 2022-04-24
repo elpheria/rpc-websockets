@@ -60,18 +60,6 @@ describe("Client", function()
                     })
                 })
 
-                server.register("circular", function()
-                {
-                    const Obj = function()
-                    {
-                        this.one = "one"
-                        this.two = "two"
-                        this.ref = this
-                    }
-
-                    return new Obj()
-                })
-
                 server.setAuth(function(data)
                 {
                     if (data.username === "foo" && data.password === "bar")
@@ -82,7 +70,6 @@ describe("Client", function()
 
                 server.event("newsUpdate")
                 server.event("newMessage")
-                server.event("circularUpdate")
                 server.event("newMessage", "/chat")
                 server.event("chatMessage", "/chat")
 
@@ -161,29 +148,6 @@ describe("Client", function()
                 client.call("sum", [5, 3]).then(function(response)
                 {
                     response.should.equal(8)
-
-                    done()
-                    client.close()
-                }, function(error)
-                {
-                    done(error)
-                })
-            })
-        })
-
-        it("should call an RPC method and receive a valid response when RPC method returns a circular object", function(done)
-        {
-            const client = new WebSocket("ws://" + host + ":" + port)
-
-            client.on("open", function()
-            {
-                client.call("circular").then(function(response)
-                {
-                    response.should.deep.equal({
-                        one: "one",
-                        two: "two",
-                        ref: response
-                    })
 
                     done()
                     client.close()
@@ -386,12 +350,7 @@ describe("Client", function()
         before(function(done)
         {
             client = new WebSocket("ws://" + host + ":" + port)
-
-            client.on("open", function()
-            {
-                client.subscribe("circularUpdate")
-                done()
-            })
+            client.once("open", done)
         })
 
         after(function(done)
@@ -485,28 +444,6 @@ describe("Client", function()
             {
                 obj.should.be.an.instanceOf(Object)
                 expect(obj).to.deep.equal({ foo: "bar", boo: "baz" })
-                done()
-            })
-        })
-
-        it("should receive an event with circular object", function(done)
-        {
-            const Obj = function()
-            {
-                this.one = "one"
-                this.two = "two"
-                this.ref = this
-            }
-
-            server.emit("circularUpdate", new Obj())
-
-            client.once("circularUpdate", function(value)
-            {
-                value.should.deep.equal({
-                    one: "one",
-                    two: "two",
-                    ref: value
-                })
                 done()
             })
         })
