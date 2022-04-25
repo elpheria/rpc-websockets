@@ -92,8 +92,6 @@ var _getPrototypeOf2 = _interopRequireDefault(require("@babel/runtime/helpers/ge
 
 var _eventemitter = require("eventemitter3");
 
-var _flatted = require("flatted");
-
 function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = (0, _getPrototypeOf2["default"])(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = (0, _getPrototypeOf2["default"])(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return (0, _possibleConstructorReturn2["default"])(this, result); }; }
 
 function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
@@ -222,7 +220,7 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
           id: rpc_id
         };
 
-        _this2.socket.send((0, _flatted.stringify)(message), ws_opts, function (error) {
+        _this2.socket.send(JSON.stringify(message), ws_opts, function (error) {
           if (error) return reject(error);
           _this2.queue[rpc_id] = {
             promise: [resolve, reject]
@@ -338,7 +336,7 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
           params: params || null
         };
 
-        _this3.socket.send((0, _flatted.stringify)(message), function (error) {
+        _this3.socket.send(JSON.stringify(message), function (error) {
           if (error) return reject(error);
           resolve();
         });
@@ -480,7 +478,7 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
         if (message instanceof ArrayBuffer) message = Buffer.from(message).toString();
 
         try {
-          message = (0, _flatted.parse)(message);
+          message = JSON.parse(message);
         } catch (error) {
           return;
         } // check if any listeners are attached and forward event
@@ -543,7 +541,7 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
 
 exports["default"] = CommonClient;
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"@babel/runtime/helpers/asyncToGenerator":5,"@babel/runtime/helpers/classCallCheck":6,"@babel/runtime/helpers/createClass":7,"@babel/runtime/helpers/getPrototypeOf":8,"@babel/runtime/helpers/inherits":9,"@babel/runtime/helpers/interopRequireDefault":10,"@babel/runtime/helpers/possibleConstructorReturn":11,"@babel/runtime/helpers/typeof":13,"@babel/runtime/regenerator":14,"buffer":16,"eventemitter3":17,"flatted":18}],3:[function(require,module,exports){
+},{"@babel/runtime/helpers/asyncToGenerator":5,"@babel/runtime/helpers/classCallCheck":6,"@babel/runtime/helpers/createClass":7,"@babel/runtime/helpers/getPrototypeOf":8,"@babel/runtime/helpers/inherits":9,"@babel/runtime/helpers/interopRequireDefault":10,"@babel/runtime/helpers/possibleConstructorReturn":11,"@babel/runtime/helpers/typeof":13,"@babel/runtime/regenerator":14,"buffer":16,"eventemitter3":17}],3:[function(require,module,exports){
 /**
  * WebSocket implements a browser-side WebSocket specification.
  * @module Client
@@ -823,7 +821,7 @@ module.exports = _typeof, module.exports.__esModule = true, module.exports["defa
 },{}],14:[function(require,module,exports){
 module.exports = require("regenerator-runtime");
 
-},{"regenerator-runtime":20}],15:[function(require,module,exports){
+},{"regenerator-runtime":19}],15:[function(require,module,exports){
 'use strict'
 
 exports.byteLength = byteLength
@@ -2756,7 +2754,7 @@ function numberIsNaN (obj) {
 }
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"base64-js":15,"buffer":16,"ieee754":19}],17:[function(require,module,exports){
+},{"base64-js":15,"buffer":16,"ieee754":18}],17:[function(require,module,exports){
 'use strict';
 
 var has = Object.prototype.hasOwnProperty
@@ -3095,107 +3093,6 @@ if ('undefined' !== typeof module) {
 }
 
 },{}],18:[function(require,module,exports){
-'use strict';
-/*! (c) 2020 Andrea Giammarchi */
-
-const {parse: $parse, stringify: $stringify} = JSON;
-const {keys} = Object;
-
-const Primitive = String;   // it could be Number
-const primitive = 'string'; // it could be 'number'
-
-const ignore = {};
-const object = 'object';
-
-const noop = (_, value) => value;
-
-const primitives = value => (
-  value instanceof Primitive ? Primitive(value) : value
-);
-
-const Primitives = (_, value) => (
-  typeof value === primitive ? new Primitive(value) : value
-);
-
-const revive = (input, parsed, output, $) => {
-  const lazy = [];
-  for (let ke = keys(output), {length} = ke, y = 0; y < length; y++) {
-    const k = ke[y];
-    const value = output[k];
-    if (value instanceof Primitive) {
-      const tmp = input[value];
-      if (typeof tmp === object && !parsed.has(tmp)) {
-        parsed.add(tmp);
-        output[k] = ignore;
-        lazy.push({k, a: [input, parsed, tmp, $]});
-      }
-      else
-        output[k] = $.call(output, k, tmp);
-    }
-    else if (output[k] !== ignore)
-      output[k] = $.call(output, k, value);
-  }
-  for (let {length} = lazy, i = 0; i < length; i++) {
-    const {k, a} = lazy[i];
-    output[k] = $.call(output, k, revive.apply(null, a));
-  }
-  return output;
-};
-
-const set = (known, input, value) => {
-  const index = Primitive(input.push(value) - 1);
-  known.set(value, index);
-  return index;
-};
-
-const parse = (text, reviver) => {
-  const input = $parse(text, Primitives).map(primitives);
-  const value = input[0];
-  const $ = reviver || noop;
-  const tmp = typeof value === object && value ?
-              revive(input, new Set, value, $) :
-              value;
-  return $.call({'': tmp}, '', tmp);
-};
-exports.parse = parse;
-
-const stringify = (value, replacer, space) => {
-  const $ = replacer && typeof replacer === object ?
-            (k, v) => (k === '' || -1 < replacer.indexOf(k) ? v : void 0) :
-            (replacer || noop);
-  const known = new Map;
-  const input = [];
-  const output = [];
-  let i = +set(known, input, $.call({'': value}, '', value));
-  let firstRun = !i;
-  while (i < input.length) {
-    firstRun = true;
-    output[i] = $stringify(input[i++], replace, space);
-  }
-  return '[' + output.join(',') + ']';
-  function replace(key, value) {
-    if (firstRun) {
-      firstRun = !firstRun;
-      return value;
-    }
-    const after = $.call(this, key, value);
-    switch (typeof after) {
-      case object:
-        if (after === null) return after;
-      case primitive:
-        return known.get(after) || set(known, input, after);
-    }
-    return after;
-  }
-};
-exports.stringify = stringify;
-
-const toJSON = any => $parse(stringify(any));
-exports.toJSON = toJSON;
-const fromJSON = any => parse($stringify(any));
-exports.fromJSON = fromJSON;
-
-},{}],19:[function(require,module,exports){
 /*! ieee754. BSD-3-Clause License. Feross Aboukhadijeh <https://feross.org/opensource> */
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   var e, m
@@ -3282,7 +3179,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128
 }
 
-},{}],20:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 /**
  * Copyright (c) 2014-present, Facebook, Inc.
  *

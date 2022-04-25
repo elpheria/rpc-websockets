@@ -17,7 +17,6 @@ var __rest = (this && this.__rest) || function (s, e) {
 };
 // @ts-ignore
 import { EventEmitter } from "eventemitter3";
-import { stringify, parse } from "flatted";
 export default class CommonClient extends EventEmitter {
     /**
      * Instantiate a Client class.
@@ -80,7 +79,7 @@ export default class CommonClient extends EventEmitter {
                 params: params || null,
                 id: rpc_id
             };
-            this.socket.send(stringify(message), ws_opts, (error) => {
+            this.socket.send(JSON.stringify(message), ws_opts, (error) => {
                 if (error)
                     return reject(error);
                 this.queue[rpc_id] = { promise: [resolve, reject] };
@@ -129,7 +128,7 @@ export default class CommonClient extends EventEmitter {
                 method: method,
                 params: params || null
             };
-            this.socket.send(stringify(message), (error) => {
+            this.socket.send(JSON.stringify(message), (error) => {
                 if (error)
                     return reject(error);
                 resolve();
@@ -195,7 +194,7 @@ export default class CommonClient extends EventEmitter {
             if (message instanceof ArrayBuffer)
                 message = Buffer.from(message).toString();
             try {
-                message = parse(message);
+                message = JSON.parse(message);
             }
             catch (error) {
                 return;

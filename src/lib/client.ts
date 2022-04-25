@@ -9,7 +9,6 @@
 import NodeWebSocket from "ws"
 // @ts-ignore
 import { EventEmitter } from "eventemitter3"
-import { stringify, parse } from "flatted"
 import {
     ICommonWebSocket,
     IWSClientAdditionalOptions,
@@ -155,7 +154,7 @@ export default class CommonClient extends EventEmitter
                 id: rpc_id
             }
 
-            this.socket.send(stringify(message), ws_opts, (error) =>
+            this.socket.send(JSON.stringify(message), ws_opts, (error) =>
             {
                 if (error)
                     return reject(error)
@@ -220,7 +219,7 @@ export default class CommonClient extends EventEmitter
                 params: params || null
             }
 
-            this.socket.send(stringify(message), (error) =>
+            this.socket.send(JSON.stringify(message), (error) =>
             {
                 if (error)
                     return reject(error)
@@ -309,7 +308,7 @@ export default class CommonClient extends EventEmitter
             if (message instanceof ArrayBuffer)
                 message = Buffer.from(message).toString()
 
-            try { message = parse(message) }
+            try { message = JSON.parse(message) }
 
             catch (error) { return }
 
