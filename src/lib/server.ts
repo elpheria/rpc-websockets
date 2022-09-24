@@ -721,10 +721,6 @@ export default class Server extends EventEmitter
             }
         }
 
-        // client sent a notification, so we won't need a reply
-        if (!message.id)
-            return
-
         // if login middleware returned true, set connection as authenticated
         if (message.method === "rpc.login" && response === true)
         {
@@ -732,6 +728,10 @@ export default class Server extends EventEmitter
             s["_authenticated"] = true
             this.namespaces[ns].clients.set(socket_id, s)
         }
+        
+        // client sent a notification, so we won't need a reply
+        if (!message.id)
+            return
 
         return {
             jsonrpc: "2.0",
