@@ -42,6 +42,7 @@ export default class CommonClient extends EventEmitter
     private autoconnect: boolean
     private ready: boolean
     private reconnect: boolean
+    private reconnect_timer_id: NodeJS.Timeout
     private reconnect_interval: number
     private max_reconnects: number
     private rest_options: IWSClientAdditionalOptions & NodeWebSocket.ClientOptions
@@ -83,6 +84,7 @@ export default class CommonClient extends EventEmitter
         this.autoconnect = autoconnect
         this.ready = false
         this.reconnect = reconnect
+        this.reconnect_timer_id = undefined
         this.reconnect_interval = reconnect_interval
         this.max_reconnects = max_reconnects
         this.rest_options = rest_options
@@ -294,6 +296,7 @@ export default class CommonClient extends EventEmitter
         options: IWSClientAdditionalOptions & NodeWebSocket.ClientOptions
     )
     {
+        clearTimeout(this.reconnect_timer_id)
         this.socket = this.webSocketFactory(address, options)
 
         this.socket.addEventListener("open", () =>
@@ -382,7 +385,10 @@ export default class CommonClient extends EventEmitter
 
             if (this.reconnect && ((this.max_reconnects > this.current_reconnects) ||
                     this.max_reconnects === 0))
-                setTimeout(() => this._connect(address, options), this.reconnect_interval)
+                this.reconnect_timer_id = setTimeout(
+                    () => this._connect(address, options),
+                    this.reconnect_interval
+                )
         })
     }
 }
