@@ -152,6 +152,7 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
     _this.autoconnect = autoconnect;
     _this.ready = false;
     _this.reconnect = reconnect;
+    _this.reconnect_timer_id = undefined;
     _this.reconnect_interval = reconnect_interval;
     _this.max_reconnects = max_reconnects;
     _this.rest_options = rest_options;
@@ -465,6 +466,7 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
     value: function _connect(address, options) {
       var _this4 = this;
 
+      clearTimeout(this.reconnect_timer_id);
       this.socket = this.webSocketFactory(address, options);
       this.socket.addEventListener("open", function () {
         _this4.ready = true;
@@ -530,7 +532,7 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
         _this4.socket = undefined;
         if (code === 1000) return;
         _this4.current_reconnects++;
-        if (_this4.reconnect && (_this4.max_reconnects > _this4.current_reconnects || _this4.max_reconnects === 0)) setTimeout(function () {
+        if (_this4.reconnect && (_this4.max_reconnects > _this4.current_reconnects || _this4.max_reconnects === 0)) _this4.reconnect_timer_id = setTimeout(function () {
           return _this4._connect(address, options);
         }, _this4.reconnect_interval);
       });

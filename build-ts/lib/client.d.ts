@@ -27,6 +27,7 @@ export default class CommonClient extends EventEmitter {
     private autoconnect;
     private ready;
     private reconnect;
+    private reconnect_timer_id;
     private reconnect_interval;
     private max_reconnects;
     private rest_options;
