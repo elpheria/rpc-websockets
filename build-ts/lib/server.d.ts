@@ -59,7 +59,7 @@ export default class Server extends EventEmitter {
      * @throws {TypeError}
      * @return {Undefined}
      */
-    setAuth(fn: (params: IRPCMethodParams, socket_id: string) => boolean, ns?: string): void;
+    setAuth(fn: (params: IRPCMethodParams, socket_id: string) => Promise<boolean>, ns?: string): void;
     /**
      * Marks an RPC method as protected.
      * @method
