@@ -167,7 +167,7 @@ export default class Server extends EventEmitter
      * @throws {TypeError}
      * @return {Undefined}
      */
-    setAuth(fn: (params: IRPCMethodParams, socket_id: string) => boolean, ns = "/")
+    setAuth(fn: (params: IRPCMethodParams, socket_id: string) => Promise<boolean>, ns = "/")
     {
         this.register("rpc.login", fn, ns)
     }
