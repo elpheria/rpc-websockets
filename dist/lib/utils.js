@@ -11,7 +11,6 @@ var errors = new Map([[-32000, "Event not provided"], [-32600, "Invalid Request"
  * @param {String} details - error details
  * @return {Object}
  */
-
 function createError(code, details) {
   var error = {
     code: code,
