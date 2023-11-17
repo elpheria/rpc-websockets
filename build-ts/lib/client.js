@@ -17,6 +17,7 @@ var __rest = (this && this.__rest) || function (s, e) {
 };
 // @ts-ignore
 import { EventEmitter } from "eventemitter3";
+import { DefaultDataPack } from "./utils";
 export default class CommonClient extends EventEmitter {
     /**
      * Instantiate a Client class.
@@ -25,9 +26,10 @@ export default class CommonClient extends EventEmitter {
      * @param {String} address - url to a websocket server
      * @param {Object} options - ws options object with reconnect parameters
      * @param {Function} generate_request_id - custom generation request Id
+     * @param {DataPack} dataPack - data pack contains encoder and decoder
      * @return {CommonClient}
      */
-    constructor(webSocketFactory, address = "ws://localhost:8080", _a = {}, generate_request_id) {
+    constructor(webSocketFactory, address = "ws://localhost:8080", _a = {}, generate_request_id, dataPack) {
         var { autoconnect = true, reconnect = true, reconnect_interval = 1000, max_reconnects = 5 } = _a, rest_options = __rest(_a, ["autoconnect", "reconnect", "reconnect_interval", "max_reconnects"]);
         super();
         this.webSocketFactory = webSocketFactory;
@@ -43,6 +45,10 @@ export default class CommonClient extends EventEmitter {
         this.rest_options = rest_options;
         this.current_reconnects = 0;
         this.generate_request_id = generate_request_id || (() => ++this.rpc_id);
+        if (!dataPack)
+            this.dataPack = new DefaultDataPack();
+        else
+            this.dataPack = dataPack;
         if (this.autoconnect)
             this._connect(this.address, Object.assign({ autoconnect: this.autoconnect, reconnect: this.reconnect, reconnect_interval: this.reconnect_interval, max_reconnects: this.max_reconnects }, this.rest_options));
     }
@@ -80,7 +86,7 @@ export default class CommonClient extends EventEmitter {
                 params: params || null,
                 id: rpc_id
             };
-            this.socket.send(JSON.stringify(message), ws_opts, (error) => {
+            this.socket.send(this.dataPack.encode(message), ws_opts, (error) => {
                 if (error)
                     return reject(error);
                 this.queue[rpc_id] = { promise: [resolve, reject] };
@@ -129,7 +135,7 @@ export default class CommonClient extends EventEmitter {
                 method: method,
                 params: params || null
             };
-            this.socket.send(JSON.stringify(message), (error) => {
+            this.socket.send(this.dataPack.encode(message), (error) => {
                 if (error)
                     return reject(error);
                 resolve();
@@ -196,7 +202,7 @@ export default class CommonClient extends EventEmitter {
             if (message instanceof ArrayBuffer)
                 message = Buffer.from(message).toString();
             try {
-                message = JSON.parse(message);
+                message = this.dataPack.decode(message);
             }
             catch (error) {
                 return;

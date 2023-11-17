@@ -74,6 +74,7 @@ Parameters:
   * `max_reconnects` {Number}: Maximum number of times the client should try to reconnect. Defaults to `5`. `0` means unlimited.
   * Any other option allowed in <a href="https://github.com/websockets/ws/blob/master/doc/ws.md#new-websocketaddress-protocols-options" target="_blank">Node WebSocket</a>
 * `generate_request_id` {Function} Custom function to generate request id instead of simple increment by default. Passes `method` and `params` to parameters.
+* `dataPack` {DataPack} data pack contains encoder and decoder.
 
 ### ws.connect()
 
@@ -180,6 +181,8 @@ Parameters:
 * `options` {Object}: Server options that are also forwarded to `ws`.
   * `port` {Number}: Port number on which the server will listen for incoming requests.
   * `host` {String}: Address on which the server will listen for incoming requests.
+* `dataPack` {DataPack} data pack contains encoder and decoder.
+
 
 Once the Server class is instantiated, you can use a `ws` library's instance via server.wss object.
 

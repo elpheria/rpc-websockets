@@ -10,6 +10,14 @@ const errors = new Map([
     [-32606, "Event forbidden"],
     [-32700, "Parse error"]
 ]);
+export class DefaultDataPack {
+    encode(value) {
+        return JSON.stringify(value);
+    }
+    decode(value) {
+        return JSON.parse(value);
+    }
+}
 /**
  * Creates a JSON-RPC 2.0-compliant error.
  * @param {Number} code - error code

@@ -41,7 +41,7 @@ var Client = /*#__PURE__*/function (_CommonClient) {
   return (0, _createClass2["default"])(Client);
 }(_client["default"]);
 exports.Client = Client;
-},{"./lib/client":2,"./lib/client/websocket.browser":3,"@babel/runtime/helpers/classCallCheck":6,"@babel/runtime/helpers/createClass":7,"@babel/runtime/helpers/getPrototypeOf":8,"@babel/runtime/helpers/inherits":9,"@babel/runtime/helpers/interopRequireDefault":10,"@babel/runtime/helpers/possibleConstructorReturn":11}],2:[function(require,module,exports){
+},{"./lib/client":2,"./lib/client/websocket.browser":3,"@babel/runtime/helpers/classCallCheck":7,"@babel/runtime/helpers/createClass":8,"@babel/runtime/helpers/getPrototypeOf":9,"@babel/runtime/helpers/inherits":10,"@babel/runtime/helpers/interopRequireDefault":11,"@babel/runtime/helpers/possibleConstructorReturn":12}],2:[function(require,module,exports){
 (function (Buffer){(function (){
 /**
  * "Client" wraps "ws" or a browser-implemented "WebSocket" library
@@ -64,6 +64,7 @@ var _inherits2 = _interopRequireDefault(require("@babel/runtime/helpers/inherits
 var _possibleConstructorReturn2 = _interopRequireDefault(require("@babel/runtime/helpers/possibleConstructorReturn"));
 var _getPrototypeOf2 = _interopRequireDefault(require("@babel/runtime/helpers/getPrototypeOf"));
 var _eventemitter = require("eventemitter3");
+var _utils = require("./utils");
 function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = (0, _getPrototypeOf2["default"])(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = (0, _getPrototypeOf2["default"])(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return (0, _possibleConstructorReturn2["default"])(this, result); }; }
 function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
 var __rest = void 0 && (void 0).__rest || function (s, e) {
@@ -87,6 +88,7 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
    * @param {String} address - url to a websocket server
    * @param {Object} options - ws options object with reconnect parameters
    * @param {Function} generate_request_id - custom generation request Id
+   * @param {DataPack} dataPack - data pack contains encoder and decoder
    * @return {CommonClient}
    */
   function CommonClient(webSocketFactory) {
@@ -94,6 +96,7 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
     var address = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "ws://localhost:8080";
     var _a = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
     var generate_request_id = arguments.length > 3 ? arguments[3] : undefined;
+    var dataPack = arguments.length > 4 ? arguments[4] : undefined;
     (0, _classCallCheck2["default"])(this, CommonClient);
     var _a$autoconnect = _a.autoconnect,
       autoconnect = _a$autoconnect === void 0 ? true : _a$autoconnect,
@@ -120,6 +123,7 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
     _this.generate_request_id = generate_request_id || function () {
       return ++_this.rpc_id;
     };
+    if (!dataPack) _this.dataPack = new _utils.DefaultDataPack();else _this.dataPack = dataPack;
     if (_this.autoconnect) _this._connect(_this.address, Object.assign({
       autoconnect: _this.autoconnect,
       reconnect: _this.reconnect,
@@ -170,7 +174,7 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
           params: params || null,
           id: rpc_id
         };
-        _this2.socket.send(JSON.stringify(message), ws_opts, function (error) {
+        _this2.socket.send(_this2.dataPack.encode(message), ws_opts, function (error) {
           if (error) return reject(error);
           _this2.queue[rpc_id] = {
             promise: [resolve, reject]
@@ -269,7 +273,7 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
           method: method,
           params: params || null
         };
-        _this3.socket.send(JSON.stringify(message), function (error) {
+        _this3.socket.send(_this3.dataPack.encode(message), function (error) {
           if (error) return reject(error);
           resolve();
         });
@@ -390,7 +394,7 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
         var message = _ref.data;
         if (message instanceof ArrayBuffer) message = Buffer.from(message).toString();
         try {
-          message = JSON.parse(message);
+          message = _this4.dataPack.decode(message);
         } catch (error) {
           return;
         }
@@ -450,7 +454,7 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
 }(_eventemitter.EventEmitter);
 exports["default"] = CommonClient;
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"@babel/runtime/helpers/asyncToGenerator":5,"@babel/runtime/helpers/classCallCheck":6,"@babel/runtime/helpers/createClass":7,"@babel/runtime/helpers/getPrototypeOf":8,"@babel/runtime/helpers/inherits":9,"@babel/runtime/helpers/interopRequireDefault":10,"@babel/runtime/helpers/possibleConstructorReturn":11,"@babel/runtime/helpers/typeof":14,"@babel/runtime/regenerator":15,"buffer":17,"eventemitter3":18}],3:[function(require,module,exports){
+},{"./utils":4,"@babel/runtime/helpers/asyncToGenerator":6,"@babel/runtime/helpers/classCallCheck":7,"@babel/runtime/helpers/createClass":8,"@babel/runtime/helpers/getPrototypeOf":9,"@babel/runtime/helpers/inherits":10,"@babel/runtime/helpers/interopRequireDefault":11,"@babel/runtime/helpers/possibleConstructorReturn":12,"@babel/runtime/helpers/typeof":15,"@babel/runtime/regenerator":16,"buffer":18,"eventemitter3":19}],3:[function(require,module,exports){
 /**
  * WebSocket implements a browser-side WebSocket specification.
  * @module Client
@@ -549,7 +553,51 @@ var WebSocketBrowserImpl = /*#__PURE__*/function (_EventEmitter) {
 function _default(address, options) {
   return new WebSocketBrowserImpl(address, options);
 }
-},{"@babel/runtime/helpers/classCallCheck":6,"@babel/runtime/helpers/createClass":7,"@babel/runtime/helpers/getPrototypeOf":8,"@babel/runtime/helpers/inherits":9,"@babel/runtime/helpers/interopRequireDefault":10,"@babel/runtime/helpers/possibleConstructorReturn":11,"eventemitter3":18}],4:[function(require,module,exports){
+},{"@babel/runtime/helpers/classCallCheck":7,"@babel/runtime/helpers/createClass":8,"@babel/runtime/helpers/getPrototypeOf":9,"@babel/runtime/helpers/inherits":10,"@babel/runtime/helpers/interopRequireDefault":11,"@babel/runtime/helpers/possibleConstructorReturn":12,"eventemitter3":19}],4:[function(require,module,exports){
+"use strict";
+
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.DefaultDataPack = void 0;
+exports.createError = createError;
+var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime/helpers/classCallCheck"));
+var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
+var errors = new Map([[-32000, "Event not provided"], [-32600, "Invalid Request"], [-32601, "Method not found"], [-32602, "Invalid params"], [-32603, "Internal error"], [-32604, "Params not found"], [-32605, "Method forbidden"], [-32606, "Event forbidden"], [-32700, "Parse error"]]);
+var DefaultDataPack = /*#__PURE__*/function () {
+  function DefaultDataPack() {
+    (0, _classCallCheck2["default"])(this, DefaultDataPack);
+  }
+  (0, _createClass2["default"])(DefaultDataPack, [{
+    key: "encode",
+    value: function encode(value) {
+      return JSON.stringify(value);
+    }
+  }, {
+    key: "decode",
+    value: function decode(value) {
+      return JSON.parse(value);
+    }
+  }]);
+  return DefaultDataPack;
+}();
+/**
+ * Creates a JSON-RPC 2.0-compliant error.
+ * @param {Number} code - error code
+ * @param {String} details - error details
+ * @return {Object}
+ */
+exports.DefaultDataPack = DefaultDataPack;
+function createError(code, details) {
+  var error = {
+    code: code,
+    message: errors.get(code) || "Internal Server Error"
+  };
+  if (details) error["data"] = details;
+  return error;
+}
+},{"@babel/runtime/helpers/classCallCheck":7,"@babel/runtime/helpers/createClass":8,"@babel/runtime/helpers/interopRequireDefault":11}],5:[function(require,module,exports){
 function _assertThisInitialized(self) {
   if (self === void 0) {
     throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
@@ -559,7 +607,7 @@ function _assertThisInitialized(self) {
 }
 
 module.exports = _assertThisInitialized, module.exports.__esModule = true, module.exports["default"] = module.exports;
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
   try {
     var info = gen[key](arg);
@@ -597,7 +645,7 @@ function _asyncToGenerator(fn) {
 }
 
 module.exports = _asyncToGenerator, module.exports.__esModule = true, module.exports["default"] = module.exports;
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 function _classCallCheck(instance, Constructor) {
   if (!(instance instanceof Constructor)) {
     throw new TypeError("Cannot call a class as a function");
@@ -605,7 +653,7 @@ function _classCallCheck(instance, Constructor) {
 }
 
 module.exports = _classCallCheck, module.exports.__esModule = true, module.exports["default"] = module.exports;
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 function _defineProperties(target, props) {
   for (var i = 0; i < props.length; i++) {
     var descriptor = props[i];
@@ -626,7 +674,7 @@ function _createClass(Constructor, protoProps, staticProps) {
 }
 
 module.exports = _createClass, module.exports.__esModule = true, module.exports["default"] = module.exports;
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 function _getPrototypeOf(o) {
   module.exports = _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function _getPrototypeOf(o) {
     return o.__proto__ || Object.getPrototypeOf(o);
@@ -635,7 +683,7 @@ function _getPrototypeOf(o) {
 }
 
 module.exports = _getPrototypeOf, module.exports.__esModule = true, module.exports["default"] = module.exports;
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 var setPrototypeOf = require("./setPrototypeOf.js");
 
 function _inherits(subClass, superClass) {
@@ -657,7 +705,7 @@ function _inherits(subClass, superClass) {
 }
 
 module.exports = _inherits, module.exports.__esModule = true, module.exports["default"] = module.exports;
-},{"./setPrototypeOf.js":13}],10:[function(require,module,exports){
+},{"./setPrototypeOf.js":14}],11:[function(require,module,exports){
 function _interopRequireDefault(obj) {
   return obj && obj.__esModule ? obj : {
     "default": obj
@@ -665,7 +713,7 @@ function _interopRequireDefault(obj) {
 }
 
 module.exports = _interopRequireDefault, module.exports.__esModule = true, module.exports["default"] = module.exports;
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 var _typeof = require("./typeof.js")["default"];
 
 var assertThisInitialized = require("./assertThisInitialized.js");
@@ -681,7 +729,7 @@ function _possibleConstructorReturn(self, call) {
 }
 
 module.exports = _possibleConstructorReturn, module.exports.__esModule = true, module.exports["default"] = module.exports;
-},{"./assertThisInitialized.js":4,"./typeof.js":14}],12:[function(require,module,exports){
+},{"./assertThisInitialized.js":5,"./typeof.js":15}],13:[function(require,module,exports){
 var _typeof = require("./typeof.js")["default"];
 
 function _regeneratorRuntime() {
@@ -1036,7 +1084,7 @@ function _regeneratorRuntime() {
 }
 
 module.exports = _regeneratorRuntime, module.exports.__esModule = true, module.exports["default"] = module.exports;
-},{"./typeof.js":14}],13:[function(require,module,exports){
+},{"./typeof.js":15}],14:[function(require,module,exports){
 function _setPrototypeOf(o, p) {
   module.exports = _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) {
     o.__proto__ = p;
@@ -1046,7 +1094,7 @@ function _setPrototypeOf(o, p) {
 }
 
 module.exports = _setPrototypeOf, module.exports.__esModule = true, module.exports["default"] = module.exports;
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 function _typeof(obj) {
   "@babel/helpers - typeof";
 
@@ -1058,7 +1106,7 @@ function _typeof(obj) {
 }
 
 module.exports = _typeof, module.exports.__esModule = true, module.exports["default"] = module.exports;
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 // TODO(Babel 8): Remove this file.
 
 var runtime = require("../helpers/regeneratorRuntime")();
@@ -1075,7 +1123,7 @@ try {
   }
 }
 
-},{"../helpers/regeneratorRuntime":12}],16:[function(require,module,exports){
+},{"../helpers/regeneratorRuntime":13}],17:[function(require,module,exports){
 'use strict'
 
 exports.byteLength = byteLength
@@ -1227,7 +1275,7 @@ function fromByteArray (uint8) {
   return parts.join('')
 }
 
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 (function (Buffer){(function (){
 /*!
  * The buffer module from node.js, for the browser.
@@ -3008,7 +3056,7 @@ function numberIsNaN (obj) {
 }
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"base64-js":16,"buffer":17,"ieee754":19}],18:[function(require,module,exports){
+},{"base64-js":17,"buffer":18,"ieee754":20}],19:[function(require,module,exports){
 'use strict';
 
 var has = Object.prototype.hasOwnProperty
@@ -3346,7 +3394,7 @@ if ('undefined' !== typeof module) {
   module.exports = EventEmitter;
 }
 
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 /*! ieee754. BSD-3-Clause License. Feross Aboukhadijeh <https://feross.org/opensource> */
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   var e, m
