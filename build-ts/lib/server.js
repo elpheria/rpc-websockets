@@ -14,9 +14,10 @@ export default class Server extends EventEmitter {
      * Instantiate a Server class.
      * @constructor
      * @param {Object} options - ws constructor's parameters with rpc
+     * @param {DataPack} dataPack - data pack contains encoder and decoder
      * @return {Server} - returns a new Server instance
      */
-    constructor(options) {
+    constructor(options, dataPack) {
         super();
         /**
          * Stores all connected sockets with a universally unique identifier
@@ -30,6 +31,10 @@ export default class Server extends EventEmitter {
          * @param {Object} namespaces.events
          */
         this.namespaces = {};
+        if (!dataPack)
+            this.dataPack = new utils.DefaultDataPack();
+        else
+            this.dataPack = dataPack;
         this.wss = new WebSocketServer(options);
         this.wss.on("listening", () => this.emit("listening"));
         this.wss.on("connection", (socket, request) => {
@@ -180,7 +185,7 @@ export default class Server extends EventEmitter {
                 const socket = this.namespaces[ns].clients.get(socket_id);
                 if (!socket)
                     continue;
-                socket.send(JSON.stringify({
+                socket.send(this.dataPack.encode({
                     notification: name,
                     params: params || null
                 }));
@@ -236,7 +241,7 @@ export default class Server extends EventEmitter {
             emit(event, ...params) {
                 const socket_ids = [...self.namespaces[name].clients.keys()];
                 for (let i = 0, id; id = socket_ids[i]; ++i) {
-                    self.namespaces[name].clients.get(id).send(JSON.stringify({
+                    self.namespaces[name].clients.get(id).send(self.dataPack.encode({
                         notification: event,
                         params: params || []
                     }));
@@ -335,10 +340,10 @@ export default class Server extends EventEmitter {
                 return; // TODO: should have debug logs here
             let parsedData;
             try {
-                parsedData = JSON.parse(data);
+                parsedData = this.dataPack.decode(data);
             }
             catch (error) {
-                return socket.send(JSON.stringify({
+                return socket.send(this.dataPack.encode({
                     jsonrpc: "2.0",
                     error: utils.createError(-32700, error.toString()),
                     id: null
@@ -346,7 +351,7 @@ export default class Server extends EventEmitter {
             }
             if (Array.isArray(parsedData)) {
                 if (!parsedData.length)
-                    return socket.send(JSON.stringify({
+                    return socket.send(this.dataPack.encode({
                         jsonrpc: "2.0",
                         error: utils.createError(-32600, "Invalid array"),
                         id: null
@@ -360,12 +365,12 @@ export default class Server extends EventEmitter {
                 }
                 if (!responses.length)
                     return;
-                return socket.send(JSON.stringify(responses), msg_options);
+                return socket.send(this.dataPack.encode(responses), msg_options);
             }
             const response = await this._runMethod(parsedData, socket._id, ns);
             if (!response)
                 return;
-            return socket.send(JSON.stringify(response), msg_options);
+            return socket.send(this.dataPack.encode(response), msg_options);
         });
     }
     /**

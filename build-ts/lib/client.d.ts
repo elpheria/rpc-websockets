@@ -5,6 +5,7 @@
  */
 import { EventEmitter } from "eventemitter3";
 import { NodeWebSocketType, ICommonWebSocketFactory } from "./client/client.types";
+import { DataPack } from "./utils";
 interface IQueueElement {
     promise: [
         Parameters<ConstructorParameters<typeof Promise>[0]>[0],
@@ -35,6 +36,7 @@ export default class CommonClient extends EventEmitter {
     private generate_request_id;
     private socket;
     private webSocketFactory;
+    private dataPack;
     /**
      * Instantiate a Client class.
      * @constructor
@@ -42,6 +44,7 @@ export default class CommonClient extends EventEmitter {
      * @param {String} address - url to a websocket server
      * @param {Object} options - ws options object with reconnect parameters
      * @param {Function} generate_request_id - custom generation request Id
+     * @param {DataPack} dataPack - data pack contains encoder and decoder
      * @return {CommonClient}
      */
     constructor(webSocketFactory: ICommonWebSocketFactory, address?: string, { autoconnect, reconnect, reconnect_interval, max_reconnects, ...rest_options }?: {
@@ -49,7 +52,7 @@ export default class CommonClient extends EventEmitter {
         reconnect?: boolean;
         reconnect_interval?: number;
         max_reconnects?: number;
-    }, generate_request_id?: (method: string, params: object | Array<any>) => number);
+    }, generate_request_id?: (method: string, params: object | Array<any>) => number, dataPack?: DataPack<object, string>);
     /**
      * Connects to a defined server if not connected already.
      * @method

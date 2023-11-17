@@ -40,9 +40,10 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
    * Instantiate a Server class.
    * @constructor
    * @param {Object} options - ws constructor's parameters with rpc
+   * @param {DataPack} dataPack - data pack contains encoder and decoder
    * @return {Server} - returns a new Server instance
    */
-  function Server(options) {
+  function Server(options, dataPack) {
     var _this;
     (0, _classCallCheck2["default"])(this, Server);
     _this = _super.call(this);
@@ -58,6 +59,7 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
      * @param {Object} namespaces.events
      */
     _this.namespaces = {};
+    if (!dataPack) _this.dataPack = new utils.DefaultDataPack();else _this.dataPack = dataPack;
     _this.wss = new _ws.Server(options);
     _this.wss.on("listening", function () {
       return _this.emit("listening");
@@ -251,7 +253,7 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
             var socket_id = _step2.value;
             var socket = _this3.namespaces[ns].clients.get(socket_id);
             if (!socket) continue;
-            socket.send(JSON.stringify({
+            socket.send(_this3.dataPack.encode({
               notification: name,
               params: params || null
             }));
@@ -315,7 +317,7 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
             params[_key2 - 1] = arguments[_key2];
           }
           for (var i = 0, id; id = socket_ids[i]; ++i) {
-            self.namespaces[name].clients.get(id).send(JSON.stringify({
+            self.namespaces[name].clients.get(id).send(self.dataPack.encode({
               notification: event,
               params: params || []
             }));
@@ -435,13 +437,13 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
                   return _context.abrupt("return");
                 case 4:
                   _context.prev = 4;
-                  parsedData = JSON.parse(data);
+                  parsedData = _this5.dataPack.decode(data);
                   _context.next = 11;
                   break;
                 case 8:
                   _context.prev = 8;
                   _context.t0 = _context["catch"](4);
-                  return _context.abrupt("return", socket.send(JSON.stringify({
+                  return _context.abrupt("return", socket.send(_this5.dataPack.encode({
                     jsonrpc: "2.0",
                     error: utils.createError(-32700, _context.t0.toString()),
                     id: null
@@ -455,7 +457,7 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
                     _context.next = 14;
                     break;
                   }
-                  return _context.abrupt("return", socket.send(JSON.stringify({
+                  return _context.abrupt("return", socket.send(_this5.dataPack.encode({
                     jsonrpc: "2.0",
                     error: utils.createError(-32600, "Invalid array"),
                     id: null
@@ -503,7 +505,7 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
                   }
                   return _context.abrupt("return");
                 case 38:
-                  return _context.abrupt("return", socket.send(JSON.stringify(responses), msg_options));
+                  return _context.abrupt("return", socket.send(_this5.dataPack.encode(responses), msg_options));
                 case 39:
                   _context.next = 41;
                   return _this5._runMethod(parsedData, socket._id, ns);
@@ -515,7 +517,7 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
                   }
                   return _context.abrupt("return");
                 case 44:
-                  return _context.abrupt("return", socket.send(JSON.stringify(response), msg_options));
+                  return _context.abrupt("return", socket.send(_this5.dataPack.encode(response), msg_options));
                 case 45:
                 case "end":
                   return _context.stop();

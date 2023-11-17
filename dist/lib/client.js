@@ -19,6 +19,7 @@ var _inherits2 = _interopRequireDefault(require("@babel/runtime/helpers/inherits
 var _possibleConstructorReturn2 = _interopRequireDefault(require("@babel/runtime/helpers/possibleConstructorReturn"));
 var _getPrototypeOf2 = _interopRequireDefault(require("@babel/runtime/helpers/getPrototypeOf"));
 var _eventemitter = require("eventemitter3");
+var _utils = require("./utils");
 function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = (0, _getPrototypeOf2["default"])(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = (0, _getPrototypeOf2["default"])(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return (0, _possibleConstructorReturn2["default"])(this, result); }; }
 function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
 var __rest = void 0 && (void 0).__rest || function (s, e) {
@@ -42,6 +43,7 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
    * @param {String} address - url to a websocket server
    * @param {Object} options - ws options object with reconnect parameters
    * @param {Function} generate_request_id - custom generation request Id
+   * @param {DataPack} dataPack - data pack contains encoder and decoder
    * @return {CommonClient}
    */
   function CommonClient(webSocketFactory) {
@@ -49,6 +51,7 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
     var address = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "ws://localhost:8080";
     var _a = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
     var generate_request_id = arguments.length > 3 ? arguments[3] : undefined;
+    var dataPack = arguments.length > 4 ? arguments[4] : undefined;
     (0, _classCallCheck2["default"])(this, CommonClient);
     var _a$autoconnect = _a.autoconnect,
       autoconnect = _a$autoconnect === void 0 ? true : _a$autoconnect,
@@ -75,6 +78,7 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
     _this.generate_request_id = generate_request_id || function () {
       return ++_this.rpc_id;
     };
+    if (!dataPack) _this.dataPack = new _utils.DefaultDataPack();else _this.dataPack = dataPack;
     if (_this.autoconnect) _this._connect(_this.address, Object.assign({
       autoconnect: _this.autoconnect,
       reconnect: _this.reconnect,
@@ -125,7 +129,7 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
           params: params || null,
           id: rpc_id
         };
-        _this2.socket.send(JSON.stringify(message), ws_opts, function (error) {
+        _this2.socket.send(_this2.dataPack.encode(message), ws_opts, function (error) {
           if (error) return reject(error);
           _this2.queue[rpc_id] = {
             promise: [resolve, reject]
@@ -224,7 +228,7 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
           method: method,
           params: params || null
         };
-        _this3.socket.send(JSON.stringify(message), function (error) {
+        _this3.socket.send(_this3.dataPack.encode(message), function (error) {
           if (error) return reject(error);
           resolve();
         });
@@ -345,7 +349,7 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
         var message = _ref.data;
         if (message instanceof ArrayBuffer) message = Buffer.from(message).toString();
         try {
-          message = JSON.parse(message);
+          message = _this4.dataPack.decode(message);
         } catch (error) {
           return;
         }

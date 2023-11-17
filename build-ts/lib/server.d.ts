@@ -4,6 +4,7 @@
  */
 import { EventEmitter } from "eventemitter3";
 import NodeWebSocket, { Server as WebSocketServer } from "ws";
+import * as utils from "./utils";
 interface INamespaceEvent {
     [x: string]: {
         sockets: Array<string>;
@@ -33,14 +34,16 @@ interface IClientWebSocket extends NodeWebSocket {
 }
 export default class Server extends EventEmitter {
     private namespaces;
+    private dataPack;
     wss: InstanceType<typeof WebSocketServer>;
     /**
      * Instantiate a Server class.
      * @constructor
      * @param {Object} options - ws constructor's parameters with rpc
+     * @param {DataPack} dataPack - data pack contains encoder and decoder
      * @return {Server} - returns a new Server instance
      */
-    constructor(options: NodeWebSocket.ServerOptions);
+    constructor(options: NodeWebSocket.ServerOptions, dataPack?: utils.DataPack<object, string>);
     /**
      * Registers an RPC method.
      * @method
