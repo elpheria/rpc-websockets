@@ -183,7 +183,6 @@ Parameters:
   * `host` {String}: Address on which the server will listen for incoming requests.
 * `dataPack` {DataPack} data pack contains encoder and decoder.
 
-
 Once the Server class is instantiated, you can use a `ws` library's instance via server.wss object.
 
 ### server.register(method, handler[, namespace]) -> RPCMethod
