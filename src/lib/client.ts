@@ -162,7 +162,7 @@ export default class CommonClient extends EventEmitter
             const message = {
                 jsonrpc: "2.0",
                 method: method,
-                params: params || null,
+                params: params || undefined,
                 id: rpc_id
             }
 
@@ -228,7 +228,7 @@ export default class CommonClient extends EventEmitter
             const message = {
                 jsonrpc: "2.0",
                 method: method,
-                params: params || null
+                params
             }
 
             this.socket.send(this.dataPack.encode(message), (error) =>
