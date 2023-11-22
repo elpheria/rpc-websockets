@@ -171,7 +171,7 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
         var message = {
           jsonrpc: "2.0",
           method: method,
-          params: params || null,
+          params: params || undefined,
           id: rpc_id
         };
         _this2.socket.send(_this2.dataPack.encode(message), ws_opts, function (error) {
@@ -271,7 +271,7 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
         var message = {
           jsonrpc: "2.0",
           method: method,
-          params: params || null
+          params: params
         };
         _this3.socket.send(_this3.dataPack.encode(message), function (error) {
           if (error) return reject(error);

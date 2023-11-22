@@ -83,7 +83,7 @@ export default class CommonClient extends EventEmitter {
             const message = {
                 jsonrpc: "2.0",
                 method: method,
-                params: params || null,
+                params: params || undefined,
                 id: rpc_id
             };
             this.socket.send(this.dataPack.encode(message), ws_opts, (error) => {
@@ -133,7 +133,7 @@ export default class CommonClient extends EventEmitter {
             const message = {
                 jsonrpc: "2.0",
                 method: method,
-                params: params || null
+                params
             };
             this.socket.send(this.dataPack.encode(message), (error) => {
                 if (error)
