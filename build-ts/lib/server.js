@@ -187,7 +187,7 @@ export default class Server extends EventEmitter {
                     continue;
                 socket.send(this.dataPack.encode({
                     notification: name,
-                    params: params || null
+                    params
                 }));
             }
         });

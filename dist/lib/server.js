@@ -255,7 +255,7 @@ var Server = /*#__PURE__*/function (_EventEmitter) {
             if (!socket) continue;
             socket.send(_this3.dataPack.encode({
               notification: name,
-              params: params || null
+              params: params
             }));
           }
         } catch (err) {
