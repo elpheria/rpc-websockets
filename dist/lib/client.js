@@ -370,10 +370,10 @@ var CommonClient = /*#__PURE__*/function (_EventEmitter) {
         }
         if (!_this4.queue[message.id]) {
           // general JSON RPC 2.0 events
-          if (message.method && message.params) {
+          if (message.method) {
             // run as microtask so that pending queue messages are resolved first
             return Promise.resolve().then(function () {
-              _this4.emit(message.method, message.params);
+              _this4.emit(message.method, message === null || message === void 0 ? void 0 : message.params);
             });
           }
           return;

@@ -224,10 +224,10 @@ export default class CommonClient extends EventEmitter {
             }
             if (!this.queue[message.id]) {
                 // general JSON RPC 2.0 events
-                if (message.method && message.params) {
+                if (message.method) {
                     // run as microtask so that pending queue messages are resolved first
                     return Promise.resolve().then(() => {
-                        this.emit(message.method, message.params);
+                        this.emit(message.method, message === null || message === void 0 ? void 0 : message.params);
                     });
                 }
                 return;
