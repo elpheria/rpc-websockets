@@ -4,7 +4,7 @@
   "description": "JSON-RPC 2.0 implementation over WebSockets for Node.js",
   "main": "./dist/index.js",
   "scripts": {
-    "build": "tsc && mkdir -p ./dist && eslint --fix -c ./.eslintrc './src/**/*.ts' && babel ./dist -d ./dist && browserify -s RPCWebSocket ./dist/index.browser.js > ./dist/index.browser-bundle.js",
+    "build": "tsc && mkdir -p ./dist && eslint --fix -c ./.eslintrc './src/**/*.ts' && ./build-browser-bundle.mjs",
     "pretest": "npm run-script build",
     "test": "mocha --exit test/*spec.js",
     "test:client": "mocha --exit test/client.spec.js",
@@ -17,7 +17,6 @@
     "url": "git+https://github.com/elpheria/rpc-websockets.git"
   },
   "dependencies": {
-    "@babel/runtime": "^7.17.2",
     "eventemitter3": "^4.0.7",
     "uuid": "^8.3.2",
     "ws": "^8.5.0"
@@ -27,20 +26,19 @@
     "utf-8-validate": "^5.0.2"
   },
   "devDependencies": {
-    "@babel/cli": "^7.17.0",
-    "@babel/core": "^7.17.2",
+    "@babel/core": "^7.24.5",
     "@babel/plugin-transform-runtime": "^7.17.0",
     "@babel/preset-env": "^7.16.11",
-    "@babel/preset-typescript": "^7.16.7",
     "@types/uuid": "^8.3.4",
     "@types/ws": "^8.2.2",
     "@typescript-eslint/eslint-plugin": "^5.11.0",
     "@typescript-eslint/parser": "^5.11.0",
     "async": "^3.2.3",
     "babel-eslint": "^10.1.0",
-    "browserify": "^17.0.0",
     "chai": "^4.3.6",
     "coveralls": "^3.1.1",
+    "esbuild": "^0.20.2",
+    "esbuild-plugin-babel": "^0.2.3",
     "eslint": "^8.8.0",
     "istanbul": "^0.4.5",
     "mocha": "^10.0.0",
