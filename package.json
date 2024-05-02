@@ -4,7 +4,7 @@
   "description": "JSON-RPC 2.0 implementation over WebSockets for Node.js",
   "main": "./dist/index.js",
   "scripts": {
-    "build": "tsc && mkdir -p ./dist && eslint --fix -c ./.eslintrc './src/**/*.ts' && babel ./build-ts -d ./dist --copy-files && browserify -s RPCWebSocket ./dist/index.browser.js > ./dist/index.browser-bundle.js",
+    "build": "tsc && mkdir -p ./dist && eslint --fix -c ./.eslintrc './src/**/*.ts' && babel ./dist -d ./dist && browserify -s RPCWebSocket ./dist/index.browser.js > ./dist/index.browser-bundle.js",
     "pretest": "npm run-script build",
     "test": "mocha --exit test/*spec.js",
     "test:client": "mocha --exit test/client.spec.js",

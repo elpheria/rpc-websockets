@@ -1,10 +1,12 @@
 {
     "compilerOptions": {
-        "outDir": "./build-ts",
+        "outDir": "./dist",
         "declaration": true,
         "allowUnreachableCode": false,
         "noImplicitAny": true,
-        "target": "es2017",
+        "module": "CommonJS",
+        "target": "ESNext",
+        "esModuleInterop": true,
         "moduleResolution": "node",
         "allowSyntheticDefaultImports": true,
         "allowJs": true
