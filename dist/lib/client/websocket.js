@@ -1,12 +1,10 @@
 /* A wrapper for the "qaap/uws-bindings" library. */
 "use strict";
-
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports["default"] = _default;
-var _ws = _interopRequireDefault(require("ws"));
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const ws_1 = __importDefault(require("ws"));
 /**
  * factory method for common WebSocket instance
  * @method
@@ -14,6 +12,7 @@ var _ws = _interopRequireDefault(require("ws"));
  * @param {(Object)} options - websocket options
  * @return {Undefined}
  */
-function _default(address, options) {
-  return new _ws["default"](address, options);
+function default_1(address, options) {
+    return new ws_1.default(address, options);
 }
+exports.default = default_1;
