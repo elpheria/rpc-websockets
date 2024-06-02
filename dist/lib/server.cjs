@@ -35,7 +35,7 @@ const eventemitter3_1 = require("eventemitter3");
 const ws_1 = require("ws");
 const uuid_1 = require("uuid");
 const url_1 = __importDefault(require("url"));
-const utils = __importStar(require("./utils"));
+const utils = __importStar(require("./utils.cjs"));
 class Server extends eventemitter3_1.EventEmitter {
     namespaces;
     dataPack;

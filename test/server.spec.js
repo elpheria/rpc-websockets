@@ -9,7 +9,7 @@ const should = require("chai").should()
 const expect = require("chai").expect
 const WebSocket = require("ws")
 
-const WebSocketServer = require("../dist").Server
+const WebSocketServer = require("../dist/index.cjs").Server
 const SERVER_HOST = "localhost"
 const SERVER_PORT = 0 // random free port
 let rpc_id = 1

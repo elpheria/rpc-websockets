@@ -4,11 +4,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Client = void 0;
-const websocket_browser_1 = __importDefault(require("./lib/client/websocket.browser"));
-const client_1 = __importDefault(require("./lib/client"));
-class Client extends client_1.default {
+const websocket_browser_cjs_1 = __importDefault(require("./lib/client/websocket.browser.cjs"));
+const client_cjs_1 = __importDefault(require("./lib/client.cjs"));
+class Client extends client_cjs_1.default {
     constructor(address = "ws://localhost:8080", { autoconnect = true, reconnect = true, reconnect_interval = 1000, max_reconnects = 5 } = {}, generate_request_id) {
-        super(websocket_browser_1.default, address, {
+        super(websocket_browser_cjs_1.default, address, {
             autoconnect,
             reconnect,
             reconnect_interval,

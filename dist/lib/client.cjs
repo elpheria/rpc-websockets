@@ -7,7 +7,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 // @ts-ignore
 const eventemitter3_1 = require("eventemitter3");
-const utils_1 = require("./utils");
+const utils_cjs_1 = require("./utils.cjs");
 class CommonClient extends eventemitter3_1.EventEmitter {
     address;
     rpc_id;
@@ -51,7 +51,7 @@ class CommonClient extends eventemitter3_1.EventEmitter {
         this.current_reconnects = 0;
         this.generate_request_id = generate_request_id || (() => ++this.rpc_id);
         if (!dataPack)
-            this.dataPack = new utils_1.DefaultDataPack();
+            this.dataPack = new utils_cjs_1.DefaultDataPack();
         else
             this.dataPack = dataPack;
         if (this.autoconnect)

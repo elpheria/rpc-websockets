@@ -14,9 +14,9 @@ import {
     IWSClientAdditionalOptions,
     NodeWebSocketType,
     ICommonWebSocketFactory
-} from "./client/client.types"
+} from "./client/client.types.cjs"
 
-import { DataPack, DefaultDataPack } from "./utils"
+import { DataPack, DefaultDataPack } from "./utils.cjs"
 
 interface IQueueElement {
     promise: [

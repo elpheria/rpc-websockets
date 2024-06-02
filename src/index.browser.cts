@@ -1,8 +1,8 @@
 "use strict"
 
-import WebSocketBrowserImpl from "./lib/client/websocket.browser"
-import CommonClient from "./lib/client"
-import { IWSClientAdditionalOptions } from "./lib/client/client.types"
+import WebSocketBrowserImpl from "./lib/client/websocket.browser.cjs"
+import CommonClient from "./lib/client.cjs"
+import { IWSClientAdditionalOptions } from "./lib/client/client.types.cjs"
 
 export class Client extends CommonClient
 {

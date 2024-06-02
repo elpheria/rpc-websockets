@@ -1,12 +1,12 @@
 "use strict"
 
-import WebSocket from "./lib/client/websocket"
-import CommonClient from "./lib/client"
+import WebSocket from "./lib/client/websocket.cjs"
+import CommonClient from "./lib/client.cjs"
 import {
     NodeWebSocketTypeOptions,
     IWSClientAdditionalOptions,
     ICommonWebSocketFactory
-} from "./lib/client/client.types"
+} from "./lib/client/client.types.cjs"
 
 export class Client extends CommonClient
 {
@@ -37,4 +37,4 @@ export class Client extends CommonClient
     }
 }
 
-export {default as Server} from "./lib/server"
+export {default as Server} from "./lib/server.cjs"

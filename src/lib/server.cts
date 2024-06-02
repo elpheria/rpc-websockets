@@ -11,7 +11,7 @@ import NodeWebSocket, { Server as WebSocketServer } from "ws"
 import { v1 as uuidv1 } from "uuid"
 import url from "url"
 
-import * as utils from "./utils"
+import * as utils from "./utils.cjs"
 
 interface INamespaceEvent {
     [x: string]: {

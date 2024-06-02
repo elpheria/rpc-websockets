@@ -4,7 +4,7 @@ import { build } from "esbuild"
 import babelPlugin from "esbuild-plugin-babel"
 
 await build({
-    entryPoints: ["./dist/index.browser.js"],
+    entryPoints: ["./dist/index.browser.cjs"],
     outfile: "./dist/index.browser-bundle.js",
     bundle: true,
     format: "iife",

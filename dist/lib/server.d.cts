@@ -4,7 +4,7 @@
  */
 import { EventEmitter } from "eventemitter3";
 import NodeWebSocket, { Server as WebSocketServer } from "ws";
-import * as utils from "./utils";
+import * as utils from "./utils.cjs";
 interface INamespaceEvent {
     [x: string]: {
         sockets: Array<string>;

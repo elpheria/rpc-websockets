@@ -3,7 +3,7 @@
 "use strict"
 
 import WebSocket from "ws"
-import { IWSClientAdditionalOptions } from "./client.types"
+import { IWSClientAdditionalOptions } from "./client.types.cjs"
 
 /**
  * factory method for common WebSocket instance

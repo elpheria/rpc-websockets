@@ -4,8 +4,8 @@
  * @module Client
  */
 import { EventEmitter } from "eventemitter3";
-import { NodeWebSocketType, ICommonWebSocketFactory } from "./client/client.types";
-import { DataPack } from "./utils";
+import { NodeWebSocketType, ICommonWebSocketFactory } from "./client/client.types.cjs";
+import { DataPack } from "./utils.cjs";
 interface IQueueElement {
     promise: [
         Parameters<ConstructorParameters<typeof Promise>[0]>[0],
