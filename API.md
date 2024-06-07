@@ -54,9 +54,19 @@ Departing from version 2.x, there's been some minor API changes. A breaking chan
 
 `client.login` now throws an error in case of failed login. Enclose the code using that method in a `try/catch` block to mitigate unhandled exceptions.
 
-## Migrating to 8.x
+## Migrating to 9.x
 
-Starting with v8.0.0, the library switched to using ESNext (ESM). The consumers of this package version must ensure they use `import` instead of `require` to import resources from this package.
+Starting with v9.0.0 this is a hybrid ES Modules / CommonJS library.
+
+Additionally, all of the exports formerly in the `lib/` directory are now bundled and exported from `rpc-websockets` itself. Any inner dependencies that you used to import can now be imported from the main package.
+
+```ts
+// Before
+import WebSocketFactory from "rpc-websockets/dist/lib/client/websocket.cjs";
+
+// After
+import { WebSocket as WebSocketFactory } from "rpc-websockets";
+```
 
 ## Client
 

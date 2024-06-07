@@ -1,10 +1,8 @@
-'use strict';
-
-var buffer = require('buffer');
-var eventemitter3 = require('eventemitter3');
+import { Buffer } from 'buffer';
+import { EventEmitter } from 'eventemitter3';
 
 // node_modules/esbuild-plugin-polyfill-node/polyfills/buffer.js
-var WebSocketBrowserImpl = class extends eventemitter3.EventEmitter {
+var WebSocketBrowserImpl = class extends EventEmitter {
   socket;
   /** Instantiate a WebSocket class
   * @constructor
@@ -70,7 +68,7 @@ var DefaultDataPack = class {
 };
 
 // src/lib/client.ts
-var CommonClient = class extends eventemitter3.EventEmitter {
+var CommonClient = class extends EventEmitter {
   address;
   rpc_id;
   queue;
@@ -304,7 +302,7 @@ var CommonClient = class extends eventemitter3.EventEmitter {
     });
     this.socket.addEventListener("message", ({ data: message }) => {
       if (message instanceof ArrayBuffer)
-        message = buffer.Buffer.from(message).toString();
+        message = Buffer.from(message).toString();
       try {
         message = this.dataPack.decode(message);
       } catch (error) {
@@ -381,9 +379,6 @@ var Client = class extends CommonClient {
   }
 };
 
-exports.Client = Client;
-exports.CommonClient = CommonClient;
-exports.DefaultDataPack = DefaultDataPack;
-exports.WebSocket = WebSocket;
+export { Client, CommonClient, DefaultDataPack, WebSocket };
 //# sourceMappingURL=out.js.map
-//# sourceMappingURL=index.browser.cjs.map
+//# sourceMappingURL=index.browser.mjs.map

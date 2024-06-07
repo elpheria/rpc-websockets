@@ -5,93 +5,99 @@
 
 "use strict"
 
-// @ts-ignore
 import { EventEmitter } from "eventemitter3"
-import NodeWebSocket, { Server as WebSocketServer } from "ws"
+import url from "node:url"
 import { v1 as uuidv1 } from "uuid"
-import url from "url"
+import NodeWebSocket, { WebSocketServer } from "ws"
 
-import * as utils from "./utils.cjs"
+import { DataPack, DefaultDataPack } from "./utils.js"
 
 interface INamespaceEvent {
-    [x: string]: {
-        sockets: Array<string>;
-        protected: boolean;
-    };
+  [x: string]: {
+    sockets: Array<string>;
+    protected: boolean;
+  };
 }
 
 interface IMethod {
-    public: () => void;
-    protected: () => void;
+  public: () => void;
+  protected: () => void;
 }
 
 interface IEvent {
-    public: () => void;
-    protected: () => void;
+  public: () => void;
+  protected: () => void;
+}
+
+interface IRPCError {
+  code: number;
+  message: string;
+  data?: string;
 }
 
 interface IRPCMethodParams {
-    [x: string]: any;
+  [x: string]: any;
 }
 
 interface IRPCMethod {
-    [x: string]: {
-        fn: (params: IRPCMethodParams, socket_id: string) => any;
-        protected: boolean;
-    };
+  [x: string]: {
+    fn: (params: IRPCMethodParams, socket_id: string) => any;
+    protected: boolean;
+  };
 }
 
 interface INamespace {
-    [x: string]: {
-        rpc_methods: IRPCMethod;
-        clients: Map<string, IClientWebSocket>;
-        events: INamespaceEvent;
-    };
+  [x: string]: {
+    rpc_methods: IRPCMethod;
+    clients: Map<string, IClientWebSocket>;
+    events: INamespaceEvent;
+  };
 }
 
 interface IClientWebSocket extends NodeWebSocket {
-    _id: string;
-    _authenticated: boolean;
+  _id: string;
+  _authenticated: boolean;
 }
 
 interface IRPCResult {
-    [x: string]: string;
+  [x: string]: string;
 }
 
-export default class Server extends EventEmitter
+export class Server extends EventEmitter
 {
     private namespaces: INamespace
-    private dataPack: utils.DataPack<any, string>
+    private dataPack: DataPack<any, string>
     wss: InstanceType<typeof WebSocketServer>
 
     /**
-     * Instantiate a Server class.
-     * @constructor
-     * @param {Object} options - ws constructor's parameters with rpc
-     * @param {DataPack} dataPack - data pack contains encoder and decoder
-     * @return {Server} - returns a new Server instance
-     */
-    constructor(options: NodeWebSocket.ServerOptions, dataPack?: utils.DataPack<object, string>)
+   * Instantiate a Server class.
+   * @constructor
+   * @param {Object} options - ws constructor's parameters with rpc
+   * @param {DataPack} dataPack - data pack contains encoder and decoder
+   * @return {Server} - returns a new Server instance
+   */
+    constructor(
+        options: NodeWebSocket.ServerOptions,
+        dataPack?: DataPack<object, string>
+    )
     {
         super()
 
         /**
-         * Stores all connected sockets with a universally unique identifier
-         * in the appropriate namespace.
-         * Stores all rpc methods to specific namespaces. "/" by default.
-         * Stores all events as keys and subscribed users in array as value
-         * @private
-         * @name namespaces
-         * @param {Object} namespaces.rpc_methods
-         * @param {Map} namespaces.clients
-         * @param {Object} namespaces.events
-         */
+     * Stores all connected sockets with a universally unique identifier
+     * in the appropriate namespace.
+     * Stores all rpc methods to specific namespaces. "/" by default.
+     * Stores all events as keys and subscribed users in array as value
+     * @private
+     * @name namespaces
+     * @param {Object} namespaces.rpc_methods
+     * @param {Map} namespaces.clients
+     * @param {Object} namespaces.events
+     */
         this.namespaces = {}
 
-        if (!dataPack)
-            this.dataPack = new utils.DefaultDataPack()
-        else
-            this.dataPack = dataPack
+        if (!dataPack) this.dataPack = new DefaultDataPack()
+        else this.dataPack = dataPack
 
         this.wss = new WebSocketServer(options)
 
@@ -102,10 +108,8 @@ export default class Server extends EventEmitter
             const u = url.parse(request.url, true)
             const ns = u.pathname
 
-            if (u.query.socket_id)
-                socket._id = u.query.socket_id as string
-            else
-                socket._id = uuidv1()
+            if (u.query.socket_id) socket._id = u.query.socket_id as string
+            else socket._id = uuidv1()
 
             // unauthenticated by default
             socket["_authenticated"] = false
@@ -120,7 +124,9 @@ export default class Server extends EventEmitter
 
                 for (const event of Object.keys(this.namespaces[ns].events))
                 {
-                    const index = this.namespaces[ns].events[event].sockets.indexOf(socket._id)
+                    const index = this.namespaces[ns].events[event].sockets.indexOf(
+                        socket._id
+                    )
 
                     if (index >= 0)
                         this.namespaces[ns].events[event].sockets.splice(index, 1)
@@ -143,97 +149,104 @@ export default class Server extends EventEmitter
     }
 
     /**
-     * Registers an RPC method.
-     * @method
-     * @param {String} name - method name
-     * @param {Function} fn - a callee function
-     * @param {String} ns - namespace identifier
-     * @throws {TypeError}
-     * @return {Object} - returns an IMethod object
-     */
-    register(name: string, fn: (params: IRPCMethodParams, socket_id: string) => void, ns = "/")
+   * Registers an RPC method.
+   * @method
+   * @param {String} name - method name
+   * @param {Function} fn - a callee function
+   * @param {String} ns - namespace identifier
+   * @throws {TypeError}
+   * @return {Object} - returns an IMethod object
+   */
+    register(
+        name: string,
+        fn: (params: IRPCMethodParams, socket_id: string) => void,
+        ns = "/"
+    )
     {
         if (!this.namespaces[ns]) this._generateNamespace(ns)
 
         this.namespaces[ns].rpc_methods[name] = {
             fn: fn,
-            protected: false
+            protected: false,
         }
 
         return {
             protected: () => this._makeProtectedMethod(name, ns),
-            public: () => this._makePublicMethod(name, ns)
+            public: () => this._makePublicMethod(name, ns),
         } as IMethod
     }
 
     /**
-     * Sets an auth method.
-     * @method
-     * @param {Function} fn - an arbitrary auth method
-     * @param {String} ns - namespace identifier
-     * @throws {TypeError}
-     * @return {Undefined}
-     */
-    setAuth(fn: (params: IRPCMethodParams, socket_id: string) => Promise<boolean>, ns = "/")
+   * Sets an auth method.
+   * @method
+   * @param {Function} fn - an arbitrary auth method
+   * @param {String} ns - namespace identifier
+   * @throws {TypeError}
+   * @return {Undefined}
+   */
+    setAuth(
+        fn: (params: IRPCMethodParams, socket_id: string) => Promise<boolean>,
+        ns = "/"
+    )
     {
         this.register("rpc.login", fn, ns)
     }
 
     /**
-     * Marks an RPC method as protected.
-     * @method
-     * @param {String} name - method name
-     * @param {String} ns - namespace identifier
-     * @return {Undefined}
-     */
+   * Marks an RPC method as protected.
+   * @method
+   * @param {String} name - method name
+   * @param {String} ns - namespace identifier
+   * @return {Undefined}
+   */
     private _makeProtectedMethod(name: string, ns = "/")
     {
         this.namespaces[ns].rpc_methods[name].protected = true
     }
 
     /**
-     * Marks an RPC method as public.
-     * @method
-     * @param {String} name - method name
-     * @param {String} ns - namespace identifier
-     * @return {Undefined}
-     */
+   * Marks an RPC method as public.
+   * @method
+   * @param {String} name - method name
+   * @param {String} ns - namespace identifier
+   * @return {Undefined}
+   */
     private _makePublicMethod(name: string, ns = "/")
     {
         this.namespaces[ns].rpc_methods[name].protected = false
     }
 
     /**
-     * Marks an event as protected.
-     * @method
-     * @param {String} name - event name
-     * @param {String} ns - namespace identifier
-     * @return {Undefined}
-     */
+   * Marks an event as protected.
+   * @method
+   * @param {String} name - event name
+   * @param {String} ns - namespace identifier
+   * @return {Undefined}
+   */
     private _makeProtectedEvent(name: string, ns = "/")
     {
         this.namespaces[ns].events[name].protected = true
     }
 
     /**
-     * Marks an event as public.
-     * @method
-     * @param {String} name - event name
-     * @param {String} ns - namespace identifier
-     * @return {Undefined}
-     */
+   * Marks an event as public.
+   * @method
+   * @param {String} name - event name
+   * @param {String} ns - namespace identifier
+   * @return {Undefined}
+   */
     private _makePublicEvent(name: string, ns = "/")
     {
         this.namespaces[ns].events[name].protected = false
     }
 
     /**
-     * Removes a namespace and closes all connections
-     * @method
-     * @param {String} ns - namespace identifier
-     * @throws {TypeError}
-     * @return {Undefined}
-     */
+   * Removes a namespace and closes all connections
+   * @method
+   * @param {String} ns - namespace identifier
+   * @throws {TypeError}
+   * @return {Undefined}
+   */
     closeNamespace(ns: string)
     {
         const namespace = this.namespaces[ns]
@@ -243,21 +256,20 @@ export default class Server extends EventEmitter
             delete namespace.rpc_methods
             delete namespace.events
 
-            for (const socket of namespace.clients.values())
-                socket.close()
+            for (const socket of namespace.clients.values()) socket.close()
 
             delete this.namespaces[ns]
         }
     }
 
     /**
-     * Creates a new event that can be emitted to clients.
-     * @method
-     * @param {String} name - event name
-     * @param {String} ns - namespace identifier
-     * @throws {TypeError}
-     * @return {Object} - returns an IEvent object
-     */
+   * Creates a new event that can be emitted to clients.
+   * @method
+   * @param {String} name - event name
+   * @param {String} ns - namespace identifier
+   * @throws {TypeError}
+   * @return {Object} - returns an IEvent object
+   */
     event(name: string, ns = "/"): IEvent
     {
         if (!this.namespaces[ns]) this._generateNamespace(ns)
@@ -271,7 +283,7 @@ export default class Server extends EventEmitter
 
         this.namespaces[ns].events[name] = {
             sockets: [],
-            protected: false
+            protected: false,
         }
 
         // forward emitted event to subscribers
@@ -285,29 +297,30 @@ export default class Server extends EventEmitter
             {
                 const socket = this.namespaces[ns].clients.get(socket_id)
 
-                if (!socket)
-                    continue
+                if (!socket) continue
 
-                socket.send(this.dataPack.encode({
-                    notification: name,
-                    params
-                }))
+                socket.send(
+                    this.dataPack.encode({
+                        notification: name,
+                        params,
+                    })
+                )
             }
         })
 
         return {
             protected: () => this._makeProtectedEvent(name, ns),
-            public: () => this._makePublicEvent(name, ns)
+            public: () => this._makePublicEvent(name, ns),
         }
     }
 
     /**
-     * Returns a requested namespace object
-     * @method
-     * @param {String} name - namespace identifier
-     * @throws {TypeError}
-     * @return {Object} - namespace object
-     */
+   * Returns a requested namespace object
+   * @method
+   * @param {String} name - namespace identifier
+   * @throws {TypeError}
+   * @return {Object} - namespace object
+   */
     of(name: string)
     {
         if (!this.namespaces[name]) this._generateNamespace(name)
@@ -316,7 +329,10 @@ export default class Server extends EventEmitter
 
         return {
             // self.register convenience method
-            register(fn_name: string, fn: (params: IRPCMethodParams) => void): IMethod
+            register(
+                fn_name: string,
+                fn: (params: IRPCMethodParams) => void
+            ): IMethod
             {
                 if (arguments.length !== 2)
                     throw new Error("must provide exactly two arguments")
@@ -349,74 +365,79 @@ export default class Server extends EventEmitter
             },
 
             /**
-             * Emits a specified event to this namespace.
-             * @inner
-             * @method
-             * @param {String} event - event name
-             * @param {Array} params - event parameters
-             * @return {Undefined}
-             */
+       * Emits a specified event to this namespace.
+       * @inner
+       * @method
+       * @param {String} event - event name
+       * @param {Array} params - event parameters
+       * @return {Undefined}
+       */
             emit(event: string, ...params: Array<string>)
             {
-                const socket_ids = [ ...self.namespaces[name].clients.keys() ]
+                const socket_ids = [...self.namespaces[name].clients.keys()]
 
-                for (let i = 0, id; id = socket_ids[i]; ++i)
+                for (let i = 0, id; (id = socket_ids[i]); ++i)
                 {
-                    self.namespaces[name].clients.get(id).send(self.dataPack.encode({
-                        notification: event,
-                        params: params || []
-                    }))
+                    self.namespaces[name].clients.get(id).send(
+                        self.dataPack.encode({
+                            notification: event,
+                            params: params || [],
+                        })
+                    )
                 }
             },
 
             /**
-             * Returns a name of this namespace.
-             * @inner
-             * @method
-             * @kind constant
-             * @return {String}
-             */
+       * Returns a name of this namespace.
+       * @inner
+       * @method
+       * @kind constant
+       * @return {String}
+       */
             get name()
             {
                 return name
             },
 
             /**
-             * Returns a hash of websocket objects connected to this namespace.
-             * @inner
-             * @method
-             * @return {Object}
-             */
+       * Returns a hash of websocket objects connected to this namespace.
+       * @inner
+       * @method
+       * @return {Object}
+       */
             connected()
             {
-                const socket_ids = [ ...self.namespaces[name].clients.keys() ]
+                const socket_ids = [...self.namespaces[name].clients.keys()]
 
-                return socket_ids.reduce((acc, curr) => ({
-                    ...acc,
-                    [curr]: self.namespaces[name].clients.get(curr)
-                }), {})
+                return socket_ids.reduce(
+                    (acc, curr) => ({
+                        ...acc,
+                        [curr]: self.namespaces[name].clients.get(curr),
+                    }),
+                    {}
+                )
             },
 
             /**
-             * Returns a list of client unique identifiers connected to this namespace.
-             * @inner
-             * @method
-             * @return {Array}
-             */
+       * Returns a list of client unique identifiers connected to this namespace.
+       * @inner
+       * @method
+       * @return {Array}
+       */
             clients()
             {
                 return self.namespaces[name]
-            }
+            },
         }
     }
 
     /**
-     * Lists all created events in a given namespace. Defaults to "/".
-     * @method
-     * @param {String} ns - namespaces identifier
-     * @readonly
-     * @return {Array} - returns a list of created events
-     */
+   * Lists all created events in a given namespace. Defaults to "/".
+   * @method
+   * @param {String} ns - namespaces identifier
+   * @readonly
+   * @return {Array} - returns a list of created events
+   */
     eventList(ns = "/")
     {
         if (!this.namespaces[ns]) return []
@@ -425,27 +446,27 @@ export default class Server extends EventEmitter
     }
 
     /**
-     * Creates a JSON-RPC 2.0 compliant error
-     * @method
-     * @param {Number} code - indicates the error type that occurred
-     * @param {String} message - provides a short description of the error
-     * @param {String|Object} data - details containing additional information about the error
-     * @return {Object}
-     */
+   * Creates a JSON-RPC 2.0 compliant error
+   * @method
+   * @param {Number} code - indicates the error type that occurred
+   * @param {String} message - provides a short description of the error
+   * @param {String|Object} data - details containing additional information about the error
+   * @return {Object}
+   */
     createError(code: number, message: string, data: string | object)
     {
         return {
             code: code,
             message: message,
-            data: data || null
+            data: data || null,
         }
     }
 
     /**
-     * Closes the server and terminates all clients.
-     * @method
-     * @return {Promise}
-     */
+   * Closes the server and terminates all clients.
+   * @method
+   * @return {Promise}
+   */
     close()
     {
         return new Promise<void>((resolve, reject) =>
@@ -456,21 +477,23 @@ export default class Server extends EventEmitter
                 this.emit("close")
                 resolve()
             }
-
-            catch (error) { reject(error) }
+            catch (error)
+            {
+                reject(error)
+            }
         })
     }
 
     /**
-     * Handles all WebSocket JSON RPC 2.0 requests.
-     * @private
-     * @param {Object} socket - ws socket instance
-     * @param {String} ns - namespaces identifier
-     * @return {Undefined}
-     */
+   * Handles all WebSocket JSON RPC 2.0 requests.
+   * @private
+   * @param {Object} socket - ws socket instance
+   * @param {String} ns - namespaces identifier
+   * @return {Undefined}
+   */
     private _handleRPC(socket: IClientWebSocket, ns = "/")
     {
-        socket.on("message", async(data: any) =>
+        socket.on("message", async (data: any) =>
         {
             const msg_options: Parameters<NodeWebSocket["send"]>[1] = {}
 
@@ -481,30 +504,37 @@ export default class Server extends EventEmitter
                 data = Buffer.from(data).toString()
             }
 
-            if (socket.readyState !== 1)
-                return // TODO: should have debug logs here
+            if (socket.readyState !== 1) return // TODO: should have debug logs here
 
             let parsedData: any
 
-            try { parsedData = this.dataPack.decode(data as string) }
-
+            try
+            {
+                parsedData = this.dataPack.decode(data as string)
+            }
             catch (error)
             {
-                return socket.send(this.dataPack.encode({
-                    jsonrpc: "2.0",
-                    error: utils.createError(-32700, error.toString()),
-                    id: null
-                }), msg_options)
+                return socket.send(
+                    this.dataPack.encode({
+                        jsonrpc: "2.0",
+                        error: createError(-32700, error.toString()),
+                        id: null,
+                    }),
+                    msg_options
+                )
             }
 
             if (Array.isArray(parsedData))
             {
                 if (!parsedData.length)
-                    return socket.send(this.dataPack.encode({
-                        jsonrpc: "2.0",
-                        error: utils.createError(-32600, "Invalid array"),
-                        id: null
-                    }), msg_options)
+                    return socket.send(
+                        this.dataPack.encode({
+                            jsonrpc: "2.0",
+                            error: createError(-32600, "Invalid array"),
+                            id: null,
+                        }),
+                        msg_options
+                    )
 
                 const responses = []
 
@@ -512,70 +542,67 @@ export default class Server extends EventEmitter
                 {
                     const response = await this._runMethod(message, socket._id, ns)
 
-                    if (!response)
-                        continue
+                    if (!response) continue
 
                     responses.push(response)
                 }
 
-                if (!responses.length)
-                    return
+                if (!responses.length) return
 
                 return socket.send(this.dataPack.encode(responses), msg_options)
             }
 
             const response = await this._runMethod(parsedData, socket._id, ns)
 
-            if (!response)
-                return
+            if (!response) return
 
             return socket.send(this.dataPack.encode(response), msg_options)
         })
     }
 
     /**
-     * Runs a defined RPC method.
-     * @private
-     * @param {Object} message - a message received
-     * @param {Object} socket_id - user's socket id
-     * @param {String} ns - namespaces identifier
-     * @return {Object|undefined}
-     */
+   * Runs a defined RPC method.
+   * @private
+   * @param {Object} message - a message received
+   * @param {Object} socket_id - user's socket id
+   * @param {String} ns - namespaces identifier
+   * @return {Object|undefined}
+   */
     private async _runMethod(message: any, socket_id: string, ns = "/")
     {
         if (typeof message !== "object" || message === null)
             return {
                 jsonrpc: "2.0",
-                error: utils.createError(-32600),
-                id: null
+                error: createError(-32600),
+                id: null,
             }
 
         if (message.jsonrpc !== "2.0")
             return {
                 jsonrpc: "2.0",
-                error: utils.createError(-32600, "Invalid JSON RPC version"),
-                id: message.id || null
+                error: createError(-32600, "Invalid JSON RPC version"),
+                id: message.id || null,
             }
 
         if (!message.method)
             return {
                 jsonrpc: "2.0",
-                error: utils.createError(-32602, "Method not specified"),
-                id: message.id || null
+                error: createError(-32602, "Method not specified"),
+                id: message.id || null,
             }
 
         if (typeof message.method !== "string")
             return {
                 jsonrpc: "2.0",
-                error: utils.createError(-32600, "Invalid method name"),
-                id: message.id || null
+                error: createError(-32600, "Invalid method name"),
+                id: message.id || null,
             }
 
         if (message.params && typeof message.params === "string")
             return {
                 jsonrpc: "2.0",
-                error: utils.createError(-32600),
-                id: message.id || null
+                error: createError(-32600),
+                id: message.id || null,
             }
 
         if (message.method === "rpc.on")
@@ -583,8 +610,8 @@ export default class Server extends EventEmitter
             if (!message.params)
                 return {
                     jsonrpc: "2.0",
-                    error: utils.createError(-32000),
-                    id: message.id || null
+                    error: createError(-32000),
+                    id: message.id || null,
                 }
 
             const results: IRPCMethodParams = {}
@@ -603,17 +630,20 @@ export default class Server extends EventEmitter
                 }
 
                 // reject request if event is protected and if client is not authenticated
-                if (namespace.events[event_names[index]].protected === true &&
-                    namespace.clients.get(socket_id)["_authenticated"] === false)
+                if (
+                    namespace.events[event_names[index]].protected === true &&
+          namespace.clients.get(socket_id)["_authenticated"] === false
+                )
                 {
                     return {
                         jsonrpc: "2.0",
-                        error: utils.createError(-32606),
-                        id: message.id || null
+                        error: createError(-32606),
+                        id: message.id || null,
                     }
                 }
 
-                const socket_index = namespace.events[event_names[index]].sockets.indexOf(socket_id)
+                const socket_index =
+          namespace.events[event_names[index]].sockets.indexOf(socket_id)
                 if (socket_index >= 0)
                 {
                     results[name] = "socket has already been subscribed to event"
@@ -627,7 +657,7 @@ export default class Server extends EventEmitter
             return {
                 jsonrpc: "2.0",
                 result: results,
-                id: message.id || null
+                id: message.id || null,
             }
         }
         else if (message.method === "rpc.off")
@@ -635,8 +665,8 @@ export default class Server extends EventEmitter
             if (!message.params)
                 return {
                     jsonrpc: "2.0",
-                    error: utils.createError(-32000),
-                    id: message.id || null
+                    error: createError(-32000),
+                    id: message.id || null,
                 }
 
             const results: IRPCResult = {}
@@ -649,7 +679,8 @@ export default class Server extends EventEmitter
                     continue
                 }
 
-                const index = this.namespaces[ns].events[name].sockets.indexOf(socket_id)
+                const index =
+          this.namespaces[ns].events[name].sockets.indexOf(socket_id)
 
                 if (index === -1)
                 {
@@ -664,7 +695,7 @@ export default class Server extends EventEmitter
             return {
                 jsonrpc: "2.0",
                 result: results,
-                id: message.id || null
+                id: message.id || null,
             }
         }
         else if (message.method === "rpc.login")
@@ -672,8 +703,8 @@ export default class Server extends EventEmitter
             if (!message.params)
                 return {
                     jsonrpc: "2.0",
-                    error: utils.createError(-32604),
-                    id: message.id || null
+                    error: createError(-32604),
+                    id: message.id || null,
                 }
         }
 
@@ -681,34 +712,36 @@ export default class Server extends EventEmitter
         {
             return {
                 jsonrpc: "2.0",
-                error: utils.createError(-32601),
-                id: message.id || null
+                error: createError(-32601),
+                id: message.id || null,
             }
         }
 
         let response = null
 
         // reject request if method is protected and if client is not authenticated
-        if (this.namespaces[ns].rpc_methods[message.method].protected === true &&
-            this.namespaces[ns].clients.get(socket_id)["_authenticated"] === false)
+        if (
+            this.namespaces[ns].rpc_methods[message.method].protected === true &&
+      this.namespaces[ns].clients.get(socket_id)["_authenticated"] === false
+        )
         {
             return {
                 jsonrpc: "2.0",
-                error: utils.createError(-32605),
-                id: message.id || null
+                error: createError(-32605),
+                id: message.id || null,
             }
         }
 
         try
         {
-            response = await this.namespaces[ns].rpc_methods[message.method]
-                .fn(message.params, socket_id)
+            response = await this.namespaces[ns].rpc_methods[message.method].fn(
+                message.params,
+                socket_id
+            )
         }
-
         catch (error)
         {
-            if (!message.id)
-                return
+            if (!message.id) return
 
             if (error instanceof Error)
                 return {
@@ -716,21 +749,20 @@ export default class Server extends EventEmitter
                     error: {
                         code: -32000,
                         message: error.name,
-                        data: error.message
+                        data: error.message,
                     },
-                    id: message.id
+                    id: message.id,
                 }
 
             return {
                 jsonrpc: "2.0",
                 error: error,
-                id: message.id
+                id: message.id,
             }
         }
 
         // client sent a notification, so we won't need a reply
-        if (!message.id)
-            return
+        if (!message.id) return
 
         // if login middleware returned true, set connection as authenticated
         if (message.method === "rpc.login" && response === true)
@@ -743,28 +775,58 @@ export default class Server extends EventEmitter
         return {
             jsonrpc: "2.0",
             result: response,
-            id: message.id
+            id: message.id,
         }
     }
 
     /**
-     * Generate a new namespace store.
-     * Also preregister some special namespace methods.
-     * @private
-     * @param {String} name - namespaces identifier
-     * @return {undefined}
-     */
+   * Generate a new namespace store.
+   * Also preregister some special namespace methods.
+   * @private
+   * @param {String} name - namespaces identifier
+   * @return {undefined}
+   */
     private _generateNamespace(name: string)
     {
         this.namespaces[name] = {
             rpc_methods: {
-                "__listMethods": {
+                __listMethods: {
                     fn: () => Object.keys(this.namespaces[name].rpc_methods),
-                    protected: false
-                }
+                    protected: false,
+                },
             },
             clients: new Map(),
-            events: {}
+            events: {},
         }
     }
+}
+
+const RPC_ERRORS = new Map([
+    [-32000, "Event not provided"],
+    [-32600, "Invalid Request"],
+    [-32601, "Method not found"],
+    [-32602, "Invalid params"],
+    [-32603, "Internal error"],
+    [-32604, "Params not found"],
+    [-32605, "Method forbidden"],
+    [-32606, "Event forbidden"],
+    [-32700, "Parse error"],
+])
+
+/**
+ * Creates a JSON-RPC 2.0-compliant error.
+ * @param {Number} code - error code
+ * @param {String} details - error details
+ * @return {Object}
+ */
+export function createError(code: number, details?: string)
+{
+    const error: IRPCError = {
+        code: code,
+        message: RPC_ERRORS.get(code) || "Internal Server Error",
+    }
+
+    if (details) error["data"] = details
+
+    return error
 }

@@ -7,35 +7,34 @@
 "use strict"
 
 import NodeWebSocket from "ws"
-// @ts-ignore
 import { EventEmitter } from "eventemitter3"
 import {
     ICommonWebSocket,
     IWSClientAdditionalOptions,
     NodeWebSocketType,
-    ICommonWebSocketFactory
-} from "./client/client.types.cjs"
+    ICommonWebSocketFactory,
+} from "./client/client.types.js"
 
-import { DataPack, DefaultDataPack } from "./utils.cjs"
+import { DataPack, DefaultDataPack } from "./utils.js"
 
 interface IQueueElement {
-    promise: [
-        Parameters<ConstructorParameters<typeof Promise>[0]>[0],
-        Parameters<ConstructorParameters<typeof Promise>[0]>[1]
-    ];
-    timeout?: ReturnType<typeof setTimeout>;
+  promise: [
+    Parameters<ConstructorParameters<typeof Promise>[0]>[0],
+    Parameters<ConstructorParameters<typeof Promise>[0]>[1]
+  ];
+  timeout?: ReturnType<typeof setTimeout>;
 }
 
 export interface IQueue {
-    [x: number]: IQueueElement;
+  [x: number]: IQueueElement;
 }
 
 export interface IWSRequestParams {
-    [x: string]: any;
-    [x: number]: any;
+  [x: string]: any;
+  [x: number]: any;
 }
 
-export default class CommonClient extends EventEmitter
+export class CommonClient extends EventEmitter
 {
     private address: string
     private rpc_id: number
@@ -47,23 +46,27 @@ export default class CommonClient extends EventEmitter
     private reconnect_timer_id: NodeJS.Timeout
     private reconnect_interval: number
     private max_reconnects: number
-    private rest_options: IWSClientAdditionalOptions & NodeWebSocket.ClientOptions
+    private rest_options: IWSClientAdditionalOptions &
+    NodeWebSocket.ClientOptions
     private current_reconnects: number
-    private generate_request_id: (method: string, params: object | Array<any>) => number
+    private generate_request_id: (
+    method: string,
+    params: object | Array<any>
+  ) => number
     private socket: ICommonWebSocket
     private webSocketFactory: ICommonWebSocketFactory
     private dataPack: DataPack<object, string>
 
     /**
-     * Instantiate a Client class.
-     * @constructor
-     * @param {webSocketFactory} webSocketFactory - factory method for WebSocket
-     * @param {String} address - url to a websocket server
-     * @param {Object} options - ws options object with reconnect parameters
-     * @param {Function} generate_request_id - custom generation request Id
-     * @param {DataPack} dataPack - data pack contains encoder and decoder
-     * @return {CommonClient}
-     */
+   * Instantiate a Client class.
+   * @constructor
+   * @param {webSocketFactory} webSocketFactory - factory method for WebSocket
+   * @param {String} address - url to a websocket server
+   * @param {Object} options - ws options object with reconnect parameters
+   * @param {Function} generate_request_id - custom generation request Id
+   * @param {DataPack} dataPack - data pack contains encoder and decoder
+   * @return {CommonClient}
+   */
     constructor(
         webSocketFactory: ICommonWebSocketFactory,
         address = "ws://localhost:8080",
@@ -74,7 +77,10 @@ export default class CommonClient extends EventEmitter
             max_reconnects = 5,
             ...rest_options
         } = {},
-        generate_request_id?: (method: string, params: object | Array<any>) => number,
+        generate_request_id?: (
+      method: string,
+      params: object | Array<any>
+    ) => number,
         dataPack?: DataPack<object, string>
     )
     {
@@ -96,10 +102,8 @@ export default class CommonClient extends EventEmitter
         this.current_reconnects = 0
         this.generate_request_id = generate_request_id || (() => ++this.rpc_id)
 
-        if (!dataPack)
-            this.dataPack = new DefaultDataPack()
-        else
-            this.dataPack = dataPack
+        if (!dataPack) this.dataPack = new DefaultDataPack()
+        else this.dataPack = dataPack
 
         if (this.autoconnect)
             this._connect(this.address, {
@@ -107,38 +111,37 @@ export default class CommonClient extends EventEmitter
                 reconnect: this.reconnect,
                 reconnect_interval: this.reconnect_interval,
                 max_reconnects: this.max_reconnects,
-                ...this.rest_options
+                ...this.rest_options,
             })
     }
 
     /**
-     * Connects to a defined server if not connected already.
-     * @method
-     * @return {Undefined}
-     */
+   * Connects to a defined server if not connected already.
+   * @method
+   * @return {Undefined}
+   */
     connect()
     {
-        if (this.socket)
-            return
+        if (this.socket) return
 
         this._connect(this.address, {
             autoconnect: this.autoconnect,
             reconnect: this.reconnect,
             reconnect_interval: this.reconnect_interval,
             max_reconnects: this.max_reconnects,
-            ...this.rest_options
+            ...this.rest_options,
         })
     }
 
     /**
-     * Calls a registered RPC method on server.
-     * @method
-     * @param {String} method - RPC method name
-     * @param {Object|Array} params - optional method parameters
-     * @param {Number} timeout - RPC reply timeout value
-     * @param {Object} ws_opts - options passed to ws
-     * @return {Promise}
-     */
+   * Calls a registered RPC method on server.
+   * @method
+   * @param {String} method - RPC method name
+   * @param {Object|Array} params - optional method parameters
+   * @param {Number} timeout - RPC reply timeout value
+   * @param {Object} ws_opts - options passed to ws
+   * @return {Promise}
+   */
     call(
         method: string,
         params?: IWSRequestParams,
@@ -154,8 +157,7 @@ export default class CommonClient extends EventEmitter
 
         return new Promise((resolve, reject) =>
         {
-            if (!this.ready)
-                return reject(new Error("socket not ready"))
+            if (!this.ready) return reject(new Error("socket not ready"))
 
             const rpc_id = this.generate_request_id(method, params)
 
@@ -163,13 +165,12 @@ export default class CommonClient extends EventEmitter
                 jsonrpc: "2.0",
                 method: method,
                 params: params || undefined,
-                id: rpc_id
+                id: rpc_id,
             }
 
             this.socket.send(this.dataPack.encode(message), ws_opts, (error) =>
             {
-                if (error)
-                    return reject(error)
+                if (error) return reject(error)
 
                 this.queue[rpc_id] = { promise: [resolve, reject] }
 
@@ -186,55 +187,52 @@ export default class CommonClient extends EventEmitter
     }
 
     /**
-     * Logins with the other side of the connection.
-     * @method
-     * @param {Object} params - Login credentials object
-     * @return {Promise}
-     */
+   * Logins with the other side of the connection.
+   * @method
+   * @param {Object} params - Login credentials object
+   * @return {Promise}
+   */
     async login(params: IWSRequestParams)
     {
         const resp = await this.call("rpc.login", params)
 
-        if (!resp)
-            throw new Error("authentication failed")
+        if (!resp) throw new Error("authentication failed")
 
         return resp
     }
 
     /**
-     * Fetches a list of client's methods registered on server.
-     * @method
-     * @return {Array}
-     */
+   * Fetches a list of client's methods registered on server.
+   * @method
+   * @return {Array}
+   */
     async listMethods()
     {
         return await this.call("__listMethods")
     }
 
     /**
-     * Sends a JSON-RPC 2.0 notification to server.
-     * @method
-     * @param {String} method - RPC method name
-     * @param {Object} params - optional method parameters
-     * @return {Promise}
-     */
+   * Sends a JSON-RPC 2.0 notification to server.
+   * @method
+   * @param {String} method - RPC method name
+   * @param {Object} params - optional method parameters
+   * @return {Promise}
+   */
     notify(method: string, params?: IWSRequestParams)
     {
         return new Promise<void>((resolve, reject) =>
         {
-            if (!this.ready)
-                return reject(new Error("socket not ready"))
+            if (!this.ready) return reject(new Error("socket not ready"))
 
             const message = {
                 jsonrpc: "2.0",
                 method: method,
-                params
+                params,
             }
 
             this.socket.send(this.dataPack.encode(message), (error) =>
             {
-                if (error)
-                    return reject(error)
+                if (error) return reject(error)
 
                 resolve()
             })
@@ -242,36 +240,36 @@ export default class CommonClient extends EventEmitter
     }
 
     /**
-     * Subscribes for a defined event.
-     * @method
-     * @param {String|Array} event - event name
-     * @return {Undefined}
-     * @throws {Error}
-     */
+   * Subscribes for a defined event.
+   * @method
+   * @param {String|Array} event - event name
+   * @return {Undefined}
+   * @throws {Error}
+   */
     async subscribe(event: string | Array<string>)
     {
-        if (typeof event === "string")
-            event = [ event ]
+        if (typeof event === "string") event = [event]
 
         const result = await this.call("rpc.on", event)
 
         if (typeof event === "string" && result[event] !== "ok")
-            throw new Error("Failed subscribing to an event '" + event + "' with: " + result[event])
+            throw new Error(
+                "Failed subscribing to an event '" + event + "' with: " + result[event]
+            )
 
         return result
     }
 
     /**
-     * Unsubscribes from a defined event.
-     * @method
-     * @param {String|Array} event - event name
-     * @return {Undefined}
-     * @throws {Error}
-     */
+   * Unsubscribes from a defined event.
+   * @method
+   * @param {String|Array} event - event name
+   * @return {Undefined}
+   * @throws {Error}
+   */
     async unsubscribe(event: string | Array<string>)
     {
-        if (typeof event === "string")
-            event = [ event ]
+        if (typeof event === "string") event = [event]
 
         const result = await this.call("rpc.off", event)
 
@@ -282,58 +280,58 @@ export default class CommonClient extends EventEmitter
     }
 
     /**
-     * Closes a WebSocket connection gracefully.
-     * @method
-     * @param {Number} code - socket close code
-     * @param {String} data - optional data to be sent before closing
-     * @return {Undefined}
-     */
+   * Closes a WebSocket connection gracefully.
+   * @method
+   * @param {Number} code - socket close code
+   * @param {String} data - optional data to be sent before closing
+   * @return {Undefined}
+   */
     close(code?: number, data?: string)
     {
         this.socket.close(code || 1000, data)
     }
 
     /**
-     * Enable / disable automatic reconnection.
-     * @method
-     * @param {Boolean} reconnect - enable / disable reconnection
-     * @return {Undefined}
-     */
+   * Enable / disable automatic reconnection.
+   * @method
+   * @param {Boolean} reconnect - enable / disable reconnection
+   * @return {Undefined}
+   */
     setAutoReconnect(reconnect: boolean)
     {
         this.reconnect = reconnect
     }
 
     /**
-     * Set the interval between reconnection attempts.
-     * @method
-     * @param {Number} interval - reconnection interval in milliseconds
-     * @return {Undefined}
-     */
+   * Set the interval between reconnection attempts.
+   * @method
+   * @param {Number} interval - reconnection interval in milliseconds
+   * @return {Undefined}
+   */
     setReconnectInterval(interval: number)
     {
         this.reconnect_interval = interval
     }
 
     /**
-     * Set the maximum number of reconnection attempts.
-     * @method
-     * @param {Number} max_reconnects - maximum reconnection attempts
-     * @return {Undefined}
-     */
+   * Set the maximum number of reconnection attempts.
+   * @method
+   * @param {Number} max_reconnects - maximum reconnection attempts
+   * @return {Undefined}
+   */
     setMaxReconnects(max_reconnects: number)
     {
         this.max_reconnects = max_reconnects
     }
 
     /**
-     * Connection/Message handler.
-     * @method
-     * @private
-     * @param {String} address - WebSocket API address
-     * @param {Object} options - ws options object
-     * @return {Undefined}
-     */
+   * Connection/Message handler.
+   * @method
+   * @private
+   * @param {String} address - WebSocket API address
+   * @param {Object} options - ws options object
+   * @return {Undefined}
+   */
     private _connect(
         address: string,
         options: IWSClientAdditionalOptions & NodeWebSocket.ClientOptions
@@ -349,14 +347,19 @@ export default class CommonClient extends EventEmitter
             this.current_reconnects = 0
         })
 
-        this.socket.addEventListener("message", ({data: message}) =>
+        this.socket.addEventListener("message", ({ data: message }) =>
         {
             if (message instanceof ArrayBuffer)
                 message = Buffer.from(message).toString()
 
-            try { message = this.dataPack.decode(message) }
-
-            catch (error) { return }
+            try
+            {
+                message = this.dataPack.decode(message)
+            }
+            catch (error)
+            {
+                return
+            }
 
             // check if any listeners are attached and forward event
             if (message.notification && this.listeners(message.notification).length)
@@ -366,16 +369,19 @@ export default class CommonClient extends EventEmitter
 
                 const args = [message.notification]
 
-                if (message.params.constructor === Object)
-                    args.push(message.params)
+                if (message.params.constructor === Object) args.push(message.params)
+                // using for-loop instead of unshift/spread because performance is better
                 else
-                    // using for-loop instead of unshift/spread because performance is better
                     for (let i = 0; i < message.params.length; i++)
                         args.push(message.params[i])
 
                 // run as microtask so that pending queue messages are resolved first
                 // eslint-disable-next-line prefer-spread
-                return Promise.resolve().then(() => { this.emit.apply(this, args) })
+                return Promise.resolve().then(() =>
+                {
+                    // eslint-disable-next-line prefer-spread
+                    this.emit.apply(this, args)
+                })
             }
 
             if (!this.queue[message.id])
@@ -395,39 +401,42 @@ export default class CommonClient extends EventEmitter
 
             // reject early since server's response is invalid
             if ("error" in message === "result" in message)
-                this.queue[message.id].promise[1](new Error(
-                    "Server response malformed. Response must include either \"result\"" +
-                    " or \"error\", but not both."
-                ))
+                this.queue[message.id].promise[1](
+                    new Error(
+                        "Server response malformed. Response must include either \"result\"" +
+              " or \"error\", but not both."
+                    )
+                )
 
             if (this.queue[message.id].timeout)
                 clearTimeout(this.queue[message.id].timeout)
 
-            if (message.error)
-                this.queue[message.id].promise[1](message.error)
-            else
-                this.queue[message.id].promise[0](message.result)
+            if (message.error) this.queue[message.id].promise[1](message.error)
+            else this.queue[message.id].promise[0](message.result)
 
             delete this.queue[message.id]
         })
 
         this.socket.addEventListener("error", (error) => this.emit("error", error))
 
-        this.socket.addEventListener("close", ({code, reason}) =>
+        this.socket.addEventListener("close", ({ code, reason }) =>
         {
-            if (this.ready) // Delay close event until internal state is updated
+            if (this.ready)
+            // Delay close event until internal state is updated
                 setTimeout(() => this.emit("close", code, reason), 0)
 
             this.ready = false
             this.socket = undefined
 
-            if (code === 1000)
-                return
+            if (code === 1000) return
 
             this.current_reconnects++
 
-            if (this.reconnect && ((this.max_reconnects > this.current_reconnects) ||
-                    this.max_reconnects === 0))
+            if (
+                this.reconnect &&
+        (this.max_reconnects > this.current_reconnects ||
+          this.max_reconnects === 0)
+            )
                 this.reconnect_timer_id = setTimeout(
                     () => this._connect(address, options),
                     this.reconnect_interval

@@ -1,15 +1,14 @@
 {
     "compilerOptions": {
-        "outDir": "./dist",
-        "declaration": true,
-        "allowUnreachableCode": false,
-        "noImplicitAny": true,
-        "module": "CommonJS",
-        "target": "ESNext",
-        "esModuleInterop": true,
-        "moduleResolution": "node",
+        "allowJs": true,
         "allowSyntheticDefaultImports": true,
-        "allowJs": true
+        "allowUnreachableCode": false,
+        "esModuleInterop": true,
+        "module": "CommonJS",
+        "moduleResolution": "node",
+        "noEmit": true,
+        "noImplicitAny": true,
+        "target": "ESNext",
     },
     "include": [
         "./src/**/*"

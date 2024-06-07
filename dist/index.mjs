@@ -1,18 +1,11 @@
-'use strict';
-
-var WebSocketImpl = require('ws');
-var eventemitter3 = require('eventemitter3');
-var url = require('url');
-var uuid = require('uuid');
-
-function _interopDefault (e) { return e && e.__esModule ? e : { default: e }; }
-
-var WebSocketImpl__default = /*#__PURE__*/_interopDefault(WebSocketImpl);
-var url__default = /*#__PURE__*/_interopDefault(url);
+import WebSocketImpl, { WebSocketServer } from 'ws';
+import { EventEmitter } from 'eventemitter3';
+import url from 'node:url';
+import { v1 } from 'uuid';
 
 // src/lib/client/websocket.ts
 function WebSocket(address, options) {
-  return new WebSocketImpl__default.default(address, options);
+  return new WebSocketImpl(address, options);
 }
 
 // src/lib/utils.ts
@@ -26,7 +19,7 @@ var DefaultDataPack = class {
 };
 
 // src/lib/client.ts
-var CommonClient = class extends eventemitter3.EventEmitter {
+var CommonClient = class extends EventEmitter {
   address;
   rpc_id;
   queue;
@@ -314,7 +307,7 @@ var CommonClient = class extends eventemitter3.EventEmitter {
     });
   }
 };
-var Server = class extends eventemitter3.EventEmitter {
+var Server = class extends EventEmitter {
   namespaces;
   dataPack;
   wss;
@@ -330,13 +323,13 @@ var Server = class extends eventemitter3.EventEmitter {
     this.namespaces = {};
     if (!dataPack) this.dataPack = new DefaultDataPack();
     else this.dataPack = dataPack;
-    this.wss = new WebSocketImpl.WebSocketServer(options);
+    this.wss = new WebSocketServer(options);
     this.wss.on("listening", () => this.emit("listening"));
     this.wss.on("connection", (socket, request) => {
-      const u = url__default.default.parse(request.url, true);
+      const u = url.parse(request.url, true);
       const ns = u.pathname;
       if (u.query.socket_id) socket._id = u.query.socket_id;
-      else socket._id = uuid.v1();
+      else socket._id = v1();
       socket["_authenticated"] = false;
       socket.on("error", (error) => this.emit("socket-error", socket, error));
       socket.on("close", () => {
@@ -888,11 +881,6 @@ var Client = class extends CommonClient {
   }
 };
 
-exports.Client = Client;
-exports.CommonClient = CommonClient;
-exports.DefaultDataPack = DefaultDataPack;
-exports.Server = Server;
-exports.WebSocket = WebSocket;
-exports.createError = createError;
+export { Client, CommonClient, DefaultDataPack, Server, WebSocket, createError };
 //# sourceMappingURL=out.js.map
-//# sourceMappingURL=index.cjs.map
+//# sourceMappingURL=index.mjs.map

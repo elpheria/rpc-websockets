@@ -2,8 +2,9 @@
 
 "use strict"
 
-import WebSocket from "ws"
-import { IWSClientAdditionalOptions } from "./client.types.cjs"
+import WebSocketImpl from "ws"
+
+import { IWSClientAdditionalOptions } from "./client.types.js"
 
 /**
  * factory method for common WebSocket instance
@@ -12,10 +13,10 @@ import { IWSClientAdditionalOptions } from "./client.types.cjs"
  * @param {(Object)} options - websocket options
  * @return {Undefined}
  */
-export default function(
+export function WebSocket(
     address: string,
-    options: IWSClientAdditionalOptions & WebSocket.ClientOptions
+    options: IWSClientAdditionalOptions & WebSocketImpl.ClientOptions
 )
 {
-    return new WebSocket(address, options)
+    return new WebSocketImpl(address, options)
 }
