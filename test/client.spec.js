@@ -158,6 +158,29 @@ describe("Client", function()
             })
         })
 
+        it("should call an RPC method with string id receive a valid response", function(done)
+        {
+            let count = 1
+            const client = new WebSocket("ws://" + host + ":" + port, {}, (method) => {
+                count = count + 1
+                return `${method}-${count}`
+            })
+
+            client.on("open", function()
+            {
+                client.call("sum", [5, 3]).then(function(response)
+                {
+                    response.should.equal(8)
+
+                    done()
+                    client.close()
+                }, function(error)
+                {
+                    done(error)
+                })
+            })
+        })
+
         it("should forward ws options to ws.send", function(done)
         {
             const client = new WebSocket("ws://" + host + ":" + port)

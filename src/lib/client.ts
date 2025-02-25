@@ -26,7 +26,7 @@ interface IQueueElement {
 }
 
 export interface IQueue {
-  [x: number]: IQueueElement;
+  [x: number | string]: IQueueElement;
 }
 
 export interface IWSRequestParams {
@@ -37,7 +37,7 @@ export interface IWSRequestParams {
 export class CommonClient extends EventEmitter
 {
     private address: string
-    private rpc_id: number
+    private rpc_id: number | string
     private queue: IQueue
     private options: IWSClientAdditionalOptions & NodeWebSocket.ClientOptions
     private autoconnect: boolean
@@ -52,7 +52,7 @@ export class CommonClient extends EventEmitter
     private generate_request_id: (
     method: string,
     params: object | Array<any>
-  ) => number
+  ) => number | string
     private socket: ICommonWebSocket
     private webSocketFactory: ICommonWebSocketFactory
     private dataPack: DataPack<object, string>
@@ -80,7 +80,7 @@ export class CommonClient extends EventEmitter
         generate_request_id?: (
       method: string,
       params: object | Array<any>
-    ) => number,
+    ) => number | string,
         dataPack?: DataPack<object, string>
     )
     {
@@ -100,7 +100,7 @@ export class CommonClient extends EventEmitter
         this.max_reconnects = max_reconnects
         this.rest_options = rest_options
         this.current_reconnects = 0
-        this.generate_request_id = generate_request_id || (() => ++this.rpc_id)
+        this.generate_request_id = generate_request_id || (() => Number(this.rpc_id) + 1)
 
         if (!dataPack) this.dataPack = new DefaultDataPack()
         else this.dataPack = dataPack
