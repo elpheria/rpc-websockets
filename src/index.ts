@@ -22,7 +22,7 @@ export class Client extends CommonClient
         generate_request_id?: (
       method: string,
       params: object | Array<any>
-    ) => number
+    ) => number | string
     )
     {
         super(
