@@ -374,17 +374,19 @@ export class Server extends EventEmitter
        */
             emit(event: string, ...params: Array<string>)
             {
-                const socket_ids = [...self.namespaces[name].clients.keys()]
-
-                for (let i = 0, id; (id = socket_ids[i]); ++i)
-                {
-                    self.namespaces[name].clients.get(id).send(
-                        self.dataPack.encode({
-                            notification: event,
-                            params: params || [],
-                        })
-                    )
-                }
+                const nsEvent = self.namespaces[name].events[event.replace(/^\//, "")]
+                if (nsEvent)
+                    for (const socket_id of nsEvent.sockets)
+                    {
+                        const socket = self.namespaces[name].clients.get(socket_id)
+                        if (!socket) continue
+                        socket.send(
+                            self.dataPack.encode({
+                                notification: event,
+                                params,
+                            })
+                        )
+                    }
             },
 
             /**
