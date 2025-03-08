@@ -374,7 +374,7 @@ export class Server extends EventEmitter
        */
             emit(event: string, ...params: Array<string>)
             {
-                const nsEvent = self.namespaces[name].events[event.replace(/^\//, "")]
+                const nsEvent = self.namespaces[name].events[event]
                 if (nsEvent)
                     for (const socket_id of nsEvent.sockets)
                     {
