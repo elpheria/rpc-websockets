@@ -629,7 +629,7 @@ describe("Client", function()
             })
         })
 
-        it("should receive an event from a joined namespace", function(done)
+        it("should not receive an event from a joined namespace if wasn't subscribed", function(done)
         {
             const chat = server.of("/chat")
             chat.emit("chatMessage")
