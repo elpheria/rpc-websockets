@@ -13,9 +13,14 @@ This is a JavaScript classes documentation which describes both client and serve
     * [subscribe](#wssubscribeevent---promise)
     * [unsubscribe](#wsunsubscribeevent---promise)
     * [close](#wsclosecode-data)
+    * [getCurrentReconnects](#wsgetcurrentreconnects---number)
+    * [getMaxReconnects](#wsgetmaxreconnects---number)
+    * [isReconnecting](#wsisreconnecting---boolean)
+    * [willReconnect](#wswillreconnect---boolean)
     * [event:open](#event-open)
     * [event:error](#event-error)
     * [event:close](#event-close)
+    * [event:max_reconnects_reached](#event-max_reconnects_reached)
     * [event:notification](#event-notification)
 * [Server](#server)
     * [Constructor](#new-websocketserveroptions---server)
@@ -149,6 +154,22 @@ Parameters:
 * `code` {Number}: Socket close code.
 * `data` {String}: Optional data to be sent to socket before closing.
 
+### ws.getCurrentReconnects() -> Number
+
+Returns the current number of reconnection attempts made.
+
+### ws.getMaxReconnects() -> Number
+
+Returns the maximum number of reconnection attempts configured. Returns `0` if unlimited reconnections are configured.
+
+### ws.isReconnecting() -> Boolean
+
+Checks if the client is currently in the process of attempting to reconnect.
+
+### ws.willReconnect() -> Boolean
+
+Checks if the client will attempt to reconnect on the next connection failure based on current state and configuration.
+
 ### Event: 'open'
 
 Emits when the connection is opened and ready for use.
@@ -162,6 +183,23 @@ Emits when a socket error is raised.
 ### Event: 'close'
 
 Emits when the connection is closed.
+
+### Event: 'max_reconnects_reached'
+
+* `code` {Number}: WebSocket close code
+* `reason` {String}: WebSocket close reason
+
+Emits when all reconnection attempts have been exhausted and the client will not attempt to reconnect again. Only fired when `max_reconnects` is greater than 0 and the limit has been reached.
+
+Example:
+```js
+ws.on('max_reconnects_reached', (code, reason) => {
+  console.log('All reconnection attempts failed')
+  console.log('Close code:', code)
+  console.log('Close reason:', reason)
+  // Handle permanent disconnection
+})
+```
 
 ### Event: &lt;Notification&gt;
 
