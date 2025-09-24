@@ -704,6 +704,78 @@ describe("Client", function()
             })
         })
     })
+
+    describe("reconnection state methods", function()
+    {
+        it("should provide access to reconnection state", function()
+        {
+            const client = new WebSocket("ws://invalid:1234", {
+                autoconnect: false,
+                reconnect: true,
+                max_reconnects: 3
+            })
+
+            expect(client.getCurrentReconnects()).to.equal(0)
+            expect(client.getMaxReconnects()).to.equal(3)
+            expect(client.isReconnecting()).to.equal(false)
+            expect(client.willReconnect()).to.equal(true)
+        })
+
+        it("should update reconnection state during reconnect attempts", function(done)
+        {
+            const client = new WebSocket("ws://invalid:1234", {
+                autoconnect: true,
+                reconnect: true,
+                max_reconnects: 2,
+                reconnect_interval: 100
+            })
+
+            let maxReconnectsReachedFired = false
+
+            client.on("max_reconnects_reached", function(code, reason)
+            {
+                maxReconnectsReachedFired = true
+                
+                // Verify the client state when max reconnects is reached
+                expect(client.getCurrentReconnects()).to.equal(2)
+                expect(client.willReconnect()).to.equal(false)
+                expect(code).to.be.a("number")
+                done()
+            })
+
+            // Timeout as fallback
+            setTimeout(() => {
+                if (!maxReconnectsReachedFired) {
+                    done(new Error("max_reconnects_reached event was not fired"))
+                }
+            }, 1000)
+        })
+
+        it("should not emit max_reconnects_reached when max_reconnects is 0", function(done)
+        {
+            const client = new WebSocket("ws://invalid:1234", {
+                autoconnect: true,
+                reconnect: true,
+                max_reconnects: 0,
+                reconnect_interval: 100
+            })
+
+            let maxReconnectsReachedFired = false
+
+            client.on("max_reconnects_reached", function()
+            {
+                maxReconnectsReachedFired = true
+            })
+
+            // Wait and verify the event is not fired
+            setTimeout(() => {
+                expect(maxReconnectsReachedFired).to.equal(false)
+                expect(client.willReconnect()).to.equal(true)
+                client.close()
+                done()
+            }, 300)
+        })
+    })
 })
 
 /** Runs a WebSocket server.

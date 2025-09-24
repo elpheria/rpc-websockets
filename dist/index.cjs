@@ -213,7 +213,9 @@ var CommonClient = class extends eventemitter3.EventEmitter {
   * @return {Undefined}
   */
   close(code, data) {
-    this.socket.close(code || 1e3, data);
+    if (this.socket) {
+      this.socket.close(code || 1e3, data);
+    }
   }
   /**
   * Enable / disable automatic reconnection.
@@ -241,6 +243,38 @@ var CommonClient = class extends eventemitter3.EventEmitter {
   */
   setMaxReconnects(max_reconnects) {
     this.max_reconnects = max_reconnects;
+  }
+  /**
+  * Get the current number of reconnection attempts made.
+  * @method
+  * @return {Number} current reconnection attempts
+  */
+  getCurrentReconnects() {
+    return this.current_reconnects;
+  }
+  /**
+  * Get the maximum number of reconnection attempts.
+  * @method
+  * @return {Number} maximum reconnection attempts
+  */
+  getMaxReconnects() {
+    return this.max_reconnects;
+  }
+  /**
+  * Check if the client is currently attempting to reconnect.
+  * @method
+  * @return {Boolean} true if reconnection is in progress
+  */
+  isReconnecting() {
+    return this.reconnect_timer_id !== void 0;
+  }
+  /**
+  * Check if the client will attempt to reconnect on the next close event.
+  * @method
+  * @return {Boolean} true if reconnection will be attempted
+  */
+  willReconnect() {
+    return this.reconnect && (this.max_reconnects === 0 || this.current_reconnects < this.max_reconnects);
   }
   /**
   * Connection/Message handler.
@@ -311,6 +345,9 @@ var CommonClient = class extends eventemitter3.EventEmitter {
           () => this._connect(address, options),
           this.reconnect_interval
         );
+      else if (this.reconnect && this.max_reconnects > 0 && this.current_reconnects >= this.max_reconnects) {
+        setTimeout(() => this.emit("max_reconnects_reached", code, reason), 1);
+      }
     });
   }
 };

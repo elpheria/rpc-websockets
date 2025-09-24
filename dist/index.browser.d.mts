@@ -164,6 +164,30 @@ declare class CommonClient extends EventEmitter {
    */
     setMaxReconnects(max_reconnects: number): void;
     /**
+   * Get the current number of reconnection attempts made.
+   * @method
+   * @return {Number} current reconnection attempts
+   */
+    getCurrentReconnects(): number;
+    /**
+   * Get the maximum number of reconnection attempts.
+   * @method
+   * @return {Number} maximum reconnection attempts
+   */
+    getMaxReconnects(): number;
+    /**
+   * Check if the client is currently attempting to reconnect.
+   * @method
+   * @return {Boolean} true if reconnection is in progress
+   */
+    isReconnecting(): boolean;
+    /**
+   * Check if the client will attempt to reconnect on the next close event.
+   * @method
+   * @return {Boolean} true if reconnection will be attempted
+   */
+    willReconnect(): boolean;
+    /**
    * Connection/Message handler.
    * @method
    * @private
