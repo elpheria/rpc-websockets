@@ -290,10 +290,7 @@ export class CommonClient extends EventEmitter
    */
     close(code?: number, data?: string)
     {
-        if (this.socket)
-        {
-            this.socket.close(code || 1000, data)
-        }
+        if (this.socket) this.socket.close(code || 1000, data)
     }
 
     /**
