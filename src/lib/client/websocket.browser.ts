@@ -13,6 +13,14 @@ import {
     IWSClientAdditionalOptions,
 } from "./client.types.js"
 
+export type WebSocketBrowserOptions = {
+    /**
+     * One or more protocols passed to the websocket constructor
+     * @link https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/WebSocket
+     */
+    protocols?: string | string[]
+}
+
 class WebSocketBrowserImpl extends EventEmitter
 {
     socket: BrowserWebSocketType
@@ -20,15 +28,14 @@ class WebSocketBrowserImpl extends EventEmitter
     /** Instantiate a WebSocket class
    * @constructor
    * @param {String} address - url to a websocket server
-   * @param {(Object)} options - websocket options
-   * @param {(String|Array)} protocols - a list of protocols
+   * @param {WebSocketBrowserOptions} options - websocket options
    * @return {WebSocketBrowserImpl} - returns a WebSocket instance
    */
-    constructor(address: string, options: {}, protocols?: string | string[])
+    constructor(address: string, options: WebSocketBrowserOptions)
     {
         super()
 
-        this.socket = new window.WebSocket(address, protocols)
+        this.socket = new window.WebSocket(address, options.protocols)
 
         this.socket.onopen = () => this.emit("open")
         this.socket.onmessage = (event) => this.emit("message", event.data)
@@ -100,7 +107,7 @@ class WebSocketBrowserImpl extends EventEmitter
  */
 export function WebSocket(
     address: string,
-    options: IWSClientAdditionalOptions
+    options: IWSClientAdditionalOptions & WebSocketBrowserOptions
 )
 {
     return new WebSocketBrowserImpl(address, options)

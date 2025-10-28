@@ -1,6 +1,6 @@
 "use strict"
 
-import { WebSocket } from "./lib/client/websocket.browser.js"
+import { WebSocket, WebSocketBrowserOptions } from "./lib/client/websocket.browser.js"
 import { CommonClient } from "./lib/client.js"
 import { IWSClientAdditionalOptions } from "./lib/client/client.types.js"
 
@@ -13,7 +13,8 @@ export class Client extends CommonClient
             reconnect = true,
             reconnect_interval = 1000,
             max_reconnects = 5,
-        }: IWSClientAdditionalOptions = {},
+            ...rest_options
+        }: IWSClientAdditionalOptions & WebSocketBrowserOptions = {},
         generate_request_id?: (
       method: string,
       params: object | Array<any>
@@ -28,6 +29,7 @@ export class Client extends CommonClient
                 reconnect,
                 reconnect_interval,
                 max_reconnects,
+                ...rest_options,
             },
             generate_request_id
         )
