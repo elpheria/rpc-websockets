@@ -7,13 +7,12 @@ var WebSocketBrowserImpl = class extends EventEmitter {
   /** Instantiate a WebSocket class
   * @constructor
   * @param {String} address - url to a websocket server
-  * @param {(Object)} options - websocket options
-  * @param {(String|Array)} protocols - a list of protocols
+  * @param {WebSocketBrowserOptions} options - websocket options
   * @return {WebSocketBrowserImpl} - returns a WebSocket instance
   */
-  constructor(address, options, protocols) {
+  constructor(address, options) {
     super();
-    this.socket = new window.WebSocket(address, protocols);
+    this.socket = new window.WebSocket(address, options.protocols);
     this.socket.onopen = () => this.emit("open");
     this.socket.onmessage = (event) => this.emit("message", event.data);
     this.socket.onerror = (error) => this.emit("error", error);
@@ -398,7 +397,8 @@ var Client = class extends CommonClient {
     autoconnect = true,
     reconnect = true,
     reconnect_interval = 1e3,
-    max_reconnects = 5
+    max_reconnects = 5,
+    ...rest_options
   } = {}, generate_request_id) {
     super(
       WebSocket,
@@ -407,7 +407,8 @@ var Client = class extends CommonClient {
         autoconnect,
         reconnect,
         reconnect_interval,
-        max_reconnects
+        max_reconnects,
+        ...rest_options
       },
       generate_request_id
     );
