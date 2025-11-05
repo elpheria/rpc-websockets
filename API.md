@@ -91,9 +91,10 @@ Parameters:
   * `reconnect` {Boolean}: Whether client should reconnect automatically once the connection is down. Defaults to `true`.
   * `reconnect_interval` {Number}: Time between adjacent reconnects. Defaults to `1000`.
   * `max_reconnects` {Number}: Maximum number of times the client should try to reconnect. Defaults to `5`. `0` means unlimited.
-  * Any other option allowed in <a href="https://github.com/websockets/ws/blob/master/doc/ws.md#new-websocketaddress-protocols-options" target="_blank">Node WebSocket</a>
+  * When running in Node.js: Any other option allowed in <a href="https://github.com/websockets/ws/blob/master/doc/ws.md#new-websocketaddress-protocols-options" target="_blank">Node WebSocket</a>
 * `generate_request_id` {Function} Custom function to generate request id instead of simple increment by default. Passes `method` and `params` to parameters.
 * `dataPack` {DataPack} data pack contains encoder and decoder.
+* `protocols` {string|string[]}: When running in a web browser, these protocols will be passed to the WebSocket constructor. See <a href="https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/WebSocket#protocols" target="_blank">mdn for details</a>
 
 ### ws.connect()
 
