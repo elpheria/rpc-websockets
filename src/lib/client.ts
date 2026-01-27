@@ -399,7 +399,7 @@ export class CommonClient extends EventEmitter
             {
                 message = this.dataPack.decode(message)
             }
-            catch (error)
+            catch
             {
                 return
             }
@@ -419,7 +419,7 @@ export class CommonClient extends EventEmitter
                         args.push(message.params[i])
 
                 // run as microtask so that pending queue messages are resolved first
-                // eslint-disable-next-line prefer-spread
+
                 return Promise.resolve().then(() =>
                 {
                     // eslint-disable-next-line prefer-spread
