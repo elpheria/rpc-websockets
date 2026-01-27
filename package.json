@@ -54,7 +54,7 @@
     "@typescript-eslint/eslint-plugin": "^8.53.1",
     "@typescript-eslint/parser": "^8.53.1",
     "async": "^3.2.3",
-    "chai": "^4.3.6",
+    "chai": "^6.2.2",
     "esbuild-plugin-polyfill-node": "^0.3.0",
     "eslint": "^9.39.2",
     "istanbul": "^0.4.5",
