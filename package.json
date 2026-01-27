@@ -29,7 +29,8 @@
     "pretest": "npm run-script build",
     "test": "mocha --exit test/*spec.js",
     "test:client": "mocha --exit test/client.spec.js",
-    "test:server": "mocha --exit test/server.spec.js"
+    "test:server": "mocha --exit test/server.spec.js",
+    "prepublishOnly": "npm run build"
   },
   "repository": {
     "type": "git",
