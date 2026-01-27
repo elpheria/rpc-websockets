@@ -55,7 +55,7 @@ export class CommonClient extends EventEmitter
   ) => number | string
     private socket: ICommonWebSocket
     private webSocketFactory: ICommonWebSocketFactory
-    private dataPack: DataPack<object, string>
+    private dataPack: DataPack<object, any>
 
     /**
    * Instantiate a Client class.
@@ -81,7 +81,7 @@ export class CommonClient extends EventEmitter
       method: string,
       params: object | Array<any>
     ) => number | string,
-        dataPack?: DataPack<object, string>
+        dataPack?: DataPack<object, any>
     )
     {
         super()

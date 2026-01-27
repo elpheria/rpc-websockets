@@ -7,6 +7,7 @@ import {
     IWSClientAdditionalOptions,
     ICommonWebSocketFactory,
 } from "./lib/client/client.types.js"
+import { DataPack } from "./lib/utils.js"
 
 export class Client extends CommonClient
 {
@@ -22,7 +23,8 @@ export class Client extends CommonClient
         generate_request_id?: (
       method: string,
       params: object | Array<any>
-    ) => number | string
+    ) => number | string,
+        dataPack?: DataPack<object, any>
     )
     {
         super(
@@ -35,7 +37,8 @@ export class Client extends CommonClient
           max_reconnects,
           ...rest_options,
       },
-      generate_request_id
+      generate_request_id,
+      dataPack
         )
     }
 }
