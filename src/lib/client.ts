@@ -55,7 +55,7 @@ export class CommonClient extends EventEmitter
   ) => number | string
     private socket: ICommonWebSocket
     private webSocketFactory: ICommonWebSocketFactory
-    private dataPack: DataPack<object, string>
+    private dataPack: DataPack<object, any>
 
     /**
    * Instantiate a Client class.
@@ -81,7 +81,7 @@ export class CommonClient extends EventEmitter
       method: string,
       params: object | Array<any>
     ) => number | string,
-        dataPack?: DataPack<object, string>
+        dataPack?: DataPack<object, any>
     )
     {
         super()
@@ -399,7 +399,7 @@ export class CommonClient extends EventEmitter
             {
                 message = this.dataPack.decode(message)
             }
-            catch (error)
+            catch
             {
                 return
             }
@@ -419,7 +419,7 @@ export class CommonClient extends EventEmitter
                         args.push(message.params[i])
 
                 // run as microtask so that pending queue messages are resolved first
-                // eslint-disable-next-line prefer-spread
+
                 return Promise.resolve().then(() =>
                 {
                     // eslint-disable-next-line prefer-spread

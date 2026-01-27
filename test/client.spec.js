@@ -782,6 +782,99 @@ describe("Client", function()
             }, 300)
         })
     })
+
+    describe("DataPack", function()
+    {
+        it("should accept custom DataPack parameter", function(done)
+        {
+            // Custom DataPack that uses JSON
+            const customDataPack = {
+                encode: (value) => JSON.stringify(value),
+                decode: (value) => JSON.parse(value)
+            }
+
+            const client = new WebSocket("ws://" + host + ":" + port, 
+                { autoconnect: false },
+                undefined,  // generate_request_id
+                customDataPack
+            )
+            
+            client.should.be.an.instanceOf(WebSocket)
+            client.on("open", done)
+            client.connect()
+        })
+
+        it("should use custom DataPack for encoding/decoding", function(done)
+        {
+            // Custom DataPack with tracking
+            let encodeCount = 0
+            let decodeCount = 0
+
+            const trackingDataPack = {
+                encode: (value) => {
+                    encodeCount++
+                    return JSON.stringify(value)
+                },
+                decode: (value) => {
+                    decodeCount++
+                    return JSON.parse(value)
+                }
+            }
+
+            const client = new WebSocket("ws://" + host + ":" + port, 
+                { autoconnect: true },
+                undefined,  // generate_request_id
+                trackingDataPack
+            )
+
+            client.on("open", function()
+            {
+                client.call("greet").then(function(result)
+                {
+                    result.should.equal("Hello, subscriber!")
+                    encodeCount.should.be.greaterThan(0)
+                    decodeCount.should.be.greaterThan(0)
+                    client.close()
+                    done()
+                }).catch(done)
+            })
+
+            client.on("error", done)
+        })
+
+        it("should work with binary DataPack", function(done)
+        {
+            // Simple binary DataPack using MessagePack-like approach
+            const binaryDataPack = {
+                encode: (value) => {
+                    return Buffer.from(JSON.stringify(value), 'utf8')
+                },
+                decode: (value) => {
+                    if (value instanceof ArrayBuffer)
+                        return JSON.parse(Buffer.from(value).toString('utf8'))
+                    return JSON.parse(value.toString('utf8'))
+                }
+            }
+
+            const client = new WebSocket("ws://" + host + ":" + port, 
+                { autoconnect: true },
+                undefined,  // generate_request_id
+                binaryDataPack
+            )
+
+            client.on("open", function()
+            {
+                client.call("greet").then(function(result)
+                {
+                    result.should.equal("Hello, subscriber!")
+                    client.close()
+                    done()
+                }).catch(done)
+            })
+
+            client.on("error", done)
+        })
+    })
 })
 
 /** Runs a WebSocket server.
