@@ -846,8 +846,12 @@ var Server = class extends EventEmitter {
     if (!message.id) return;
     if (message.method === "rpc.login" && response === true) {
       const s = this.namespaces[ns].clients.get(socket_id);
-      s["_authenticated"] = true;
-      this.namespaces[ns].clients.set(socket_id, s);
+      if (s) {
+        s["_authenticated"] = true;
+        this.namespaces[ns].clients.set(socket_id, s);
+      } else {
+        console.warn("rpc.login succeeded after socket disconnected", { socket_id, ns });
+      }
     }
     return {
       jsonrpc: "2.0",

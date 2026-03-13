@@ -1286,6 +1286,87 @@ describe("Server", function()
                 })
             })
 
+            it("should stay available if client disconnects before async login resolves", function(done)
+            {
+                let raceServer = null
+                const racePort = 41001
+
+                function finish(error)
+                {
+                    if (!raceServer) return done(error)
+
+                    raceServer.close().then(function()
+                    {
+                        done(error)
+                    }, done)
+                }
+
+                getInstance(racePort).then((inst) =>
+                {
+                    raceServer = inst
+
+                    inst.setAuth(function(data)
+                    {
+                        return new Promise(function(resolve)
+                        {
+                            setTimeout(function()
+                            {
+                                resolve(data.username === "foo" && data.password === "bar")
+                            }, 50)
+                        })
+                    })
+
+                    return connect(racePort, inst.wss.options.host)
+                }).then((ws) =>
+                {
+                    ws.send(JSON.stringify({
+                        id: ++rpc_id,
+                        jsonrpc: "2.0",
+                        method: "rpc.login",
+                        params: {
+                            username: "foo",
+                            password: "bar"
+                        }
+                    }))
+
+                    setTimeout(function()
+                    {
+                        ws.close()
+                    }, 1)
+
+                    setTimeout(function()
+                    {
+                        connect(racePort, raceServer.wss.options.host).then((probeWs) =>
+                        {
+                            const probeId = ++rpc_id
+
+                            probeWs.send(JSON.stringify({
+                                id: probeId,
+                                jsonrpc: "2.0",
+                                method: "rpc.login",
+                                params: {
+                                    username: "foo",
+                                    password: "bar2"
+                                }
+                            }))
+
+                            probeWs.once("message", function(message)
+                            {
+                                message = JSON.parse(message)
+
+                                message.id.should.equal(probeId)
+                                message.result.should.equal(false)
+
+                                probeWs.close()
+                                finish()
+                            })
+
+                            probeWs.once("error", finish)
+                        }).catch(finish)
+                    }, 75)
+                }).catch(finish)
+            })
+
             it("should return a valid response if authorized", function(done)
             {
                 connect(port, host).then((ws) =>
