@@ -778,10 +778,6 @@ export class Server extends EventEmitter
                 s["_authenticated"] = true
                 this.namespaces[ns].clients.set(socket_id, s)
             }
-            else
-            {
-                console.warn("rpc.login succeeded after socket disconnected", { socket_id, ns })
-            }
         }
 
         return {
