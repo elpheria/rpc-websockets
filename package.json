@@ -41,7 +41,7 @@
     "@types/ws": "^8.2.2",
     "buffer": "^6.0.3",
     "eventemitter3": "^5.0.1",
-    "uuid": "^11.0.0",
+    "uuid": "^14.0.0",
     "ws": "^8.5.0"
   },
   "optionalDependencies": {
