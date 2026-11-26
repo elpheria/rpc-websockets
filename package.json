@@ -3,13 +3,19 @@
   "version": "10.0.1",
   "description": "JSON-RPC 2.0 implementation over WebSockets for Node.js",
   "exports": {
-    "browser": {
-      "import": "./dist/index.browser.mjs",
-      "require": "./dist/index.browser.cjs"
-    },
-    "node": {
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.cjs"
+    ".": {
+      "browser": {
+        "import": "./dist/index.browser.mjs",
+        "require": "./dist/index.browser.cjs"
+      },
+      "node": {
+        "import": "./dist/index.mjs",
+        "require": "./dist/index.cjs"
+      },
+      "default": {
+        "import": "./dist/index.mjs",
+        "require": "./dist/index.cjs"
+      }
     }
   },
   "browser": {
