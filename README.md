@@ -32,7 +32,14 @@ Install our OSS library in your project:
 npm install rpc-websockets
 ```
 
-Write your source code using `rpc-websockets`:
+For a Node.js project using ES modules, use these imports in the example below.
+
+```js
+import { Client as WebSocket, Server as WebSocketServer } from 'rpc-websockets'
+```
+
+For CommonJS, use the example as written.
+
 ```js
 var WebSocket = require('rpc-websockets').Client
 var WebSocketServer = require('rpc-websockets').Server
@@ -100,6 +107,14 @@ ws.on('open', function() {
   ws.close()
 })
 ```
+
+Browser bundlers that select the `browser` export condition load the browser client from the same package name.
+
+```js
+import { Client } from 'rpc-websockets'
+```
+
+Resolvers that select neither `browser` nor `node` fall back to the Node.js build.
 
 ## Documentation
 
